@@ -14,5 +14,6 @@ export const POST = (async ({ request }) => {
 
     const newUuid = uuid.v5(creator.concat('_', new Date().toISOString()), import.meta.env.VITE_NAMESPACE_UUID);
 
+    // [TODO] when schema fixed, add new room with new uuid by query
     return new Response(newUuid);
 }) satisfies RequestHandler;
