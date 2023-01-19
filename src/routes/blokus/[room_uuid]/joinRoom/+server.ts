@@ -1,14 +1,15 @@
 import { type RequestHandler, redirect } from '@sveltejs/kit';
 import { validate } from 'uuid';
 
-export const PATCH = (({ url }) => {
-    const roomUuid = url.toString().replace(new RegExp(url.origin.concat('/blokus/')), '');
-    if (!validate(roomUuid) || roomUuid[14] !== '5') {
+export const PATCH = (({ url, params }) => {
+    const { room_uuid } = params;
+    if (!room_uuid || !validate(room_uuid)) {
+        console.log('123')
         return new Response('invalid uuid', {
             status: 404,
         });
     }
 
     // [TODO] when schema fixed, add user to room by query
-    throw redirect(302, `/blokus/${roomUuid}`);
+    throw redirect(302, `/blokus/${params.room_uuid}`);
 }) satisfies RequestHandler;
