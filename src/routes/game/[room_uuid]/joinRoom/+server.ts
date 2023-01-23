@@ -27,5 +27,5 @@ export const PATCH = (async ({ params, request }) => {
     throw new Error('INTERNAL ERROR - query failed');
   }
 
-  throw redirect(302, `/blokus/${params.room_uuid}`);
+  throw redirect(302, `/blokus/${room_uuid}`);
 }) satisfies RequestHandler;
