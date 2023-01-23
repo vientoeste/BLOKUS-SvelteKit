@@ -6,19 +6,19 @@ const putColorOnBlocks = (rowOfBoard: (string | number)[]) => {
   rowOfBoard.forEach((e: string | number, idx: number) => {
     switch (e) {
       case 'a':
-        strToReturn += `${idx === 0 ? '│' : ' '}\x1b[44m\x1b[33ma \x1b[40m\x1b[37m${idx < 19 && rowOfBoard[idx + 1] === rowOfBoard[idx] ? '\x1b[44m' : ''}`;
+        strToReturn += `${idx === 0 ? '│' : ' '}\x1b[44m\x1b[33ma \x1b[49m\x1b[37m${idx < 19 && rowOfBoard[idx + 1] === rowOfBoard[idx] ? '\x1b[44m' : ''}`;
         break;
       case 'b':
-        strToReturn += `${idx === 0 ? '│' : ' '}\x1b[43m\x1b[30mb \x1b[40m\x1b[37m${idx < 19 && rowOfBoard[idx + 1] === rowOfBoard[idx] ? '\x1b[43m' : ''}`;
+        strToReturn += `${idx === 0 ? '│' : ' '}\x1b[43m\x1b[30mb \x1b[49m\x1b[37m${idx < 19 && rowOfBoard[idx + 1] === rowOfBoard[idx] ? '\x1b[43m' : ''}`;
         break;
       case 'c':
-        strToReturn += `${idx === 0 ? '│' : ' '}\x1b[41m\x1b[37mc \x1b[40m\x1b[37m${idx < 19 && rowOfBoard[idx + 1] === rowOfBoard[idx] ? '\x1b[41m' : ''}`;
+        strToReturn += `${idx === 0 ? '│' : ' '}\x1b[41m\x1b[37mc \x1b[49m\x1b[37m${idx < 19 && rowOfBoard[idx + 1] === rowOfBoard[idx] ? '\x1b[41m' : ''}`;
         break;
       case 'd':
-        strToReturn += `${idx === 0 ? '│' : ' '}\x1b[42m\x1b[37md \x1b[40m\x1b[37m${idx < 19 && rowOfBoard[idx + 1] === rowOfBoard[idx] ? '\x1b[42m' : ''}`;
+        strToReturn += `${idx === 0 ? '│' : ' '}\x1b[42m\x1b[37md \x1b[49m\x1b[37m${idx < 19 && rowOfBoard[idx + 1] === rowOfBoard[idx] ? '\x1b[42m' : ''}`;
         break;
       default:
-        strToReturn += `${idx === 0 ? '│' : ' '}\x1b[40m\x1b[37m0 \x1b[40m\x1b[37m`;
+        strToReturn += `${idx === 0 ? '│' : ' '}\x1b[49m\x1b[37m0 \x1b[49m\x1b[37m`;
         break;
     }
   });
