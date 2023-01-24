@@ -1,0 +1,21 @@
+table, table th, table td {
+  text-align: center;
+  border: 1px solid rgba(0, 0, 0, 0.267);
+  border-collapse: collapse;
+  width: 15cm;
+}
+.none {
+  background-color: rgb(185, 185, 185);
+}
+.a {
+  background-color: rgba(0, 0, 255, 0.625);
+}
+.b {
+  background-color: rgba(255, 0, 0, 0.65);
+}
+.c {
+  background-color: rgb(0, 220, 0, 0.625);
+}
+.d {
+  background-color: rgb(255, 255, 0, 0.75);
+}
