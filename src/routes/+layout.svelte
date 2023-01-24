@@ -1,7 +1,8 @@
 <nav>
-    <a href="/">Main</a>
-    <a href="/ex1">example Router 1</a>
-    <a href="/ex2">example Router 2</a>
+  <a href="/">Main</a>
+  <a href="/game">Rooms</a>
+  <a href="https://en.wikipedia.org/wiki/Blokus">How To Play(wikipedia)</a>
+  <a href="/about">About</a>
 </nav>
 
 <slot />
