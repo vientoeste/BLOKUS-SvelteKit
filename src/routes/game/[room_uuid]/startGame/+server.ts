@@ -17,6 +17,7 @@ export const PATCH = (async ({ params }) => {
     throw new Error('invalid participants');
   }
 
+  // [TODO] 기존에는 board가 없으면 게임 시작 전, 있으면 시작 후로 분류했으나 insert 시 board 초기화로 변경했음
   const res = await db.collection('room').updateOne({
     uuid: room_uuid,
   }, {
