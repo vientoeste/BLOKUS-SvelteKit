@@ -2,6 +2,14 @@ import type { PageServerLoad } from "./$types";
 import { validate } from "uuid";
 import db from '$lib/database';
 
+const makeTableHead = (): string => {
+  let tableHead = '';
+  for (let i = 0; i < 20; i++) {
+    tableHead = tableHead.concat(`<th>${i % 10}</th>`);
+  }
+  return tableHead;
+};
+
 export const load = (async ({ params }) => {
   const { room_uuid } = params;
   if (!validate(room_uuid)) {
@@ -17,13 +25,17 @@ export const load = (async ({ params }) => {
     return res.board;
   });
 
-  // [TODO] page.svelte 말고 여기서 바꿔서 쏴주기
-  board = board.map((e1: (string | number)[]) => {
-    const tmp = e1.map((e2: (string | number)) => `<div class=${e2 === 0 ? 'none' : e2}>\u00a0</div>`);
-    return tmp;
-  });
+  board = board.reduce((prev: string, curr: (string | number)[], idx: number) => {
+    const currentRow = curr.reduce((
+      prevShadow: string, currShadow: (string | number)
+    ) => prevShadow.concat(`<td><div class=${currShadow === 0
+      ? 'none'
+      : currShadow}>\u00a0</div></td>`), '');
+
+    return prev.concat(`<tr><th>${idx}</th>`, currentRow, '</tr>');
+  }, '');
 
   return {
-    board: board,
+    board: `<tr><th />${makeTableHead()}</tr>`.concat(board),
   };
 }) satisfies PageServerLoad;
