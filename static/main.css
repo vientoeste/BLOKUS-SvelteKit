@@ -2,7 +2,8 @@ table, table th, table td {
   text-align: center;
   border: 1px solid rgba(0, 0, 0, 0.267);
   border-collapse: collapse;
-  width: 15cm;
+  column-width: 25px;
+  line-height: 25px;
 }
 .none {
   background-color: rgb(185, 185, 185);
