@@ -1,9 +1,20 @@
 table, table th, table td {
   text-align: center;
-  border: 1px solid rgba(0, 0, 0, 0.267);
   border-collapse: collapse;
   column-width: 25px;
   line-height: 25px;
+}
+td {
+  border: 1px solid rgba(0, 0, 0, 0.267);
+}
+.board {
+  float: left;
+  margin-right: 100px;
+}
+.blocks {
+  position: relative;
+  float: left;
+  margin-left: 10px;
 }
 .none {
   background-color: rgb(185, 185, 185);
