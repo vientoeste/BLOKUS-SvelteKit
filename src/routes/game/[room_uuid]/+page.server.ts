@@ -63,14 +63,13 @@ export const load = (async ({ params }) => {
 export const actions = {
   putBlock: async (event) => {
     try {
-      const { board, id } = await db.collection('room').findOne({ uuid: event.params.room_uuid }).then((e) => {
-        console.log(e)
+      const board = await db.collection('room').findOne({ uuid: event.params.room_uuid }).then((e) => {
         if (!e || !e.board) {
           throw new Error('Invalid board');
         }
-        return { board: e.board, id: e._id.toString() };
+        return e.board;
       });
-      console.log(id)
+
       const params = await event.request.formData().then((e) => {
         const blockInfo = (e.get('block') as string).split('.');
         return {
@@ -82,7 +81,7 @@ export const actions = {
         }
       });
       const updated = putBlockOnBoard(board, params.block, params.position, params.rotation, params.player, params.flip);
-      console.log(board)
+
       await db.collection('room').updateOne({
         uuid: event.params.room_uuid
       }, {
@@ -97,6 +96,13 @@ export const actions = {
     } catch (e) {
       console.error(e);
     }
-    return 'ok';
+  },
+  removeRoom: async (event) => {
+    try {
+      // [TODO] 권한 체크
+      await db.collection('room').deleteOne({ uuid: event.params.room_uuid });
+    } catch (e) {
+      alert()
+    }
   }
 } satisfies Actions;
