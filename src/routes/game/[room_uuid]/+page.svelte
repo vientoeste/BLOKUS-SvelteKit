@@ -10,15 +10,13 @@
 <br />
 <br />
 <form method="POST" id="tmp" action="?/putBlock">
-  <button formaction="?/removeRoom">d</button>
+  <button formaction="?/removeRoom">remove this room</button>
   <div class="container" id="container">
     <div class="board" id="board">
       <table style="border: 1px solid rgba(0, 0, 0, 0.267);">
         {@html data.board}
       </table>
       <button>submit</button>
-    </div>
-    <div class="valueField" id="valueField">
       <table class="inputs">
         <tr>
           <th>col</th>

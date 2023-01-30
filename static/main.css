@@ -4,7 +4,8 @@
   grid-template-rows: 1fr 1fr;
   grid-template-areas:
     "board blocks"
-    "valueField spare";
+    /* "valueField spare"; */
+    "spare-1 spare-2";
 }
 
 table, table th, table td {
@@ -23,9 +24,9 @@ td {
   margin-right: 100px;
   grid-area: board;
 }
-#valueField {
+/* #valueField {
   grid-area: valueField;
-}
+} */
 #blocks {
   float: left;
   grid-area: blocks;
