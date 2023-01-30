@@ -3,6 +3,8 @@ import db from '$lib/database';
 import { v5 } from 'uuid';
 import { redirect } from "@sveltejs/kit";
 import { createNewBoard } from "./game";
+import { writable } from "svelte/store";
+import { rooms } from "../../Store";
 
 
 export const load = (async () => {
@@ -36,7 +38,12 @@ export const actions = {
     if (!res.insertedId) {
       throw new Error('INTERNAL ERROR - query failed');
     }
-
+    Object.defineProperty(rooms, newUuid, {
+      value: writable({
+        turn: -1,
+        a: creator,
+      }),
+    });
     throw redirect(302, `/game/${newUuid}`)
   }
 } satisfies Actions;
