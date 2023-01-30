@@ -10,6 +10,7 @@
 <br />
 <br />
 <form method="POST" id="tmp" action="?/putBlock">
+  <button formaction="?/removeRoom">d</button>
   <div class="container" id="container">
     <div class="board" id="board">
       <table style="border: 1px solid rgba(0, 0, 0, 0.267);">

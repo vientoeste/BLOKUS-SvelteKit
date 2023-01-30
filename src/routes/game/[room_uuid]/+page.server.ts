@@ -2,7 +2,7 @@ import type { PageServerLoad } from "./$types";
 import { validate } from "uuid";
 import db from '$lib/database';
 import { BLOCK, putBlockOnBoard } from "../game";
-import type { Actions } from "@sveltejs/kit";
+import { redirect, type Actions } from "@sveltejs/kit";
 
 const makeTableHead = (): string => {
   let tableHead = '';
@@ -98,11 +98,9 @@ export const actions = {
     }
   },
   removeRoom: async (event) => {
-    try {
-      // [TODO] 권한 체크
-      await db.collection('room').deleteOne({ uuid: event.params.room_uuid });
-    } catch (e) {
-      alert()
-    }
+    // [TODO] 권한 체크
+    await db.collection('room').deleteOne({ uuid: event.params.room_uuid });
+
+    throw redirect(300, '/room');
   }
 } satisfies Actions;
