@@ -101,6 +101,6 @@ export const actions = {
     // [TODO] 권한 체크
     await db.collection('room').deleteOne({ uuid: event.params.room_uuid });
 
-    throw redirect(300, '/room');
+    throw redirect(301, '/game');
   }
 } satisfies Actions;
