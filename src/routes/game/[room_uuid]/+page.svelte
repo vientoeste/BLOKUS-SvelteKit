@@ -69,7 +69,7 @@
           >
         </tr>
       </table>
-      <input type="hidden" id="player" name="player" value="a" />
+      <input type="hidden" id="player" name="player" value={data.id} />
     </div>
     <div class="blocks" id="blocks">
       {@html data.block}

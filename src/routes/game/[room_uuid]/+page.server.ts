@@ -3,6 +3,7 @@ import { validate } from "uuid";
 import db from '$lib/database';
 import { BLOCK, putBlockOnBoard } from "../game";
 import { redirect, type Actions } from "@sveltejs/kit";
+import jwt from 'jsonwebtoken';
 
 const makeTableHead = (): string => {
   let tableHead = '';
@@ -23,10 +24,19 @@ const makeTableContents = (e: (string | number)[][], pieceCount: string, index: 
   }, ''), `</table></div>`)
 };
 
-export const load = (async ({ params }) => {
+export const load = (async ({ params, cookies }) => {
   const { room_uuid } = params;
   if (!validate(room_uuid)) {
     throw new Error('Invalid uuid');
+  }
+
+  const authCookie = cookies.get('AuthorizationToken');
+  if (!authCookie) {
+    throw redirect(307, '/');
+  }
+  const user = jwt.verify(authCookie.split(' ')[1], import.meta.env.VITE_JWT_SECRET);
+  if (!user) {
+    throw new Error('internal server error');
   }
 
   let board = await db.collection('room').findOne({
@@ -37,7 +47,6 @@ export const load = (async ({ params }) => {
     }
     return res.board;
   });
-
   board = board.reduce((prev: string, curr: (string | number)[], idx: number) => {
     const currentRow = curr.reduce((
       prevShadow: string, currShadow: (string | number), idxShadow: number
@@ -54,9 +63,12 @@ export const load = (async ({ params }) => {
       blocksInHtml = blocksInHtml.concat(makeTableContents(v2, k1, k2));
     }
   }
+
+  // [TODO] id -> a, b, c, d in order 
   return {
     board: `<tr><th />${makeTableHead()}</tr>`.concat(board),
     block: blocksInHtml,
+    id: user,
   };
 }) satisfies PageServerLoad;
 
@@ -102,5 +114,5 @@ export const actions = {
     await db.collection('room').deleteOne({ uuid: event.params.room_uuid });
 
     throw redirect(301, '/game');
-  }
+  },
 } satisfies Actions;
