@@ -4,4 +4,8 @@ import { writable, type Writable } from 'svelte/store';
 export const alertMessage = writable({
   message: '',
 });
-export const rooms: Record<string, Writable<Record<string, string>>> = {};
+// [TODO] 동적 변수 할당을 위해 객체 내에 writable을 사용했는데 subscribe가 제대로 되지 않음
+export const rooms: Record<string, Writable<{
+  participants: string[],
+  turn: number,
+}>> = {};

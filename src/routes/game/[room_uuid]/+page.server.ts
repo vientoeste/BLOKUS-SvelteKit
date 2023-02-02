@@ -4,6 +4,8 @@ import db from '$lib/database';
 import { BLOCK, putBlockOnBoard } from "../game";
 import { redirect, type Actions } from "@sveltejs/kit";
 import jwt from 'jsonwebtoken';
+import { extractUserIdFromToken } from "$lib/auth";
+import { rooms } from "../../../Store";
 
 const makeTableHead = (): string => {
   let tableHead = '';
@@ -34,10 +36,7 @@ export const load = (async ({ params, cookies }) => {
   if (!authCookie) {
     throw redirect(307, '/');
   }
-  const user = jwt.verify(authCookie.split(' ')[1], import.meta.env.VITE_JWT_SECRET);
-  if (!user) {
-    throw new Error('internal server error');
-  }
+  const userId = extractUserIdFromToken(authCookie.split(' ')[1]);
 
   let board = await db.collection('room').findOne({
     uuid: room_uuid,
@@ -64,11 +63,18 @@ export const load = (async ({ params, cookies }) => {
     }
   }
 
-  // [TODO] id -> a, b, c, d in order 
+  rooms[room_uuid].update((v) => {
+    if (v.participants.indexOf(userId) === -1) {
+      v.participants.push(userId);
+    }
+    return v;
+  });
+
   return {
     board: `<tr><th />${makeTableHead()}</tr>`.concat(board),
     block: blocksInHtml,
-    id: user,
+    id: userId,
+    route: room_uuid,
   };
 }) satisfies PageServerLoad;
 
@@ -92,8 +98,13 @@ export const actions = {
           player: e.get('player') as string,
         }
       });
+      console.log(params.player);
       const updated = putBlockOnBoard(board, params.block, params.position, params.rotation, params.player, params.flip);
 
+      rooms[event.params.room_uuid as string].update((v) => {
+        v.turn = v.turn + 1;
+        return v;
+      });
       await db.collection('room').updateOne({
         uuid: event.params.room_uuid
       }, {
@@ -104,7 +115,7 @@ export const actions = {
         if (e.modifiedCount !== 1) {
           throw new Error('internal error - not updated');
         }
-      })
+      });
     } catch (e) {
       console.error(e);
     }
@@ -114,5 +125,15 @@ export const actions = {
     await db.collection('room').deleteOne({ uuid: event.params.room_uuid });
 
     throw redirect(301, '/game');
+  },
+  startGame: async (event) => {
+    const { room_uuid } = event.params;
+    if (!room_uuid) {
+      throw new Error('internal server error');
+    }
+    rooms[room_uuid].update((v) => {
+      v.turn = 0;
+      return v;
+    });
   },
 } satisfies Actions;

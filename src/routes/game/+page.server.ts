@@ -5,16 +5,18 @@ import { redirect } from "@sveltejs/kit";
 import { createNewBoard } from "./game";
 import { writable } from "svelte/store";
 import { rooms } from "../../Store";
+import { extractUserIdFromToken } from "$lib/auth";
 
 
-export const load = (async () => {
+export const load = (async (event) => {
   const queryRes = (await db.collection('room').find().toArray()).map(e => {
     const uuid = `<a href="/game/${e.uuid}">${e.name}</a>`;
-    return uuid
+    return uuid;
   });
+  const userId = extractUserIdFromToken(event.cookies.get('AuthorizationToken')?.split(' ')[1] ?? '');
   return {
     rooms: queryRes.join('<br>'),
-    creator: 'tmp' // [TODO] 임시 세션 관리
+    creator: userId,
   };
 }) satisfies PageServerLoad;
 
@@ -41,7 +43,7 @@ export const actions = {
     Object.defineProperty(rooms, newUuid, {
       value: writable({
         turn: -1,
-        a: creator,
+        participants: [creator],
       }),
     });
     throw redirect(302, `/game/${newUuid}`)

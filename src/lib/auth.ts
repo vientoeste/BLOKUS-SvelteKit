@@ -18,7 +18,6 @@ export const createUser = async (id: string, hashedPwd: string) => {
       if (!res) {
         throw new Error();
       }
-      console.log('ok')
       return res.insertedId.toString();
     });
     return insertedId;
@@ -48,27 +47,32 @@ export const loginAndGetToken = async (id: string, hashedPwd: string) => {
   return token;
 };
 
+export const extractUserIdFromToken = (token: string) => {
+  const jwtUser = jwt.verify(token, import.meta.env.VITE_JWT_SECRET);
+  if (typeof jwtUser === 'string') {
+    throw new Error('internal server error');
+  }
+  return jwtUser.id.toString();
+};
+
 export const checkAuthFromToken = async (token: string) => {
   if (token.slice(0, 6) !== 'Bearer') {
     throw new Error('invalid token');
   }
   const jwtToken = token.split(' ')[1];
   try {
-    const jwtUser = jwt.verify(jwtToken, import.meta.env.VITE_JWT_SECRET);
-    if (typeof jwtUser === 'string') {
-      throw new Error('internal server error');
-    }
+    const userId = extractUserIdFromToken(jwtToken);
 
     const user = await db.collection('user').find({
-      id: jwtUser.id
+      id: userId,
     }).toArray();
     if (!user) {
       throw new Error('User not found');
     }
-    if (user.length !== 1) {
-      throw new Error('')
+    if (user.length !== 1 || user[0].id !== userId) {
+      throw new Error('internal server error');
     }
-    return user[0].id;
+    return userId;
   } catch (e) {
     console.error(e);
   }

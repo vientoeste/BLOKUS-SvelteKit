@@ -1,7 +1,30 @@
 <script lang="ts">
+  import { rooms } from "../../../Store";
   import type { PageData } from "./$types";
   let number = 0;
   export let data: PageData;
+  export let turn: number;
+  export let participants: string[];
+
+  rooms[data.route].subscribe((v) => {
+    turn = v.turn;
+    participants = v.participants.slice();
+  });
+  const tmp = (turn: number, participants: string[]) => {
+    switch (participants.length) {
+      case 1:
+        return participants[0];
+      case 2:
+        return participants[turn % 2];
+      case 3:
+        if (turn % 4 === 3) {
+          return participants[Math.floor(turn / 4) % 3];
+        }
+        return participants[turn % 4];
+      case 4:
+        return participants[turn % 4];
+    }
+  };
 </script>
 
 <head>
@@ -9,8 +32,23 @@
 </head>
 <br />
 <br />
+{#if turn === -1}
+  Game Not Started
+  <form method="POST" action="?/startGame">
+    <button>start</button>
+  </form>
+{:else}
+  Current Turn: {turn}, {tmp(turn, participants)}'s turn<br />
+  Color: {turn === 0
+    ? "blue"
+    : turn === 1
+    ? "red"
+    : turn === 2
+    ? "yellow"
+    : "green"}
+{/if}
+<br />Participants: {participants}
 <form method="POST" id="tmp" action="?/putBlock">
-  <button formaction="?/removeRoom">remove this room</button>
   <div class="container" id="container">
     <div class="board" id="board">
       <table style="border: 1px solid rgba(0, 0, 0, 0.267);">
@@ -69,7 +107,13 @@
           >
         </tr>
       </table>
-      <input type="hidden" id="player" name="player" value={data.id} />
+      <input
+        type="hidden"
+        id="player"
+        name="player"
+        value={turn === 0 ? "a" : turn === 1 ? "b" : turn === 2 ? "c" : "d"}
+      />
+      <button formaction="?/removeRoom">remove this room</button>
     </div>
     <div class="blocks" id="blocks">
       {@html data.block}
