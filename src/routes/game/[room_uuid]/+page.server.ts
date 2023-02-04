@@ -3,7 +3,6 @@ import { validate } from "uuid";
 import db from '$lib/database';
 import { BLOCK, putBlockOnBoard } from "../game";
 import { redirect, type Actions } from "@sveltejs/kit";
-import jwt from 'jsonwebtoken';
 import { extractUserIdFromToken } from "$lib/auth";
 import { rooms } from "../../../Store";
 
@@ -98,7 +97,7 @@ export const actions = {
           player: e.get('player') as string,
         }
       });
-      console.log(params.player);
+
       const updated = putBlockOnBoard(board, params.block, params.position, params.rotation, params.player, params.flip);
 
       rooms[event.params.room_uuid as string].update((v) => {
