@@ -3,15 +3,18 @@
   import type { PageData } from "./$types";
   let number = 0;
   export let data: PageData;
-  const stored = rooms[data.route];
-  // [TODO] didn't worked
-  export let turn: number = $stored.turn;
-  export let participants: string[] = $stored.participants.slice();
 
-  stored.subscribe((v) => {
-    turn = v.turn;
-    participants = v.participants.slice();
-  });
+  // [TODO] Store의 subscribe()가 에러를 유발함에 따라 주석 처리
+  // 1. input 관련 table 격자가 생김
+  // 2. rotation 버튼에 preventDefault가 적용되지 않음
+  // 3. 2로 인해 rotation 시 form을 submit해버림
+  export let turn: number = 0;
+  export let participants: string[] = [""];
+
+  // rooms[data.route].subscribe((v) => {
+  //   turn = v.turn;
+  //   participants = v.participants.slice();
+  // });
   const tmp = (turn: number, participants: string[]) => {
     switch (participants.length) {
       case 1:

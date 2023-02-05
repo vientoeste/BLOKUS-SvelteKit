@@ -65,7 +65,6 @@ export const load = (async ({ params, cookies }) => {
   const stored = rooms[room_uuid];
   stored.update((v) => {
     const { participants, turn } = v;
-    console.log(v)
     if (!participants.includes(userId)) {
       participants.push(userId);
     }
