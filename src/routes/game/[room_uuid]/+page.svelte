@@ -3,10 +3,12 @@
   import type { PageData } from "./$types";
   let number = 0;
   export let data: PageData;
-  export let turn: number;
-  export let participants: string[];
+  const stored = rooms[data.route];
+  // [TODO] didn't worked
+  export let turn: number = $stored.turn;
+  export let participants: string[] = $stored.participants.slice();
 
-  rooms[data.route].subscribe((v) => {
+  stored.subscribe((v) => {
     turn = v.turn;
     participants = v.participants.slice();
   });

@@ -62,11 +62,16 @@ export const load = (async ({ params, cookies }) => {
     }
   }
 
-  rooms[room_uuid].update((v) => {
-    if (v.participants.indexOf(userId) === -1) {
-      v.participants.push(userId);
+  const stored = rooms[room_uuid];
+  stored.update((v) => {
+    const { participants, turn } = v;
+    console.log(v)
+    if (!participants.includes(userId)) {
+      participants.push(userId);
     }
-    return v;
+    return {
+      participants, turn,
+    };
   });
 
   return {
@@ -100,9 +105,13 @@ export const actions = {
 
       const updated = putBlockOnBoard(board, params.block, params.position, params.rotation, params.player, params.flip);
 
-      rooms[event.params.room_uuid as string].update((v) => {
-        v.turn = v.turn + 1;
-        return v;
+      const stored = rooms[event.params.room_uuid as string];
+      stored.update((v) => {
+        const { participants, turn } = v;
+        return {
+          participants,
+          turn: turn + 1,
+        };
       });
       await db.collection('room').updateOne({
         uuid: event.params.room_uuid
@@ -130,9 +139,14 @@ export const actions = {
     if (!room_uuid) {
       throw new Error('internal server error');
     }
-    rooms[room_uuid].update((v) => {
-      v.turn = 0;
-      return v;
+
+    const stored = rooms[room_uuid];
+    stored.update((v) => {
+      const { participants } = v;
+      return {
+        participants,
+        turn: 0,
+      };
     });
   },
 } satisfies Actions;
