@@ -40,12 +40,7 @@ export const actions = {
     if (!res.insertedId) {
       throw new Error('INTERNAL ERROR - query failed');
     }
-    Object.defineProperty(rooms, newUuid, {
-      value: writable({
-        turn: -1,
-        participants: [creator],
-      }),
-    });
+    // [TODO] store -> socket.io로 대체. 새 namespace에 대한 하위 프로퍼티 정의
     throw redirect(302, `/game/${newUuid}`)
   }
 } satisfies Actions;

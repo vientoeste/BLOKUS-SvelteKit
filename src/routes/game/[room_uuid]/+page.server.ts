@@ -4,7 +4,6 @@ import db from '$lib/database';
 import { BLOCK, putBlockOnBoard } from "../game";
 import { redirect, type Actions } from "@sveltejs/kit";
 import { extractUserIdFromToken } from "$lib/auth";
-import { rooms } from "../../../Store";
 
 const makeTableHead = (): string => {
   let tableHead = '';
@@ -62,16 +61,7 @@ export const load = (async ({ params, cookies }) => {
     }
   }
 
-  const stored = rooms[room_uuid];
-  stored.update((v) => {
-    const { participants, turn } = v;
-    if (!participants.includes(userId)) {
-      participants.push(userId);
-    }
-    return {
-      participants, turn,
-    };
-  });
+  // [TODO] store -> socket.io로 대체. 참가자 추가
 
   return {
     board: `<tr><th />${makeTableHead()}</tr>`.concat(board),
@@ -104,14 +94,8 @@ export const actions = {
 
       const updated = putBlockOnBoard(board, params.block, params.position, params.rotation, params.player, params.flip);
 
-      const stored = rooms[event.params.room_uuid as string];
-      stored.update((v) => {
-        const { participants, turn } = v;
-        return {
-          participants,
-          turn: turn + 1,
-        };
-      });
+      // [TODO] store -> socket.io로 대체. 턴 +1
+
       await db.collection('room').updateOne({
         uuid: event.params.room_uuid
       }, {
@@ -139,13 +123,6 @@ export const actions = {
       throw new Error('internal server error');
     }
 
-    const stored = rooms[room_uuid];
-    stored.update((v) => {
-      const { participants } = v;
-      return {
-        participants,
-        turn: 0,
-      };
-    });
+    // [TODO] store -> socket.io로 대체. 턴 0(시작)으로
   },
 } satisfies Actions;
