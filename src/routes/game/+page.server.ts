@@ -3,8 +3,6 @@ import db from '$lib/database';
 import { v5 } from 'uuid';
 import { redirect } from "@sveltejs/kit";
 import { createNewBoard } from "./game";
-import { writable } from "svelte/store";
-import { rooms } from "../../Store";
 import { extractUserIdFromToken } from "$lib/auth";
 
 
