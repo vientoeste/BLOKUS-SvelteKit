@@ -1,9 +1,7 @@
 <script lang="ts">
-  import { io } from "socket.io-client";
   import type { PageData } from "./$types";
   let number = 0;
   export let data: PageData;
-
   export let turn: number = 0;
   export let participants: string[] = [""];
 

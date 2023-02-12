@@ -4,6 +4,7 @@ import db from '$lib/database';
 import { BLOCK, putBlockOnBoard } from "../game";
 import { redirect, type Actions } from "@sveltejs/kit";
 import { extractUserIdFromToken } from "$lib/auth";
+import { WebSocket } from "ws";
 
 const makeTableHead = (): string => {
   let tableHead = '';
@@ -62,6 +63,8 @@ export const load = (async ({ params, cookies }) => {
   }
 
   // [TODO] store -> socket.io로 대체. 참가자 추가
+  // [TODO] ws 포트 유동적으로 잡기
+  const ws = new WebSocket('ws://localhost:8081');
 
   return {
     board: `<tr><th />${makeTableHead()}</tr>`.concat(board),
