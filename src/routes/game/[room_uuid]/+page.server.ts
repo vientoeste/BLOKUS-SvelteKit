@@ -63,8 +63,7 @@ export const load = (async ({ params, cookies }) => {
   }
 
   // [TODO] store -> socket.io로 대체. 참가자 추가
-  // [TODO] ws 포트 유동적으로 잡기
-  const ws = new WebSocket('ws://localhost:8081');
+  // [TODO] ws 예제 참고, 서브도메인 사용?
 
   return {
     board: `<tr><th />${makeTableHead()}</tr>`.concat(board),
@@ -97,7 +96,7 @@ export const actions = {
 
       const updated = putBlockOnBoard(board, params.block, params.position, params.rotation, params.player, params.flip);
 
-      // [TODO] store -> socket.io로 대체. 턴 +1
+      // [TODO] websocket logics come here. turn ++
 
       await db.collection('room').updateOne({
         uuid: event.params.room_uuid
@@ -126,6 +125,6 @@ export const actions = {
       throw new Error('internal server error');
     }
 
-    // [TODO] store -> socket.io로 대체. 턴 0(시작)으로
+    // [TODO] websocket logics come here
   },
 } satisfies Actions;

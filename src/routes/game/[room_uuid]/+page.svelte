@@ -5,7 +5,7 @@
   export let turn: number = 0;
   export let participants: string[] = [""];
 
-  // [TODO] store -> socket.io로 대체. socket 관련 UI 전면 수정 필요
+  // [TODO] ws를 통해 보드 밸류 등 수정
 
   const tmp = (turn: number, participants: string[]) => {
     switch (participants.length) {

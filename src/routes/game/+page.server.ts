@@ -38,15 +38,8 @@ export const actions = {
     if (!res.insertedId) {
       throw new Error('INTERNAL ERROR - query failed');
     }
-    // [TODO] store -> socket.io로 대체. 새 namespace에 대한 하위 프로퍼티 정의
-    // 새 namespace 만들기
-    // [TODO] ws 포트 유동적으로 잡기
-    const wss = new WebSocketServer({
-      port: 8081,
-    });
-    wss.on('connection', (stream) => {
-      console.log(stream);
-    });
+    // [TODO] 새 웹소켓 서브도메인 만들기?
+
     throw redirect(302, `/game/${newUuid}`)
   }
 } satisfies Actions;
