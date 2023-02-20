@@ -4,7 +4,6 @@ import { v5 } from 'uuid';
 import { redirect } from "@sveltejs/kit";
 import { createNewBoard } from "./game";
 import { extractUserIdFromToken } from "$lib/auth";
-import { WebSocketServer } from "ws";
 
 export const load = (async (event) => {
   const queryRes = (await db.collection('room').find().toArray()).map(e => {
@@ -13,7 +12,7 @@ export const load = (async (event) => {
   });
   const userId = extractUserIdFromToken(event.cookies.get('AuthorizationToken')?.split(' ')[1] ?? '');
   return {
-    rooms: queryRes.join('<br>'),
+    rooms: queryRes,
     creator: userId,
   };
 }) satisfies PageServerLoad;

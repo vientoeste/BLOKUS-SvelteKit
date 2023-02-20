@@ -1,8 +1,25 @@
 <script lang="ts">
   import type { PageData } from "./$types";
-  let number = 0;
+  import { io } from "socket.io-client";
+  import { onMount } from "svelte";
+
+  // [TODO] socket.io-client works strangely
+  onMount(() => {
+    let socket = io("/game");
+    console.log(socket.connected);
+    socket.on("startGame", (e) => {
+      console.log("emitted");
+      console.log(e);
+      document.querySelector(".notStarted")?.remove();
+      // const startedBlock = document.querySelector(".started");
+      // if (startedBlock) {
+      //   startedBlock.style.display = "";
+      // }
+    });
+  });
   export let data: PageData;
-  export let turn: number = 0;
+  let number = 0;
+  export let turn: number = -1;
   export let participants: string[] = [""];
 
   // [TODO] ws를 통해 보드 밸류 등 수정
@@ -29,12 +46,16 @@
 </head>
 <br />
 <br />
-{#if turn === -1}
+<!-- {#if turn === -1} -->
+<div class="notStarted">
   Game Not Started
   <form method="POST" action="?/startGame">
     <button>start</button>
   </form>
-{:else}
+</div>
+<!-- {:else} -->
+<div class="started" style="display: none;">
+  <title>Game Started</title>
   Current Turn: {turn}, {tmp(turn, participants)}'s turn<br />
   Color: {turn === 0
     ? "blue"
@@ -43,7 +64,8 @@
     : turn === 2
     ? "yellow"
     : "green"}
-{/if}
+</div>
+<!-- {/if} -->
 <br />Participants: {participants}
 <form method="POST" id="tmp" action="?/putBlock">
   <div class="container" id="container">

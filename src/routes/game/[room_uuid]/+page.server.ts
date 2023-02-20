@@ -4,7 +4,6 @@ import db from '$lib/database';
 import { BLOCK, putBlockOnBoard } from "../game";
 import { redirect, type Actions } from "@sveltejs/kit";
 import { extractUserIdFromToken } from "$lib/auth";
-import { WebSocket } from "ws";
 
 const makeTableHead = (): string => {
   let tableHead = '';
@@ -19,7 +18,10 @@ const makeTableContents = (e: (string | number)[][], pieceCount: string, index: 
     <table style="border: 10px;">`.concat(e.reduce((prev: string, curr: (string | number)[]) => {
     const currentRow = curr.reduce((
       prevShadow: string, currShadow: (string | number)
-    ) => prevShadow.concat(currShadow === 0 ? '<th></th>' : `<td onClick="document.getElementById('block').value='${pieceCount}.${index}'"><div class='a'>\u00a0</div></td>`), '');
+    ) => prevShadow.concat(currShadow === 0 ?
+      '<th></th>'
+      : `<td onClick="document.getElementById('block').value='${pieceCount}.${index}'">
+      <div class='a'>\u00a0</div></td>`), '');
 
     return prev.concat(currentRow, '</tr>');
   }, ''), `</table></div>`)
@@ -63,7 +65,6 @@ export const load = (async ({ params, cookies }) => {
   }
 
   // [TODO] store -> socket.io로 대체. 참가자 추가
-  // [TODO] ws 예제 참고, 서브도메인 사용?
 
   return {
     board: `<tr><th />${makeTableHead()}</tr>`.concat(board),
@@ -119,12 +120,21 @@ export const actions = {
 
     throw redirect(301, '/game');
   },
-  startGame: async (event) => {
+  // [TODO] socket.io-client works strangely
+  /*startGame: async (event) => {
+    console.log(12)
     const { room_uuid } = event.params;
     if (!room_uuid) {
       throw new Error('internal server error');
     }
+    const socket = io("/game");
+    // console.log(socket)
 
-    // [TODO] websocket logics come here
-  },
+    socket.on('connect', () => {
+
+      console.log(123321134123)
+    })
+    console.log(socket.disconnected)
+    socket.emit('startGame')
+  },*/
 } satisfies Actions;

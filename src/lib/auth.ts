@@ -42,7 +42,8 @@ export const loginAndGetToken = async (id: string, hashedPwd: string) => {
     _id: userInfo[0]._id,
     id: id,
   }, import.meta.env.VITE_JWT_SECRET, {
-    expiresIn: '1h',
+    expiresIn: import.meta.env.NODE_ENV === 'development' ?
+      '48h' : import.meta.env.VITE_JWT_EXPTIME ?? '1h',
   });
   return token;
 };
