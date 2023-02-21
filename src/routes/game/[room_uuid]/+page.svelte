@@ -1,27 +1,39 @@
 <script lang="ts">
   import type { PageData } from "./$types";
-  import { io } from "socket.io-client";
+  import { io, Socket } from "socket.io-client";
   import { onMount } from "svelte";
 
+  const changeMode = () => {
+    document.getElementById("notStarted")?.remove();
+    const startedBlock = document.getElementById("started");
+    if (startedBlock) {
+      startedBlock.style.display = "";
+    }
+  };
   // [TODO] socket.io-client works strangely
+  let socket: Socket = io("/game");
   onMount(() => {
-    let socket = io("/game");
+    // socket = io("/game");
     console.log(socket.connected);
-    socket.on("startGame", (e) => {
-      console.log("emitted");
-      console.log(e);
-      document.querySelector(".notStarted")?.remove();
-      // const startedBlock = document.querySelector(".started");
-      // if (startedBlock) {
-      //   startedBlock.style.display = "";
-      // }
+    socket.on("connect", () => {
+      console.log("socket connected");
+      // [CHECK] Does socket.on('customEvent') not work on +page.svelte?
     });
+  });
+  console.log("tmp");
+  socket.on("startGame", (e) => {
+    console.log("emitted");
+    console.log(e);
+    changeMode();
   });
   export let data: PageData;
   let number = 0;
   export let turn: number = -1;
   export let participants: string[] = [""];
-
+  function emitStartGame() {
+    console.log(socket); // works well
+    socket.emit("startGame", "data"); // on server-side, works well but on client-side seems doesn't work
+  }
   // [TODO] ws를 통해 보드 밸류 등 수정
 
   const tmp = (turn: number, participants: string[]) => {
@@ -47,14 +59,12 @@
 <br />
 <br />
 <!-- {#if turn === -1} -->
-<div class="notStarted">
+<div id="notStarted">
   Game Not Started
-  <form method="POST" action="?/startGame">
-    <button>start</button>
-  </form>
+  <button on:click={emitStartGame}>start</button>
 </div>
 <!-- {:else} -->
-<div class="started" style="display: none;">
+<div id="started" style="display: none;">
   <title>Game Started</title>
   Current Turn: {turn}, {tmp(turn, participants)}'s turn<br />
   Color: {turn === 0

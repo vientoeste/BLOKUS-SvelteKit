@@ -1,7 +1,19 @@
 <script lang="ts">
   import type { PageData } from "./$types";
-  import { io } from "socket.io-client";
-  const socket = io();
+  import { io, Socket } from "socket.io-client";
+  import { onMount } from "svelte";
+
+  let socket: Socket;
+  onMount(() => {
+    socket = io("/game");
+    socket.on("connect", () => {
+      console.log("socket connected");
+      socket.on("startGame", (data) => {
+        console.log("12378234789123");
+        console.log("emitted at page", data);
+      });
+    });
+  });
   export let data: PageData;
 </script>
 
