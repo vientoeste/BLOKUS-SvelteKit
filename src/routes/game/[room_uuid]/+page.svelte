@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PageData } from "./$types";
-  import { io } from "$lib/socket.io/game";
+  import { io, Socket } from "socket.io-client";
   import { onMount } from "svelte";
 
   const changeMode = () => {
@@ -11,21 +11,28 @@
     }
   };
   // [TODO] socket.io-client works strangely
+  let socket: Socket = io("/game");
   onMount(() => {
-    // [CHECK] Does socket.on('customEvent') not work on +page.svelte?
-    io.on("startGame", (e) => {
-      console.log("emitted");
-      console.log(e);
-      changeMode();
+    // socket = io("/game");
+    console.log(socket.connected);
+    socket.on("connect", () => {
+      console.log("socket connected");
+      // [CHECK] Does socket.on('customEvent') not work on +page.svelte?
     });
   });
   console.log("tmp");
+  socket.on("startGame", (e) => {
+    console.log("emitted");
+    console.log(e);
+    changeMode();
+  });
   export let data: PageData;
   let number = 0;
   export let turn: number = -1;
   export let participants: string[] = [""];
   function emitStartGame() {
-    io.emit("startGame", "data"); // on server-side, works well but on client-side seems doesn't work
+    console.log(socket); // works well
+    socket.emit("startGame", "data"); // on server-side, works well but on client-side seems doesn't work
   }
   // [TODO] ws를 통해 보드 밸류 등 수정
 
@@ -54,9 +61,7 @@
 <!-- {#if turn === -1} -->
 <div id="notStarted">
   Game Not Started
-  <form action="#" on:submit|preventDefault={emitStartGame}>
-    <button type="submit">start</button>
-  </form>
+  <button on:click={emitStartGame}>start</button>
 </div>
 <!-- {:else} -->
 <div id="started" style="display: none;">
