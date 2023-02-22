@@ -23,9 +23,9 @@ const config: UserConfig = {
 					const game = io.of('/game');
 					game.on('connection', (socket) => {
 						console.log('game: connected');
-						socket.on('startGame', () => {
-							console.log('emitted at viteconfig')
-						})
+						// socket.on('startGame', () => {
+						// 	console.log('emitted at viteconfig')
+						// })
 						socket.on('disconnect', () => {
 							console.log('game: disconnected');
 						})
