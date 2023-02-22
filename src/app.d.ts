@@ -9,7 +9,7 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			user: {
-				_id: ObjectId,
+				_id?: ObjectId,
 				id: string,
 			}
 		}
