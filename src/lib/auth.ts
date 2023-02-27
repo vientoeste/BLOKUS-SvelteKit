@@ -57,7 +57,7 @@ export const loginAndGetToken = async (id: string, hashedPwd: string) => {
     _id: userInfo[0]._id,
     id: id,
   }, import.meta.env.VITE_JWT_SECRET, {
-    expiresIn: import.meta.env.VITE_JWT_EXPTIME,
+    expiresIn: import.meta.env.VITE_JWT_EXPTIME.concat('s'),
   });
   return {
     token, error: ''
@@ -73,6 +73,9 @@ export const extractUserIdFromToken = (token: string): string => {
     return jwtUser.id.toString();
   } catch (e) {
     console.error(e);
+    if (e.message.includes('jwt must be provided')) {
+      throw redirect(304, '/');
+    }
     return '';
   }
 };
