@@ -1,8 +1,31 @@
-<nav>
-  <a href="/">Main</a>
-  <a href="/game">Rooms</a>
-  <a href="https://en.wikipedia.org/wiki/Blokus">How To Play(wikipedia)</a>
-  <a href="/about">About</a>
-</nav>
+<script>
+  import Header from "$lib/components/header.svelte";
+  import Footer from "$lib/components/footer.svelte";
+  import "../app.css";
+</script>
 
-<slot />
+<Header />
+<main>
+  <article>
+    <slot />
+  </article>
+  <aside></aside>
+</main>
+<Footer />
+
+<style>
+  main {
+    margin: 50px 0;
+    display: flex;
+    flex-direction: row;
+    width: 62.5%;
+    height: auto;
+    gap: 2%;
+  }
+  article {
+    width: 69%;
+  }
+  aside {
+    width: 29%;
+  }
+</style>
