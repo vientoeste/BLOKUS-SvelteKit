@@ -1,6 +1,7 @@
 <script>
   import Header from "$lib/components/header.svelte";
   import Footer from "$lib/components/footer.svelte";
+  import Login from "$lib/components/login.svelte";
   import "../app.css";
 </script>
 
@@ -9,7 +10,9 @@
   <article>
     <slot />
   </article>
-  <aside></aside>
+  <aside>
+    <section id="login"><Login /></section>
+  </aside>
 </main>
 <Footer />
 
