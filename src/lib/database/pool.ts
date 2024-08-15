@@ -1,8 +1,8 @@
-import { createClient } from "redis";
+import { createClient as createRedisClient } from "redis";
 
-type RedisClient = ReturnType<typeof createClient>
+type RedisClient = ReturnType<typeof createRedisClient>
 
-type RedisConfig = Parameters<typeof createClient>
+type RedisConfig = Parameters<typeof createRedisClient>[0]
 
 interface RedisConnectionPoolConfig {
   redisConfig: RedisConfig;
@@ -45,7 +45,7 @@ export class RedisConnectionPool {
   }
 
   async createClient() {
-    const client = createClient(this.config);
+    const client = createRedisClient(this.config);
 
     client.on('error', (err) => {
       console.error('Redis client error:', err);
