@@ -12,7 +12,15 @@ interface RedisConnectionPoolConfig {
   retryInterval?: number;
 }
 
-export class RedisConnectionPool {
+export interface RedisConnectionPoolInf {
+  initialize(): Promise<void>;
+  getClientCount(): number;
+  acquire(): Promise<RedisClient>;
+  release(connection: RedisClient): void;
+  close(): Promise<void>;
+}
+
+export class RedisConnectionPool implements RedisConnectionPoolInf {
   constructor(config: RedisConnectionPoolConfig) {
     this.config = config.redisConfig;
     this.pool = [];
@@ -62,12 +70,18 @@ export class RedisConnectionPool {
   }
 
   async connectWithTimeout(client: RedisClient) {
+    let timeoutId: NodeJS.Timeout | undefined = undefined;
+    const timeout = new Promise((_, reject) =>
+      timeoutId = setTimeout(() => reject(new Error('Connection timeout')), this.connectionTimeout)
+    );
     return Promise.race([
       client.connect(),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Connection timeout')), this.connectionTimeout)
-      )
-    ]);
+      timeout,
+    ]).then(() => {
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId);
+      }
+    })
   }
 
   async handleConnectionError(client: RedisClient) {
@@ -96,6 +110,10 @@ export class RedisConnectionPool {
       }
     }
     throw new Error('Max reconnection attempts reached');
+  }
+
+  getClientCount() {
+    return this.pool.length;
   }
 
   async acquire() {
