@@ -1,0 +1,10 @@
+{
+    "testPathIgnorePatterns": [
+        "/node_modules/",
+        "/dist/",
+        "/.js$/"
+    ],
+    "transform": {
+        "^.+\\.(ts|tsx)$": "ts-jest"
+    }
+}
