@@ -29,6 +29,7 @@ export class RedisConnectionPool implements RedisConnectionPoolInf {
     this.connectionTimeout = config.connectionTimeout || 5000;
     this.maxRetries = config.maxRetries || 3;
     this.retryInterval = config.retryInterval || 1000;
+    this.waitingQueue = [];
   }
 
   private config: RedisConfig;
@@ -44,6 +45,8 @@ export class RedisConnectionPool implements RedisConnectionPoolInf {
   private maxRetries: number;
 
   private retryInterval: number;
+
+  private waitingQueue: ((connection: RedisClient) => void)[];
 
   async initialize() {
     for (let i = 0; i < this.size; i++) {
@@ -117,19 +120,26 @@ export class RedisConnectionPool implements RedisConnectionPoolInf {
   }
 
   async acquire() {
-    if (this.pool.length > 0) {
-      const connection = this.pool.pop() as RedisClient;
-      this.acquiredConnections.add(connection);
-      return connection;
-    }
-
-    if (this.acquiredConnections.size < this.size) {
+    if (this.pool.length < this.size) {
       const client = await this.createClient();
-      this.acquiredConnections.add(client);
+      this.pool.push(client);
       return client;
     }
 
-    throw new Error('Connection pool exhausted');
+    return new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        const index = this.waitingQueue.findIndex(cb => cb === resolve);
+        if (index !== -1) {
+          this.waitingQueue.splice(index, 1);
+          reject(new Error('Connection acquisition timeout'));
+        }
+      }, this.connectionTimeout);
+
+      this.waitingQueue.push((connection: RedisClient) => {
+        clearTimeout(timeoutId);
+        resolve(connection);
+      });
+    }) as Promise<RedisClient>;
   }
 
   release(connection: RedisClient) {
