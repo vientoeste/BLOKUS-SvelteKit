@@ -1,6 +1,6 @@
 import { createClient as createRedisClient } from "redis";
 
-type RedisClient = ReturnType<typeof createRedisClient>;
+export type RedisClient = ReturnType<typeof createRedisClient>;
 
 type RedisConfig = Parameters<typeof createRedisClient>[0];
 
