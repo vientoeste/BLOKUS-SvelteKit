@@ -25,7 +25,7 @@ export class RedisConnectionPool implements RedisConnectionPoolInf {
   constructor(config: RedisConnectionPoolConfig) {
     this.config = config.redisConfig;
     this.pool = [];
-    this.size = config.poolSize || 10;
+    this.size = config.poolSize || 4;
     this.acquiredConnections = new Set();
     this.connectionTimeout = config.connectionTimeout || 5000;
     this.maxRetries = config.maxRetries || 3;
