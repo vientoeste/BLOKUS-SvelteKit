@@ -1,4 +1,5 @@
 import { createClient as createRedisClient } from "redis";
+import assert from 'node:assert';
 
 export type RedisClient = ReturnType<typeof createRedisClient>;
 
@@ -16,7 +17,7 @@ export interface RedisConnectionPoolInf {
   initialize(): Promise<void>;
   getClientCount(): number;
   acquire(): Promise<RedisClient>;
-  release(connection: RedisClient): void;
+  release(connection: RedisClient): Promise<void>;
   close(): Promise<void>;
 }
 
@@ -46,7 +47,11 @@ export class RedisConnectionPool implements RedisConnectionPoolInf {
 
   private retryInterval: number;
 
-  private waitingQueue: ((connection: RedisClient) => void)[];
+  private waitingQueue: Array<{
+    resolve: (connection: RedisClient) => void;
+    reject: (reason: Error) => void;
+    timer: NodeJS.Timeout;
+  }>;
 
   async initialize() {
     for (let i = 0; i < this.size; i++) {
@@ -120,45 +125,55 @@ export class RedisConnectionPool implements RedisConnectionPoolInf {
   }
 
   async acquire() {
-    if (this.pool.length < this.size) {
-      const client = await this.createClient();
-      this.pool.push(client);
+    if (this.pool.length > 0) {
+      const client = this.pool.pop();
+      assert(client);
+      this.acquiredConnections.add(client);
       return client;
     }
 
-    return new Promise((resolve, reject) => {
-      const timeoutId = setTimeout(() => {
-        const index = this.waitingQueue.findIndex(cb => cb === resolve);
+    if (this.acquiredConnections.size < this.size) {
+      const client = await this.createClient();
+      this.acquiredConnections.add(client);
+      return client;
+    }
+
+    return new Promise<RedisClient>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        const index = this.waitingQueue.findIndex(item => item.timer === timer);
         if (index !== -1) {
           this.waitingQueue.splice(index, 1);
           reject(new Error('Connection acquisition timeout'));
         }
       }, this.connectionTimeout);
 
-      this.waitingQueue.push((connection: RedisClient) => {
-        clearTimeout(timeoutId);
-        resolve(connection);
-      });
-    }) as Promise<RedisClient>;
+      this.waitingQueue.push({ resolve, reject, timer });
+    });
   }
 
-  release(connection: RedisClient) {
-    if (this.acquiredConnections.has(connection)) {
-      this.acquiredConnections.delete(connection);
+  async release(connection: RedisClient): Promise<void> {
+    this.acquiredConnections.delete(connection);
+
+    if (this.waitingQueue.length > 0) {
+      const waitingInfo = this.waitingQueue.shift();
+      assert(waitingInfo);
+      const { resolve, timer } = waitingInfo;
+      clearTimeout(timer);
+      this.acquiredConnections.add(connection);
+      resolve(connection);
+    } else {
       this.pool.push(connection);
     }
   }
 
-  async close() {
-    const allConnections = [...this.pool, ...this.acquiredConnections];
-    for (const connection of allConnections) {
-      try {
-        await connection.quit();
-      } catch (error) {
-        console.error('Error while closing connection:', error);
-      }
-    }
+  async close(): Promise<void> {
+    await Promise.all([...this.pool, ...this.acquiredConnections].map(connection => connection.quit()));
     this.pool = [];
     this.acquiredConnections.clear();
+    for (const { reject, timer } of this.waitingQueue) {
+      clearTimeout(timer);
+      reject(new Error('Pool is closing'));
+    }
+    this.waitingQueue = [];
   }
 }
