@@ -73,7 +73,7 @@ export const extractUserIdFromToken = (token: string): string => {
     return jwtUser.id.toString();
   } catch (e) {
     console.error(e);
-    if (e.message.includes('jwt must be provided')) {
+    if (e instanceof Error && e.message.includes('jwt must be provided')) {
       throw redirect(304, '/');
     }
     return '';
