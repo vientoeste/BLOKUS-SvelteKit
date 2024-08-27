@@ -2,7 +2,7 @@ import type { PageServerLoad, Actions } from "./$types";
 import db from '$lib/database';
 import { v5 } from 'uuid';
 import { redirect } from "@sveltejs/kit";
-import { createNewBoard } from "./game";
+import { createNewBoard } from "$lib/game";
 import { extractUserIdFromToken } from "$lib/auth";
 
 export const load = (async (event) => {

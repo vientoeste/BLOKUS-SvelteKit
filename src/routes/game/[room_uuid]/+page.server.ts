@@ -1,7 +1,7 @@
 import type { PageServerLoad } from "./$types";
 import { validate } from "uuid";
 import db from '$lib/database';
-import { BLOCK, putBlockOnBoard } from "../game";
+import { BLOCK, putBlockOnBoard } from "$lib/game";
 import { redirect, type Actions } from "@sveltejs/kit";
 import { extractUserIdFromToken } from "$lib/auth";
 

@@ -1,6 +1,6 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import db from '$lib/database';
-import { createNewBoard } from '../../game';
+import { createNewBoard } from '$lib/game';
 
 export const PATCH = (async ({ params }) => {
   const { room_uuid } = params;

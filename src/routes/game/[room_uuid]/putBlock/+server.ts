@@ -1,5 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { putBlockOnBoard } from '../../game';
+import { putBlockOnBoard } from '$lib/game';
 import db from '$lib/database';
 import { validate } from 'uuid';
 
