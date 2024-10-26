@@ -280,3 +280,43 @@ export const putBlockOnBoard = (
   }
   return currentBoard;
 };
+
+const createBlock = (type: BlockType) => preset[type].map(row => Array.from(row)) as BlockMatrix;
+
+const flipBlock = (blockMatrix: BlockMatrix) =>
+  blockMatrix.reverse();
+
+const rotateBlock = (blockMatrix: BlockMatrix) => {
+  const rotatedBlock: boolean[][] = Array.from({ length: blockMatrix[0].length }, () => {
+    const newArr: boolean[] = [];
+    newArr.length = blockMatrix.length;
+    newArr.fill(false);
+    return newArr;
+  });
+
+  blockMatrix.forEach((blockLine, xIdx) => {
+    blockLine.forEach((blockSpace, yIdx) => {
+      if (blockSpace) {
+        rotatedBlock[yIdx][blockMatrix.length - xIdx - 1] = true;
+      }
+    });
+  });
+
+  blockMatrix.length = rotatedBlock.length;
+  rotatedBlock.forEach((blockLine, idx) => {
+    blockMatrix[idx] = [...blockLine];
+  });
+};
+
+const getBlockMatrix = (blockInfo: Block): BlockMatrix => {
+  const block = createBlock(blockInfo.type);
+  if (blockInfo.rotation !== 0) {
+    for (let rotationTime = 1; rotationTime <= blockInfo.rotation; rotationTime += 1) {
+      rotateBlock(block);
+    }
+  }
+  if (blockInfo.flip === true) {
+    flipBlock(block);
+  }
+  return block;
+};
