@@ -163,7 +163,7 @@ const rotateBlock_LEGACY = (newBlock: number[][], rotation: number) => {
   return rotatedBlock;
 };
 
-export const isAvailableArea = (
+export const isAvailableArea_LEGACY = (
   board: (string | number)[][], block: number[][], position: number[], player: string,
 ): boolean => {
   if (position[1] + block[0].length > 20 || position[0] + block.length > 20) {
@@ -267,7 +267,7 @@ export const putBlockOnBoard = (
     rotatedBlock = flipBlock_LEGACY(rotatedBlock);
   }
   const currentBoard = board;
-  if (isAvailableArea(currentBoard, rotatedBlock, position, player)) {
+  if (isAvailableArea_LEGACY(currentBoard, rotatedBlock, position, player)) {
     const x = rotatedBlock[0].length;
     const y = rotatedBlock.length;
     for (let i = 0; i < y; i += 1) {
