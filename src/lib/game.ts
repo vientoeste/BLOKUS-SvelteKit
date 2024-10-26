@@ -1,3 +1,5 @@
+import type { Block, BlockMatrix, BlockType } from "./types";
+
 /**
  * 디버깅용 함수들. 콘솔 출력 시 블록에 색 입히기
  */
@@ -39,79 +41,84 @@ ${strToPrint(board)}
 └────┴───────────────────────────────────────────────────────────┘`);
 };
 
-export const BLOCK: Record<string, Record<string, number[][]>> = {
-  five: {
-    a: [[1, 1, 1, 1, 1]],
-    b: [
-      [1, 1, 1],
-      [1, 0, 0],
-      [1, 0, 0],
-    ],
-    c: [
-      [0, 1, 0],
-      [1, 1, 1],
-      [0, 1, 0],
-    ],
-    d: [
-      [0, 0, 1],
-      [0, 1, 1],
-      [1, 1, 0],
-    ],
-    e: [
-      [1, 0, 0],
-      [1, 1, 1],
-      [0, 1, 0],
-    ],
-    f: [
-      [1, 1, 1],
-      [0, 1, 0],
-      [0, 1, 0],
-    ],
-    g: [
-      [1, 1, 1, 1],
-      [1, 0, 0, 0],
-    ],
-    h: [
-      [0, 0, 1],
-      [1, 1, 1],
-      [1, 0, 0],
-    ],
-    i: [
-      [1, 0],
-      [1, 1],
-      [1, 1],
-    ],
-    j: [
-      [1, 1, 0, 0],
-      [0, 1, 1, 1],
-    ],
-    k: [
-      [1, 1],
-      [1, 0],
-      [1, 1],
-    ],
-    l: [
-      [0, 1, 0, 0],
-      [1, 1, 1, 1],
-    ],
-  },
-  four: {
-    a: [[1, 1, 1, 1]],
-    b: [[1, 1, 1], [1, 0, 0]],
-    c: [[1, 1, 1], [0, 1, 0]],
-    d: [[1, 1, 0], [0, 1, 1]],
-    e: [[1, 1], [1, 1]],
-  },
-  three: {
-    a: [[1, 1, 1]],
-    b: [[1, 1], [1, 0]],
-  },
-  two: {
-    a: [[1, 1]],
-  },
-  one: {
-    a: [[1]],
-  },
+const preset: Record<BlockType, BlockMatrix> = {
+  '50': [[true, true, true, true, true]],
+  '51': [
+    [true, true, true],
+    [true, false, false],
+    [true, false, false],
+  ],
+  '52': [
+    [false, true, false],
+    [true, true, true],
+    [false, true, false],
+  ],
+  '53': [
+    [false, false, true],
+    [false, true, true],
+    [true, true, false],
+  ],
+  '54': [
+    [true, false, false],
+    [true, true, true],
+    [false, true, false],
+  ],
+  '55': [
+    [true, true, true],
+    [false, true, false],
+    [false, true, false],
+  ],
+  '56': [
+    [true, true, true, true],
+    [true, false, false, false],
+  ],
+  '57': [
+    [false, false, true],
+    [true, true, true],
+    [true, false, false],
+  ],
+  '58': [
+    [true, false],
+    [true, true],
+    [true, true],
+  ],
+  '59': [
+    [true, true, false, false],
+    [false, true, true, true],
+  ],
+  '5a': [
+    [true, true],
+    [true, false],
+    [true, true],
+  ],
+  '5b': [
+    [false, true, false, false],
+    [true, true, true, true],
+  ],
+  '40': [[true, true, true, true]],
+  '41': [
+    [true, true, true],
+    [true, false, false],
+  ],
+  '42': [
+    [true, true, true],
+    [false, true, false],
+  ],
+  '43': [
+    [true, true, false],
+    [false, true, true],
+  ],
+  '44': [
+    [true, true],
+    [true, true],
+  ],
+  '30': [[true, true, true]],
+  '31': [
+    [true, true],
+    [true, false],
+  ],
+  '20': [[true, true]],
+  '10': [[true]],
 };
 
 export const createNewBoard = (): (string | number)[][] => Array.from(Array(20), () => {
