@@ -127,7 +127,7 @@ export const createNewBoard = (): (string | number)[][] => Array.from(Array(20),
   return newArr.fill(0);
 });
 
-const flipBlock = (block: number[][]) => {
+const flipBlock_LEGACY = (block: number[][]) => {
   const blockToReturn: number[][] = [];
   for (let i = 0; i < block.length; i += 1) {
     blockToReturn.push(block[block.length - 1 - i]);
@@ -155,7 +155,7 @@ const rotateBlockToClockwiseDir = (newBlock: number[][]): number[][] => {
   return blockToReturn;
 };
 
-const rotateBlock = (newBlock: number[][], rotation: number) => {
+const rotateBlock_LEGACY = (newBlock: number[][], rotation: number) => {
   let rotatedBlock: number[][] = newBlock;
   for (let i = 0; i < rotation; i += 1) {
     rotatedBlock = rotateBlockToClockwiseDir(rotatedBlock);
@@ -262,9 +262,9 @@ export const putBlockOnBoard = (
   if (/0-3/.test(rotation.toString())) {
     throw new Error('rotation must be included in 0-3');
   }
-  let rotatedBlock = rotation === 0 ? newBlock : rotateBlock(newBlock, rotation);
+  let rotatedBlock = rotation === 0 ? newBlock : rotateBlock_LEGACY(newBlock, rotation);
   if (flip) {
-    rotatedBlock = flipBlock(rotatedBlock);
+    rotatedBlock = flipBlock_LEGACY(rotatedBlock);
   }
   const currentBoard = board;
   if (isAvailableArea(currentBoard, rotatedBlock, position, player)) {
