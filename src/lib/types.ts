@@ -18,10 +18,12 @@ export interface PlaceBlockDTO {
   block: BlockMatrix;
   position: number[];
   board: (boolean | number)[][];
+  playerIdx: 0 | 1 | 2 | 3;
 }
 
 export interface PutBlockDTO {
   board: (number | false)[][];
   blockInfo: Block;
   position: number[];
+  playerIdx: 0 | 1 | 2 | 3;
 }

@@ -1,4 +1,4 @@
-import type { Block, BlockMatrix, BlockType } from "./types";
+import type { Block, BlockMatrix, BlockType, PlaceBlockDTO, PutBlockDTO } from "./types";
 
 /**
  * 디버깅용 함수들. 콘솔 출력 시 블록에 색 입히기
