@@ -12,17 +12,19 @@ export type Block = {
   flip: boolean;
 }
 
+export type BoardMatrix = (number | false)[][];
+
 export type BlockMatrix = boolean[][];
 
 export interface PlaceBlockDTO {
   block: BlockMatrix;
   position: number[];
-  board: (boolean | number)[][];
+  board: BoardMatrix;
   playerIdx: 0 | 1 | 2 | 3;
 }
 
 export interface PutBlockDTO {
-  board: (number | false)[][];
+  board: BoardMatrix;
   blockInfo: Block;
   position: number[];
   playerIdx: 0 | 1 | 2 | 3;
