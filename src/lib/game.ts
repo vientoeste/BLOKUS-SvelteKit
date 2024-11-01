@@ -308,7 +308,7 @@ const rotateBlock = (blockMatrix: BlockMatrix) => {
   });
 };
 
-const getBlockMatrix = (blockInfo: Block): BlockMatrix => {
+export const getBlockMatrix = (blockInfo: Block): BlockMatrix => {
   const block = createBlock(blockInfo.type);
   if (blockInfo.rotation !== 0) {
     for (let rotationTime = 1; rotationTime <= blockInfo.rotation; rotationTime += 1) {
