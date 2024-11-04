@@ -405,6 +405,10 @@ export const hasDiagonalConnection = ({ block, position, board, playerIdx }: Pla
   );
 };
 
+export const hasEdgeConnection = ({ block, board, playerIdx, position }: PlaceBlockDTO) => {
+  throw new Error('not implemented'); 
+};
+
 export const placeBlock = ({ block, position, board, playerIdx }: PlaceBlockDTO) => {
   const [row, col] = position;
   block.forEach((blockLine, rowIdx) => {
