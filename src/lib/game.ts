@@ -360,8 +360,49 @@ export const isFirstMoveValid = ({ block, playerIdx, turn, position }: PlaceBloc
     && col + blockWidth - 1 === boardPosition[1];
 };
 
+export const getDiagonalCellsToCheck = ({ block, row, col }: { block: BlockMatrix, row: number, col: number }) => {
+  const diagonalCells = [[true, true], [true, true]];
+  if (col < block[0].length - 1 && block[row][col + 1] === true) {
+    diagonalCells[0][1] = false;
+    diagonalCells[1][1] = false;
+  }
+  if (col > 0 && block[row][col - 1] === true) {
+    diagonalCells[0][0] = false;
+    diagonalCells[1][0] = false;
+  }
+  if (row > 0 && block[row - 1][col] === true) {
+    diagonalCells[0][0] = false;
+    diagonalCells[0][1] = false;
+  }
+  if (row < block.length - 1 && block[row + 1][col] === true) {
+    diagonalCells[1][0] = false;
+    diagonalCells[1][1] = false;
+  }
+  return diagonalCells;
+};
+
 export const hasDiagonalConnection = ({ block, position, board, playerIdx }: PlaceBlockDTO) => {
-  throw new Error('not implemented');
+  const [row, col] = position;
+  return block.some((blockLine, rowIdx) =>
+    blockLine.some((blockCell, colIdx) => {
+      if (blockCell === true) {
+        const diagonalCells = getDiagonalCellsToCheck({ block, row: rowIdx, col: colIdx });
+        return diagonalCells.some((diagonalCellLine, diagonalCellRow) =>
+          diagonalCellLine.some((cell, diagonalCellCol) => {
+            if (!cell) {
+              return false;
+            }
+            const rowOnBoard = row + rowIdx + 2 * diagonalCellRow - 1;
+            const colOnBoard = col + colIdx + 2 * diagonalCellCol - 1;
+            if (rowOnBoard < 0 || colOnBoard < 0 || rowOnBoard > 19 || colOnBoard > 19) {
+              return false;
+            }
+            return board[rowOnBoard][colOnBoard] === playerIdx;
+          })
+        );
+      }
+    })
+  );
 };
 
 export const placeBlock = ({ block, position, board, playerIdx }: PlaceBlockDTO) => {
