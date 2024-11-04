@@ -406,7 +406,21 @@ export const hasDiagonalConnection = ({ block, position, board, playerIdx }: Pla
 };
 
 export const hasEdgeConnection = ({ block, board, playerIdx, position }: PlaceBlockDTO) => {
-  throw new Error('not implemented'); 
+  const [row, col] = position;
+  const boardSize = 20;
+  return block.some((blockLine, blockRow) =>
+    blockLine.some((blockCell, blockCol) => {
+      if (!blockCell) return false;
+      const boardRow = blockRow + row;
+      const boardCol = blockCol + col;
+      return (
+        (boardRow > 0 && board[boardRow - 1][boardCol] === playerIdx)
+        || (boardRow < boardSize - 1 && board[boardRow + 1][boardCol] === playerIdx)
+        || (boardCol > 0 && board[boardRow][boardCol - 1] === playerIdx)
+        || (boardCol < boardSize - 1 && board[boardRow][boardCol + 1] === playerIdx)
+      );
+    })
+  );
 };
 
 export const placeBlock = ({ block, position, board, playerIdx }: PlaceBlockDTO) => {
