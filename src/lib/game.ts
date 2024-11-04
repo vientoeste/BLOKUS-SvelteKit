@@ -322,5 +322,16 @@ export const getBlockMatrix = (blockInfo: Block): BlockMatrix => {
 };
 
 export const isWithinBoardBounds = ({ block, position }: PlaceBlockDTO) => {
-  throw new Error('not implemented');
+  const [row, col] = position;
+  const boardHeight = 20;
+  const boardWidth = 20;
+  const blockHeight = block.length;
+  const blockWidth = block[0].length;
+
+  return !(
+    row < 0 ||
+    row + blockHeight > boardHeight ||
+    col < 0 ||
+    col + blockWidth > boardWidth
+  );
 };
