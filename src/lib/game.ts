@@ -359,3 +359,14 @@ export const isFirstMoveValid = ({ block, playerIdx, turn, position }: PlaceBloc
   return row + blockHeight - 1 === boardPosition[0]
     && col + blockWidth - 1 === boardPosition[1];
 };
+
+export const placeBlock = ({ block, position, board, playerIdx }: PlaceBlockDTO) => {
+  const [row, col] = position;
+  block.forEach((blockLine, rowIdx) => {
+    blockLine.forEach((blockCell, colIdx) => {
+      if (blockCell) {
+        board[row + rowIdx][col + colIdx] = playerIdx;
+      }
+    });
+  });
+};
