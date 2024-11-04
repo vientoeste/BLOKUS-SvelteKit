@@ -435,6 +435,30 @@ export const hasOverlap = ({ block, board, position }: PlaceBlockDTO) => {
   );
 };
 
+export const isBlockPlaceable = ({ block, position, board, playerIdx, turn }: PlaceBlockDTO): { result: boolean, reason?: string } => {
+  if (!isWithinBoardBounds({ block, position, board, playerIdx, turn })) {
+    return { result: false, reason: 'bound' };
+  }
+
+  if (!isFirstMoveValid({ block, position, board, playerIdx, turn })) {
+    return { result: false, reason: 'invalid first move' };
+  }
+
+  if (!hasDiagonalConnection({ block, position, board, playerIdx, turn })) {
+    return { result: false, reason: 'no connection' };
+  }
+
+  if (hasEdgeConnection({ block, position, board, playerIdx, turn })) {
+    return { result: false, reason: 'connected with other block' };
+  }
+
+  if (hasOverlap({ block, position, board, playerIdx, turn })) {
+    return { result: false, reason: 'overlapped' };
+  }
+
+  return { result: true };
+};
+
 export const placeBlock = ({ block, position, board, playerIdx }: PlaceBlockDTO) => {
   const [row, col] = position;
   block.forEach((blockLine, rowIdx) => {
