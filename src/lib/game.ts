@@ -423,6 +423,10 @@ export const hasEdgeConnection = ({ block, board, playerIdx, position }: PlaceBl
   );
 };
 
+export const hasOverlap = ({ block, board, position }: PlaceBlockDTO) => {
+  throw new Error('not implemented');
+};
+
 export const placeBlock = ({ block, position, board, playerIdx }: PlaceBlockDTO) => {
   const [row, col] = position;
   block.forEach((blockLine, rowIdx) => {

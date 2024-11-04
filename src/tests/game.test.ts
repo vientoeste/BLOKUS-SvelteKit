@@ -1,4 +1,4 @@
-import { getBlockMatrix, hasDiagonalConnection, hasEdgeConnection, isFirstMoveValid, isWithinBoardBounds, placeBlock } from '$lib/game';
+import { getBlockMatrix, hasDiagonalConnection, hasEdgeConnection, hasOverlap, isFirstMoveValid, isWithinBoardBounds, placeBlock } from '$lib/game';
 import type { BlockMatrix, BoardMatrix, PlaceBlockDTO } from '$lib/types';
 
 describe('isBlockPlaceable 내부 로직 검사', () => {
@@ -786,6 +786,164 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         };
 
         const result = hasEdgeConnection(dto);
+
+        expect(result).toBe(true);
+      });
+    });
+  });
+
+  describe('hasOverlap', () => {
+    describe('1x1 블록의 충돌 테스트', () => {
+      test('셀에 다른 블록이 존재하면 true 반환', () => {
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [1, 1],
+          turn: 0,
+        });
+        const dto: PlaceBlockDTO = {
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [1, 1],
+          turn: 1,
+        };
+
+        const result = hasOverlap(dto);
+
+        expect(result).toBe(true);
+      });
+
+      test('셀에 다른 블록이 존재하지 않으면 false 반환', () => {
+        const dto: PlaceBlockDTO = {
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [1, 1],
+          turn: 1,
+        };
+
+        const result = hasOverlap(dto);
+
+        expect(result).toBe(false);
+      });
+    });
+
+    describe('복잡한 모양(type 54)의 블록 테스트', () => {
+      test('블록의 빈 공간에만 다른 블록이 존재하면 false 반환', () => {
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [1, 2],
+          turn: 0,
+        });
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [1, 3],
+          turn: 0,
+        });
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [3, 1],
+          turn: 0,
+        });
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [3, 3],
+          turn: 0,
+        });
+        const dto: PlaceBlockDTO = {
+          block: complexBlock,
+          board,
+          playerIdx: 0,
+          position: [1, 1],
+          turn: 0,
+        };
+
+        const result = hasOverlap(dto);
+
+        expect(result).toBe(false);
+      });
+
+      test('블록의 셀에만 다른 블록이 존재하면 true 반환', () => {
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [1, 1],
+          turn: 0,
+        });
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [2, 1],
+          turn: 0,
+        });
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [2, 2],
+          turn: 0,
+        });
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [2, 3],
+          turn: 0,
+        });
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [3, 2],
+          turn: 0,
+        });
+        const dto: PlaceBlockDTO = {
+          block: complexBlock,
+          board,
+          playerIdx: 0,
+          position: [1, 1],
+          turn: 0,
+        };
+
+        const result = hasOverlap(dto);
+
+        expect(result).toBe(true);
+      });
+
+      test('블록의 빈 공간과 셀 모두에 다른 블록이 존재하면 true 반환', () => {
+        const randomBlock = getBlockMatrix({
+          type: '58',
+          rotation: 1,
+          flip: false,
+        });
+        placeBlock({
+          block: randomBlock,
+          board,
+          playerIdx: 0,
+          position: [1, 1],
+          turn: 0,
+        });
+        const dto: PlaceBlockDTO = {
+          block: complexBlock,
+          board,
+          playerIdx: 0,
+          position: [1, 1],
+          turn: 0,
+        };
+
+        const result = hasOverlap(dto);
 
         expect(result).toBe(true);
       });
