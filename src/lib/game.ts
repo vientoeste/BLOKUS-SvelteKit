@@ -337,5 +337,25 @@ export const isWithinBoardBounds = ({ block, position }: PlaceBlockDTO) => {
 };
 
 export const isFirstMoveValid = ({ block, playerIdx, turn, position }: PlaceBlockDTO) => {
-  throw new Error('not implemented');
+  if (turn > 3) {
+    return true;
+  }
+  const [row, col] = position;
+
+  const blockHeight = block.length;
+  const blockWidth = block[0].length;
+  const cornerPositionsPreset = {
+    0: { board: [0, 0], block: [0, 0] },
+    1: { board: [0, 19], block: [0, blockWidth - 1] },
+    2: { board: [19, 19], block: [blockHeight - 1, blockWidth - 1] },
+    3: { board: [19, 0], block: [blockHeight - 1, 0] },
+  };
+
+  const { board: boardPosition, block: blockPosition } = cornerPositionsPreset[playerIdx];
+
+  if (!block[blockPosition[0]][blockPosition[1]]) {
+    return false;
+  }
+  return row + blockHeight - 1 === boardPosition[0]
+    && col + blockWidth - 1 === boardPosition[1];
 };
