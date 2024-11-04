@@ -424,7 +424,15 @@ export const hasEdgeConnection = ({ block, board, playerIdx, position }: PlaceBl
 };
 
 export const hasOverlap = ({ block, board, position }: PlaceBlockDTO) => {
-  throw new Error('not implemented');
+  const [row, col] = position;
+  return block.some((blockLine, blockRow) =>
+    blockLine.some((cell, blockCol) => {
+      if (!cell) return false;
+      const boardRow = blockRow + row;
+      const boardCol = blockCol + col;
+      return board[boardRow][boardCol] !== false;
+    })
+  );
 };
 
 export const placeBlock = ({ block, position, board, playerIdx }: PlaceBlockDTO) => {
