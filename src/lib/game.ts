@@ -320,3 +320,7 @@ export const getBlockMatrix = (blockInfo: Block): BlockMatrix => {
   }
   return block;
 };
+
+export const isWithinBoardBounds = ({ block, position }: PlaceBlockDTO) => {
+  throw new Error('not implemented');
+};
