@@ -1,4 +1,4 @@
-import { getBlockMatrix, isFirstMoveValid, isWithinBoardBounds } from '$lib/game';
+import { getBlockMatrix, hasDiagonalConnection, isFirstMoveValid, isWithinBoardBounds, placeBlock } from '$lib/game';
 import type { BlockMatrix, BoardMatrix, PlaceBlockDTO } from '$lib/types';
 
 describe('isBlockPlaceable 내부 로직 검사', () => {
@@ -105,6 +105,311 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
       const result = isFirstMoveValid(dto);
 
       expect(result).toBe(true);
+    });
+  });
+
+  describe('hasDiagonalConnection', () => {
+    describe('대각 연결이 유효하지 않는 경우', () => {
+      test('주변에 블록이 없는 경우 false를 반환', () => {
+        const dto: PlaceBlockDTO = {
+          block: complexBlock,
+          position: [5, 5],
+          board,
+          playerIdx: 0,
+          turn: 4,
+        };
+
+        const result = hasDiagonalConnection(dto);
+
+        expect(result).toBe(false);
+      });
+
+      test('다른 플레이어의 블록과 대각선으로 연결된 경우 false를 반환', () => {
+        placeBlock({ board, block: singleCellBlock, playerIdx: 1, position: [0, 0], turn: 0 })
+        const dto: PlaceBlockDTO = {
+          block: singleCellBlock,
+          position: [1, 1],
+          board,
+          playerIdx: 0,
+          turn: 1,
+        };
+
+        const result = hasDiagonalConnection(dto);
+
+        expect(result).toBe(false);
+      });
+
+      test('대각선이 아닌 방향으로만 블록이 있는 경우 false를 반환', () => {
+        placeBlock({ block: singleCellBlock, position: [0, 1], board, playerIdx: 0, turn: 0 })
+        placeBlock({ block: singleCellBlock, position: [1, 0], board, playerIdx: 0, turn: 0 })
+        const dto: PlaceBlockDTO = {
+          block: singleCellBlock,
+          position: [0, 0],
+          board,
+          playerIdx: 0,
+          turn: 0,
+        };
+
+        const result = hasDiagonalConnection(dto);
+
+        expect(result).toBe(false);
+      });
+    });
+
+    describe('대각 연결이 유효한 경우', () => {
+      test('좌상단 연결이 유효한 경우 true를 반환', () => {
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [0, 0],
+          turn: 0
+        });
+        const dto: PlaceBlockDTO = {
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [1, 1],
+          turn: 1,
+        };
+
+        const result = hasDiagonalConnection(dto);
+
+        expect(result).toBe(true);
+      });
+      test('우상단 연결이 유효한 경우 true를 반환', () => {
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [0, 19],
+          turn: 0
+        });
+        const dto: PlaceBlockDTO = {
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [1, 18],
+          turn: 1,
+        };
+
+        const result = hasDiagonalConnection(dto);
+
+        expect(result).toBe(true);
+      });
+
+      test('우하단 연결이 유효한 경우 true를 반환', () => {
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [19, 19],
+          turn: 0,
+        });
+        const dto: PlaceBlockDTO = {
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [18, 18],
+          turn: 1,
+        };
+
+        const result = hasDiagonalConnection(dto);
+
+        expect(result).toBe(true);
+      });
+
+      test('좌하단 연결이 유효한 경우 true를 반환', () => {
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [19, 0],
+          turn: 0
+        });
+        const dto: PlaceBlockDTO = {
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [18, 1],
+          turn: 1,
+        };
+
+        const result = hasDiagonalConnection(dto);
+
+        expect(result).toBe(true);
+      });
+    });
+
+    describe('복잡한 모양(type 54)의 블록 테스트', () => {
+      test('(-1, -1)', () => {
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [0, 0],
+          turn: 0,
+        });
+        const dto: PlaceBlockDTO = {
+          block: complexBlock,
+          position: [1, 1],
+          board,
+          playerIdx: 0,
+          turn: 0,
+        };
+
+        const result = hasDiagonalConnection(dto);
+
+        expect(result).toBe(true);
+      });
+
+      test('(1, -1)', () => {
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [0, 1],
+          turn: 0,
+        });
+        const dto: PlaceBlockDTO = {
+          block: complexBlock,
+          position: [1, 0],
+          board,
+          playerIdx: 0,
+          turn: 0,
+        };
+
+        const result = hasDiagonalConnection(dto);
+
+        expect(result).toBe(true);
+      });
+
+      test('(2, -1)', () => {
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [2, 0],
+          turn: 0,
+        });
+        const dto: PlaceBlockDTO = {
+          block: complexBlock,
+          position: [0, 1],
+          board,
+          playerIdx: 0,
+          turn: 0,
+        };
+
+        const result = hasDiagonalConnection(dto);
+
+        expect(result).toBe(true);
+      });
+
+      test('(3, 0)', () => {
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [3, 0],
+          turn: 0,
+        });
+        const dto: PlaceBlockDTO = {
+          block: complexBlock,
+          position: [0, 0],
+          board,
+          playerIdx: 0,
+          turn: 0,
+        };
+
+        const result = hasDiagonalConnection(dto);
+
+        expect(result).toBe(true);
+      });
+
+
+      test('(3, 2)', () => {
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [3, 2],
+          turn: 0,
+        });
+        const dto: PlaceBlockDTO = {
+          block: complexBlock,
+          position: [0, 0],
+          board,
+          playerIdx: 0,
+          turn: 0,
+        };
+
+        const result = hasDiagonalConnection(dto);
+
+        expect(result).toBe(true);
+      });
+
+      test('(2, 3)', () => {
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [2, 3],
+          turn: 0,
+        });
+        const dto: PlaceBlockDTO = {
+          block: complexBlock,
+          position: [0, 0],
+          board,
+          playerIdx: 0,
+          turn: 0,
+        };
+
+        const result = hasDiagonalConnection(dto);
+
+        expect(result).toBe(true);
+      });
+
+      test('(0, 3)', () => {
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [0, 3],
+          turn: 0,
+        });
+        const dto: PlaceBlockDTO = {
+          block: complexBlock,
+          position: [0, 0],
+          board,
+          playerIdx: 0,
+          turn: 0,
+        };
+
+        const result = hasDiagonalConnection(dto);
+
+        expect(result).toBe(true);
+      });
+
+      test('(-1, 1)', () => {
+        placeBlock({
+          block: singleCellBlock,
+          board,
+          playerIdx: 0,
+          position: [0, 1],
+          turn: 0,
+        });
+        const dto: PlaceBlockDTO = {
+          block: complexBlock,
+          position: [1, 0],
+          board,
+          playerIdx: 0,
+          turn: 0,
+        };
+
+        const result = hasDiagonalConnection(dto);
+
+        expect(result).toBe(true);
+      });
     });
   });
 });
