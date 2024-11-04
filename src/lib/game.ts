@@ -127,160 +127,6 @@ export const createNewBoard = (): (string | number)[][] => Array.from(Array(20),
   return newArr.fill(0);
 });
 
-const flipBlock_LEGACY = (block: number[][]) => {
-  const blockToReturn: number[][] = [];
-  for (let i = 0; i < block.length; i += 1) {
-    blockToReturn.push(block[block.length - 1 - i]);
-  }
-  return blockToReturn;
-};
-
-const rotateBlockToClockwiseDir = (newBlock: number[][]): number[][] => {
-  const blockToReturn: number[][] = [];
-
-  const x = newBlock[0].length;
-  const y = newBlock.length;
-  blockToReturn.length = x;
-  for (let i = 0; i < newBlock[0].length; i += 1) {
-    blockToReturn[i] = [];
-  }
-  blockToReturn[0].length = y;
-
-  for (let i = 0; i < y; i += 1) {
-    for (let j = 0; j < x; j += 1) {
-      blockToReturn[j][y - i - 1] = newBlock[i][j];
-    }
-  }
-
-  return blockToReturn;
-};
-
-const rotateBlock_LEGACY = (newBlock: number[][], rotation: number) => {
-  let rotatedBlock: number[][] = newBlock;
-  for (let i = 0; i < rotation; i += 1) {
-    rotatedBlock = rotateBlockToClockwiseDir(rotatedBlock);
-  }
-  return rotatedBlock;
-};
-
-export const isAvailableArea_LEGACY = (
-  board: (string | number)[][], block: number[][], position: number[], player: string,
-): boolean => {
-  if (position[1] + block[0].length > 20 || position[0] + block.length > 20) {
-    throw new Error('range out');
-  }
-  const x = block[0].length;
-  const y = block.length;
-  const affectedArea: (number | string)[][] = [];
-  const regExpY = new RegExp(`0|${20 - y}`);
-  const regExpX = new RegExp(`0|${20 - x}`);
-  if (regExpY.test(position[0].toString()) && regExpX.test(position[1].toString())) {
-    if (((position[0] === 0
-      && ((player === 'a' && position[1] === 0 && block[0][0] === 1)
-        || (player === 'd' && position[1] === 20 - x && block[0][block[0].length - 1] === 1)))
-      || (position[0] === 20 - y
-        && ((player === 'b' && position[1] === 0 && block[block.length - 1][0] === 1)
-          || (player === 'c' && position[1] === 20 - x && block[block.length - 1][block[0].length - 1] === 1))))) {
-      return true;
-    }
-    if (((position[0] === 0
-      && ((player === 'a' && position[1] === 0 && block[0][0] !== 1)
-        || (player === 'd' && position[1] === 20 - x && block[0][block[0].length - 1] !== 1)))
-      || (position[0] === 20 - y
-        && ((player === 'b' && position[1] === 0 && block[block.length - 1][0] !== 1)
-          || (player === 'c' && position[1] === 20 - x && block[block.length - 1][block[0].length - 1] !== 1))))) {
-      throw new Error('no block on vertex');
-    }
-  }
-  for (let i = position[0] - 1; i <= position[0] + y; i += 1) {
-    for (let j = position[1] - 1; j <= position[1] + x; j += 1) {
-      if ((i - position[0] === -1 && position[0] === 0)
-        || i === 20) {
-        continue;
-      }
-      if (!affectedArea[i - position[0] + 1]) {
-        affectedArea[i - position[0] + 1] = [];
-      }
-      affectedArea[i - position[0] + 1][j - position[1] + 1] = board[i][j];
-
-      if (i - position[0] >= 0 && j - position[1] >= 0
-        && i - position[0] < block.length && j - position[1] < block[0].length
-        && block[i - position[0]][j - position[1]] === 1
-        && affectedArea[i - position[0] + 1][j - position[1] + 1] !== 0) {
-        throw new Error('blocks folded');
-      }
-      if (i - position[0] >= 0 && j - position[1] >= 0
-        && i - position[0] < block.length && j - position[1] < block[0].length
-        && block[i - position[0]][j - position[1]] === 1
-        && affectedArea[i - position[0] + 1][j - position[1] + 1] === 0) {
-        affectedArea[i - position[0] + 1][j - position[1] + 1] = 'n';
-      }
-    }
-  }
-  if (!affectedArea[0]) {
-    affectedArea.shift();
-  }
-  let flag = false;
-  for (let i = 0; i < affectedArea.length; i += 1) {
-    for (let j = 0; j < affectedArea[0].length; j += 1) {
-      if (affectedArea[i][j] === 'n'
-        && ((i > 0
-          && (affectedArea[i - 1][j - 1] === player
-            || affectedArea[i - 1][j + 1] === player))
-          || (i < affectedArea.length - 1
-            && (affectedArea[i + 1][j + 1] === player
-              || affectedArea[i + 1][j - 1] === player)))) {
-        flag = true;
-      }
-      if (affectedArea[i][j] === 'n' && (
-        (position[0] !== 0 && affectedArea[i - 1][j] === player)
-        || affectedArea[i][j - 1] === player
-        || (position[0] + y !== 20 && affectedArea[i + 1][j] === player)
-        || affectedArea[i][j + 1] === player)) {
-        throw new Error('no adjacent block');
-      }
-    }
-  }
-  if (!flag) {
-    throw new Error('no block connected');
-  }
-  return true;
-};
-
-export const putBlockOnBoard = (
-  board: (string | number)[][],
-  newBlock: number[][],
-  position: number[],
-  rotation: number,
-  player: string,
-  flip = false,
-): (string | number
-)[][] => {
-  if (position.length !== 2) {
-    throw new Error('position length must be 2');
-  }
-  if (/0-3/.test(rotation.toString())) {
-    throw new Error('rotation must be included in 0-3');
-  }
-  let rotatedBlock = rotation === 0 ? newBlock : rotateBlock_LEGACY(newBlock, rotation);
-  if (flip) {
-    rotatedBlock = flipBlock_LEGACY(rotatedBlock);
-  }
-  const currentBoard = board;
-  if (isAvailableArea_LEGACY(currentBoard, rotatedBlock, position, player)) {
-    const x = rotatedBlock[0].length;
-    const y = rotatedBlock.length;
-    for (let i = 0; i < y; i += 1) {
-      for (let j = 0; j < x; j += 1) {
-        if (currentBoard[position[0] + i][position[1] + j] === 0 && rotatedBlock[i][j] === 1) {
-          currentBoard[position[0] + i][position[1] + j] = player;
-        }
-      }
-    }
-  }
-  return currentBoard;
-};
-
 const createBlock = (type: BlockType) => preset[type].map(row => Array.from(row)) as BlockMatrix;
 
 const flipBlock = (blockMatrix: BlockMatrix) =>
@@ -468,4 +314,15 @@ export const placeBlock = ({ block, position, board, playerIdx }: PlaceBlockDTO)
       }
     });
   });
+};
+
+export const putBlockOnBoard = ({ board, blockInfo, position, playerIdx, turn }: PutBlockDTO) => {
+  const block = getBlockMatrix(blockInfo);
+
+  const { result, reason } = isBlockPlaceable({ block, position, board, playerIdx, turn })
+  if (!result) {
+    return reason;
+  }
+
+  placeBlock({ block, position, board, playerIdx, turn });
 };
