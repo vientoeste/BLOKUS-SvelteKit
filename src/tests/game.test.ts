@@ -1,4 +1,4 @@
-import { getBlockMatrix, isWithinBoardBounds } from '$lib/game';
+import { getBlockMatrix, isFirstMoveValid, isWithinBoardBounds } from '$lib/game';
 import type { BlockMatrix, BoardMatrix, PlaceBlockDTO } from '$lib/types';
 
 describe('isBlockPlaceable 내부 로직 검사', () => {
@@ -56,6 +56,55 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         expect(leftwardResult).toBe(false);
         expect(rightwardResult).toBe(false);
       });
+    });
+  });
+
+  describe('isFirstMoveValid', () => {
+    describe('첫 턴인 경우', () => {
+      test('코너에 블록을 놓으면 true를 반환', () => {
+        const cornerPositions = [[0, 0], [0, 19], [19, 19], [19, 0]];
+        cornerPositions.forEach((position, idx) => {
+          const dto: PlaceBlockDTO = {
+            block: singleCellBlock,
+            board,
+            position,
+            playerIdx: idx as 0 | 1 | 2 | 3,
+            turn: idx,
+          };
+
+          const result = isFirstMoveValid(dto);
+
+          expect(result).toBe(true);
+        });
+      });
+
+      test('코너가 아닌 곳에 블록을 놓으면 false를 반환', () => {
+        const dto: PlaceBlockDTO = {
+          block: singleCellBlock,
+          position: [1, 1],
+          board,
+          playerIdx: 0,
+          turn: 0,
+        };
+
+        const result = isFirstMoveValid(dto);
+
+        expect(result).toBe(false);
+      });
+    });
+
+    test('첫 턴이 아닐 때는 코너가 아니어도 true를 반환', () => {
+      const dto: PlaceBlockDTO = {
+        block: singleCellBlock,
+        position: [1, 1],
+        board,
+        playerIdx: 0,
+        turn: 4,
+      };
+
+      const result = isFirstMoveValid(dto);
+
+      expect(result).toBe(true);
     });
   });
 });

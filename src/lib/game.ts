@@ -335,3 +335,7 @@ export const isWithinBoardBounds = ({ block, position }: PlaceBlockDTO) => {
     col + blockWidth > boardWidth
   );
 };
+
+export const isFirstMoveValid = ({ block, playerIdx, turn, position }: PlaceBlockDTO) => {
+  throw new Error('not implemented');
+};
