@@ -1,46 +1,5 @@
 import type { Block, BlockMatrix, BlockType, PlaceBlockDTO, PutBlockDTO } from "./types";
 
-/**
- * 디버깅용 함수들. 콘솔 출력 시 블록에 색 입히기
- */
-const putColorOnBlocks = (rowOfBoard: (string | number)[]) => {
-  let strToReturn = '';
-  rowOfBoard.forEach((e: string | number, idx: number) => {
-    switch (e) {
-      case 'a':
-        strToReturn += `${idx === 0 ? '│' : ' '}\x1b[44m\x1b[33ma \x1b[49m\x1b[37m${idx < 19 && rowOfBoard[idx + 1] === rowOfBoard[idx] ? '\x1b[44m' : ''}`;
-        break;
-      case 'b':
-        strToReturn += `${idx === 0 ? '│' : ' '}\x1b[43m\x1b[30mb \x1b[49m\x1b[37m${idx < 19 && rowOfBoard[idx + 1] === rowOfBoard[idx] ? '\x1b[43m' : ''}`;
-        break;
-      case 'c':
-        strToReturn += `${idx === 0 ? '│' : ' '}\x1b[41m\x1b[37mc \x1b[49m\x1b[37m${idx < 19 && rowOfBoard[idx + 1] === rowOfBoard[idx] ? '\x1b[41m' : ''}`;
-        break;
-      case 'd':
-        strToReturn += `${idx === 0 ? '│' : ' '}\x1b[42m\x1b[37md \x1b[49m\x1b[37m${idx < 19 && rowOfBoard[idx + 1] === rowOfBoard[idx] ? '\x1b[42m' : ''}`;
-        break;
-      default:
-        strToReturn += `${idx === 0 ? '│' : ' '}\x1b[49m\x1b[37m0 \x1b[49m\x1b[37m`;
-        break;
-    }
-  });
-  return strToReturn;
-};
-const strToPrint = (board: (string | number)[][]) => {
-  let strToReturn = '';
-  for (let i = 0; i < board.length; i += 1) {
-    strToReturn += `│ ${i.toString().length === 1 ? `${i} ` : i} ${putColorOnBlocks(board[i])}│${i === 19 ? '' : '\n'}`;
-  }
-  return strToReturn;
-};
-export const printBoard = (board: (string | number)[][]): void => {
-  global.console.log(`┌────┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┐
-│idx │0 │1 │2 │3 │4 │5 │6 │7 │8 │9 │10│11│12│13│14│15│16│17│18│19│
-├────┼──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┤
-${strToPrint(board)}
-└────┴───────────────────────────────────────────────────────────┘`);
-};
-
 const preset: Record<BlockType, BlockMatrix> = {
   '50': [[true, true, true, true, true]],
   '51': [
