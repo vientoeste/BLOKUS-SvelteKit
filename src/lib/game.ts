@@ -161,8 +161,8 @@ export const isFirstMoveValid = ({ block, playerIdx, turn, position }: PlaceBloc
   if (!block[blockPosition[0]][blockPosition[1]]) {
     return false;
   }
-  return row + blockHeight - 1 === boardPosition[0]
-    && col + blockWidth - 1 === boardPosition[1];
+  return row + blockPosition[0] === boardPosition[0]
+    && col + blockPosition[1] === boardPosition[1];
 };
 
 export const getDiagonalCellsToCheck = ({ block, row, col }: { block: BlockMatrix, row: number, col: number }) => {
@@ -249,7 +249,7 @@ export const isBlockPlaceable = ({ block, position, board, playerIdx, turn }: Pl
     return { result: false, reason: 'invalid first move' };
   }
 
-  if (!hasDiagonalConnection({ block, position, board, playerIdx, turn })) {
+  if (turn > 3 && !hasDiagonalConnection({ block, position, board, playerIdx, turn })) {
     return { result: false, reason: 'no connection' };
   }
 
