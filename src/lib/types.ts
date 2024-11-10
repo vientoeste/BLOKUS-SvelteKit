@@ -21,6 +21,7 @@ export interface PlaceBlockDTO {
   position: number[];
   board: BoardMatrix;
   playerIdx: 0 | 1 | 2 | 3;
+  turn: number;
 }
 
 export interface PutBlockDTO {
@@ -28,4 +29,5 @@ export interface PutBlockDTO {
   blockInfo: Block;
   position: number[];
   playerIdx: 0 | 1 | 2 | 3;
+  turn: number;
 }
