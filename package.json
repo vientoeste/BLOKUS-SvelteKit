@@ -32,6 +32,8 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@oslojs/crypto": "^1.0.1",
+		"@oslojs/encoding": "^1.1.0",
 		"@vientoeste/uuid-validate": "^1.0.1",
 		"bcrypt": "^5.1.0",
 		"jest": "^29.7.0",
