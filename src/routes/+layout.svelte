@@ -3,12 +3,13 @@
   import Footer from "$lib/components/footer.svelte";
   import Login from "$lib/components/login.svelte";
   import "../app.css";
+  let { children } = $props();
 </script>
 
 <Header />
 <main>
   <article>
-    <slot />
+    {@render children()}
   </article>
   <aside>
     <section id="login"><Login /></section>
