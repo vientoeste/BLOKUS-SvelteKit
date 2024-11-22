@@ -1,13 +1,44 @@
-import { writable, type Writable } from 'svelte/store';
+import { writable } from 'svelte/store';
 
-interface RoomInfo {
-  participants: string[],
-  turn: number,
+interface ModalState {
+  isOpen: boolean;
+  component: any | null;
+  props?: Record<string, any>;
+  events?: Record<string, () => void>
 }
 
-// [TODO] 세션 여기서 구현??
-export const alertMessage = writable({
-  message: '',
-});
-// [TODO] 동적 변수 할당을 위해 객체 내에 writable을 사용했는데 subscribe가 제대로 되지 않음
-export const rooms: Record<string, Writable<RoomInfo>> = {};
+const createModalStore = () => {
+  const { subscribe, set, update } = writable<ModalState>({
+    isOpen: false,
+    component: null,
+    props: {},
+    events: {},
+  });
+
+  return {
+    subscribe,
+    open: (component: any, props?: Record<string, any>, events?: { onclose?: () => void }) => {
+      set({
+        isOpen: true,
+        component,
+        props,
+        events,
+      });
+    },
+    close: () => {
+      update(state => {
+        if (state.events?.onClose) {
+          state.events.onClose();
+        }
+        return {
+          isOpen: false,
+          component: null,
+          props: {},
+          events: {}
+        };
+      });
+    }
+  };
+}
+
+export const modalStore = createModalStore();
