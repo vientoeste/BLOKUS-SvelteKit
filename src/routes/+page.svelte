@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { PageData } from "./$types";
-  import { io } from "socket.io-client";
+  // import { io } from "socket.io-client";
 
-  const socket = io();
+  // const socket = io();
   export let data: PageData;
 </script>
 
