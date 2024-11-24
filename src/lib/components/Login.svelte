@@ -1,10 +1,97 @@
+<script lang="ts">
+  import type { UserInfo } from "$lib/types";
+  import { validatePassword, validateUserId } from "$lib/utils";
+  import { writable } from "svelte/store";
+  import { modalStore, userStore } from "../../Store";
+  import Alert from "./Alert.svelte";
+  import SignUp from "./SignUp.svelte";
+  import { onMount } from "svelte";
+
+  let savedId = writable("");
+  onMount(() => {
+    $savedId = localStorage.getItem("save") ?? "";
+  });
+
+  const submitSignIn = async (event: Event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget as HTMLFormElement);
+    const userId = data.get("userId")?.toString();
+    const password = data.get("password")?.toString();
+    if (!userId || !password) {
+      return;
+    }
+
+    const { message: userIdValidationMessage, isValid: isUserIdValid } =
+      validateUserId(userId);
+    if (!isUserIdValid) {
+      modalStore.open(Alert, {
+        title: "invalid user id",
+        message: userIdValidationMessage,
+      });
+      return;
+    }
+
+    const { message: passwordValidationMessage, isValid: isPasswordValid } =
+      validatePassword(password);
+    if (!isPasswordValid) {
+      modalStore.open(Alert, {
+        title: "invalid user id",
+        message: passwordValidationMessage,
+      });
+      return;
+    }
+
+    localStorage.setItem("save", userId);
+    $savedId = userId;
+
+    const { message, userInfo } = (await fetch(
+      (event.currentTarget as HTMLFormElement).action,
+      {
+        method: "POST",
+        body: data,
+      },
+    ).then(async (r) => await r.json())) as {
+      message: string;
+      userInfo?: UserInfo;
+    };
+    if (!message) {
+      modalStore.open(Alert, {
+        title: "sign in failed",
+        message: "unknwon error occured: please try again",
+      });
+      return;
+    }
+    if (message === "user not found") {
+      modalStore.open(Alert, {
+        title: "sign in failed",
+        message: `User with id ${userId} is not exists`,
+      });
+      return;
+    }
+    if (userInfo?.id && userInfo?.userId && userInfo?.username) {
+      localStorage.setItem("id", userInfo.id);
+      localStorage.setItem("userId", userInfo.userId);
+      localStorage.setItem("username", userInfo.username);
+      userStore.update(() => ({
+        id: userInfo.id,
+        userId: userInfo.userId,
+        username: userInfo.username,
+      }));
+      modalStore.open(Alert, {
+        title: "successfully signed up",
+        message: `welcome, ${userInfo.username}!`,
+      });
+    }
+  };
+</script>
+
 <div id="login-container">
   <div id="login-header">Sign in</div>
-  <form action="?/signIn" method="post">
+  <form action="/api/auth/session" method="post" onsubmit={submitSignIn}>
     <div id="login-body-container" class="row-layout">
       <div id="login-input-container" class="column-layout">
         <div id="login-id-wrapper">
-          <input name="id" />
+          <input name="userId" bind:value={$savedId} />
         </div>
         <div id="login-pw-wrapper">
           <input name="password" type="password" />
@@ -15,17 +102,35 @@
   </form>
   <div id="login-additionals" class="row-layout">
     <div id="login-save-id" class="row-layout">
-      <input id="login-save-id-input" type="checkbox" />
+      <input
+        id="login-save-id-input"
+        type="checkbox"
+        onload={(e) => {
+          const saveId = localStorage.getItem("save");
+          if (saveId !== null) {
+            e.currentTarget.ariaChecked = "true";
+          }
+        }}
+      />
       <div>save</div>
     </div>
-    <!-- [TODO] make signup modal for onclick -->
-    <div id="register-container">sign up</div>
+    <div id="register-container">
+      <button
+        type="button"
+        onclick={() => {
+          modalStore.open(SignUp);
+        }}
+      >
+        sign up
+      </button>
+    </div>
   </div>
 </div>
 
 <style>
   #login-container {
-    width: 100%;
+    width: 350px;
+    height: 180px;
     padding-top: 18px;
     padding-bottom: 14px;
     background: #f8f8f9;
@@ -38,9 +143,11 @@
     margin-top: 10px;
     justify-content: space-between;
   }
+
   #login-input-container {
     gap: 10px;
   }
+
   input:not([type="checkbox"]) {
     border: 0;
     width: 176px;
@@ -70,19 +177,41 @@
     appearance: none;
     border: 1px #e4e8ec solid;
   }
+  #login-save-id-input:checked {
+    background: #303030;
+  }
+
+  #login-save-id-input:checked::after {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    font-size: 15px;
+    text-align: center;
+    content: "✔";
+  }
+
   #login-submit {
     width: 100px;
     height: 82px;
     background: #606060;
     border: 1px #e4e8ec solid;
   }
+
   #login-body-container {
-    gap: 10px;
+    justify-content: space-between;
   }
+
   #login-header {
     padding-bottom: 10px;
   }
+
   #register-container {
     color: #606060;
+  }
+
+  #register-container button {
+    color: #606060;
+    background-color: #f8f8f9;
+    border: none;
   }
 </style>
