@@ -1,4 +1,5 @@
-import { checkAuthFromToken } from '$lib/auth';
+// import { checkAuthFromToken } from '$lib/auth';
+import { CustomError } from '$lib/error';
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks';
 import type { ObjectId } from 'mongodb';
@@ -20,19 +21,19 @@ const authCheck = (async ({ event, resolve }) => {
     return await resolve(event);
   }
   if (authToken.slice(0, 6) !== 'Bearer') {
-    throw new Error('invalid token');
+    throw new CustomError('invalid token');
   }
 
-  const user: User | undefined = await checkAuthFromToken(authToken);
-  if (!user) {
-    throw new Error('internal error');
-  }
-  event.locals.user = {
-    _id: user._id,
-    id: user.id,
-  };
+  // const user: User | undefined = await checkAuthFromToken(authToken);
+  // if (!user) {
+  //   throw new CustomError('internal error');
+  // }
+  // event.locals.user = {
+  //   _id: user._id,
+  //   id: user.id,
+  // };
 
   return await resolve(event);
 }) satisfies Handle;
 
-export const handle = sequence(authCheck);
+// export const handle = sequence(authCheck);
