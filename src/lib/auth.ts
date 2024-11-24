@@ -1,120 +1,85 @@
-import { redirect } from '@sveltejs/kit';
-import { compare } from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import type { ObjectId } from 'mongodb';
-import bcrypt from 'bcrypt';
-import db from './database';
+import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from '@oslojs/encoding';
+import { sha256 } from '@oslojs/crypto/sha2';
+import { compare, genSalt, hash } from 'bcrypt';
+import { uuidv7 } from 'uuidv7';
+import { getUserInfoByUserId, insertUser } from '$lib/database/user';
+import { CustomError } from '$lib/error';
+import { redis } from '$lib/database/redis';
+import type { CreateUserDTO, Session, SessionToken, SignInDTO, UserInfo } from '$lib/types';
 
-interface User {
-  _id: ObjectId,
-  id: string,
+export const signUp = async ({ userId, username, password }: CreateUserDTO) => {
+  const id = uuidv7();
+  const salt = await genSalt(12);
+  const hashedPw = await hash(password, salt);
+
+  const insertedId = await insertUser(id, { userId, username, password: hashedPw });
+  return insertedId;
+};
+
+export const signIn = async ({ userId, password }: SignInDTO): Promise<{ token: SessionToken } & UserInfo> => {
+  const user = await getUserInfoByUserId(userId);
+
+  const signInResult = await compare(password, user.password);
+  if (!signInResult) {
+    throw new CustomError('authentication failed');
+  }
+
+  const token = generateSessionToken();
+  await createSession({
+    token,
+    id: user.id,
+    userId: user.userId,
+    username: user.username,
+  });
+
+  return { token, id: user.id, userId, username: user.username };
 }
 
-export const createUser = async (id: string, hashedPwd: string) => {
-  const user = await db.collection('user').find({
-    id: id,
-  }).toArray();
-  if (user.length !== 0) {
-    return { error: 'ID already existing' }
-  }
+const extractSessionId = (token: string) => encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
 
-  try {
-    const insertedId = await db.collection('user').insertOne({
-      id: id,
-      password: hashedPwd,
-    }).then((res) => {
-      if (!res) {
-        throw new Error();
-      }
-      return res.insertedId.toString();
-    });
-    return insertedId;
-  } catch (e) {
-    return { error: 'internal server error' }
+export const signOut = async (token: string) => {
+  const sessionId = extractSessionId(token);
+  const result = await invalidateSession(sessionId);
+  if (!result) {
+    throw new CustomError('session id not found', 404);
   }
+}
+
+
+export const generateSessionToken = (): string => {
+  const bytes = new Uint8Array(20);
+  crypto.getRandomValues(bytes);
+  const token = encodeBase32LowerCaseNoPadding(bytes);
+  return token;
 };
 
-export const loginAndGetToken = async (id: string, hashedPwd: string) => {
-  const userInfo = await db.collection('user').find({
-    id: id,
-  }).toArray();
-
-  if (userInfo.length === 0) {
-    return {
-      error: 'no matched user',
-    }
-  }
-  if (userInfo.length !== 1) {
-    return { error: 'internal server error' };
-  }
-
-  if (!await compare(hashedPwd, userInfo[0].password)) {
-    return { error: 'invalid password' };
-    // throw redirect(303, '/')
-  }
-
-  const token = jwt.sign({
-    _id: userInfo[0]._id,
-    id: id,
-  }, import.meta.env.VITE_JWT_SECRET, {
-    expiresIn: import.meta.env.VITE_JWT_EXPTIME.concat('s'),
-  });
-  return {
-    token, error: ''
+export const createSession = async ({ token, id, userId, username }: { token: string, id: string, userId: string, username: string }): Promise<Session> => {
+  const sessionId = extractSessionId(token);
+  const session: Session = {
+    id,
+    uid: userId,
+    uname: username,
   };
-};
-
-export const extractUserIdFromToken = (token: string): string => {
-  try {
-    const jwtUser = jwt.verify(token, import.meta.env.VITE_JWT_SECRET);
-    if (typeof jwtUser === 'string') {
-      throw new Error('internal server error');
-    }
-    return jwtUser.id.toString();
-  } catch (e) {
-    console.error(e);
-    if (e instanceof Error && e.message.includes('jwt must be provided')) {
-      throw redirect(304, '/');
-    }
-    return '';
-  }
-};
-
-export const checkAuthFromToken = async (token: string): Promise<User | undefined> => {
-  const jwtToken = token.split(' ')[1];
-  try {
-    const userId = extractUserIdFromToken(jwtToken);
-    const user = await db.collection('user').find({
-      id: userId,
-    }).toArray();
-    if (!user || user.length === 0) {
-      throw new Error('User not found');
-    }
-    if (user.length !== 1 || user[0].id !== userId) {
-      throw new Error('internal server error');
-    }
-    return {
-      id: user[0].id,
-      _id: user[0]._id,
-    };
-  } catch (e) {
-    console.error(e);
-    throw redirect(303, '/');
-  }
-};
-
-export const signUp = async (id: string, password: string) => {
-  const salt = await bcrypt.genSalt(12);
-  const hashed = await bcrypt.hash(password, salt);
-
-  const res = await createUser(id, hashed);
-  if (typeof res !== 'string') {
-    return new Response(res.error, { status: 500 });
-  }
-  return jwt.sign({
-    _id: res,
-    id: id,
-  }, import.meta.env.VITE_JWT_SECRET, {
-    expiresIn: parseInt(import.meta.env.VITE_JWT_EXPTIME),
+  await redis.hSet(`session:${sessionId}`, {
+    ...session
   });
-};
+  await redis.expire(`session:${sessionId}`, 2592000);
+  return session;
+}
+
+export const validateSessionToken = async (token: string): Promise<UserInfo | null> => {
+  const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+  const item = await redis.hGetAll(`session:${sessionId}`);
+  if (item.keys.length === 0 || !item.uid || !item.uname || !item.id) {
+    return null;
+  }
+  const { id, uid, uname } = item;
+
+  await redis.expire(`session:${sessionId}`, 2592000);
+  return { id, userId: uid, username: uname };
+}
+
+export const invalidateSession = async (sessionId: string): Promise<boolean> => {
+  const isRemoved = await redis.expire(`session:${sessionId}`, 0);
+  return isRemoved;
+}
