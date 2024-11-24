@@ -2,6 +2,13 @@ export type Undefinedable<T> = {
   [K in keyof T]: T[K] | undefined;
 };
 
+export const getUserInfoFromLocalStorage = (localStorage: Storage) => {
+  const id = localStorage.getItem('id');
+  const userId = localStorage.getItem('userId');
+  const username = localStorage.getItem('username');
+  return { id, userId, username };
+};
+
 export const isFormDataFieldsValid = (formData: FormData, allowed: string[]) => {
   const disallowed = [];
   for (const field of formData.keys()) {

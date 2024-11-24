@@ -1,38 +1,61 @@
 <script lang="ts">
-  import type { PageData } from "./$types";
-  // import { io } from "socket.io-client";
+  import { onMount } from "svelte";
+  import { getUserInfoFromLocalStorage } from "$lib/utils";
+  import { modalStore, userStore } from "../Store";
+  import Alert from "$lib/components/Alert.svelte";
 
-  // const socket = io();
-  export let data: PageData;
+  onMount(() => {
+    const user = getUserInfoFromLocalStorage(localStorage);
+    $userStore = {
+      id: user.id ?? undefined,
+      userId: user.userId ?? undefined,
+      username: user.username ?? undefined,
+    };
+    return;
+  });
+
+  const submitSignOut = async (event: Event) => {
+    event.preventDefault();
+    const response = await fetch(
+      (event.currentTarget as HTMLFormElement).action,
+      {
+        method: "DELETE",
+      },
+    );
+    if (response.status !== 204) {
+      modalStore.open(Alert, {
+        title: "sign out failed",
+        message: "unknown error occured: please try again.",
+      });
+      return;
+    }
+    modalStore.open(Alert, {
+      title: "successfully signed out",
+      message: "see you next!",
+    });
+
+    userStore.update(() => ({
+      id: undefined,
+      userId: undefined,
+      username: undefined,
+    }));
+    localStorage.removeItem("id");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("username");
+  };
 </script>
 
-{#if data.signedIn === true}
-  <h1>Welcome, {data.id}!</h1>
-  <form action="?/signOut" method="post">
+{#if $userStore.id !== undefined}
+  <h1>Welcome, {$userStore.username}!</h1>
+  <form action="api/auth/session" onsubmit={submitSignOut}>
     <button type="submit">sign out</button>
   </form>
 {:else}
   <h1>Welcome to Blokus!</h1>
   <p>
     You have to sign in first. <br />
-    If you don't have an account, sign in first using the form below.
+    If you don't have an account, sign in first using the form beside.
   </p>
 {/if}
 <br />
 <br />
-
-<form action="?/signIn" method="post">
-  <label for="id">ID</label>
-  <input id="id" type="text" name="id" />
-  <label for="password">PWD</label>
-  <input id="password" type="password" name="password" />
-  <button type="submit">sign in</button>
-</form>
-<br />
-<form action="?/signUp" method="post">
-  <label for="id">ID</label>
-  <input id="id" type="text" name="id" />
-  <label for="password">PWD</label>
-  <input id="password" type="password" name="password" />
-  <button type="submit">sign up</button>
-</form>
