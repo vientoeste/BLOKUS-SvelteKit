@@ -1,6 +1,6 @@
 export type PlayerId = string;
 
-interface UserInf {
+export interface UserInf {
   id: PlayerId;
   userId: string;
   username: string;
