@@ -1,6 +1,6 @@
 <script>
   import Header from "$lib/components/Header.svelte";
-  import Footer from "$lib/components/footer.svelte";
+  import Footer from "$lib/components/Footer.svelte";
   import Login from "$lib/components/login.svelte";
   import "../app.css";
   let { children } = $props();
