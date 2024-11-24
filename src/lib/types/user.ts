@@ -1,5 +1,7 @@
+export type PlayerId = string;
+
 interface UserInf {
-  id: string;
+  id: PlayerId;
   userId: string;
   username: string;
   password: string;
@@ -8,7 +10,7 @@ interface UserInf {
 export type UserInfo = Omit<UserInf, 'password'>;
 
 export interface UserDocumentInf {
-  _id: string;
+  _id: PlayerId;
   userId: string;
   username: string;
   password: string;
