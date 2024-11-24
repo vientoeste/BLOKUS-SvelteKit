@@ -21,3 +21,13 @@ body {
     font-family: 'Noto Sans';
     word-wrap: break-word;
 }
+
+.column-layout {
+    display: flex;
+    flex-direction: column;
+}
+
+.row-layout {
+    display: flex;
+    flex-direction: row;
+}
