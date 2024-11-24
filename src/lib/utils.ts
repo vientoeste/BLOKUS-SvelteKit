@@ -1,3 +1,7 @@
+export type Undefinedable<T> = {
+  [K in keyof T]: T[K] | undefined;
+};
+
 export const isFormDataFieldsValid = (formData: FormData, allowed: string[]) => {
   const disallowed = [];
   for (const field of formData.keys()) {

@@ -1,4 +1,12 @@
+import type { UserInfo } from '$lib/types';
+import type { Undefinedable } from '$lib/utils';
 import { writable } from 'svelte/store';
+
+export const userStore = writable<Undefinedable<UserInfo>>({
+  id: undefined,
+  userId: undefined,
+  username: undefined,
+});
 
 interface ModalState {
   isOpen: boolean;
