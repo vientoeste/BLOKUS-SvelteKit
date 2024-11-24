@@ -3,7 +3,7 @@ import type { PlayerId } from '.';
 export type RoomId = string;
 
 export interface RoomDocumentInf {
-  id: RoomId,
+  _id: RoomId,
   name: string,
   isStarted: boolean,
   startedAt?: Date,
@@ -14,9 +14,11 @@ export interface RoomDocumentInf {
     playerIdx: number;
   }[];
   boardId?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export type CreateRoomDTO = Omit<RoomDocumentInf, 'id'>;
+export type CreateRoomDTO = Omit<RoomDocumentInf, '_id'>;
 
 export type UpdateRoomDTO = Partial<Omit<RoomDocumentInf, 'id'>>;
 

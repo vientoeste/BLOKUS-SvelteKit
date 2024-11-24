@@ -15,6 +15,8 @@ export interface UserDocumentInf {
   username: string;
   password: string;
   isDeleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type CreateUserDTO = Omit<UserInf, 'id'>;
