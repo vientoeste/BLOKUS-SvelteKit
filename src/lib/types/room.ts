@@ -12,10 +12,8 @@ export interface RoomDocumentInf {
     userId: string;
     username: string;
     playerIdx: number;
-    score: number;
-    isActive: boolean;
   }[];
-  boardId: string;
+  boardId?: string;
 }
 
 export type CreateRoomDTO = Omit<RoomDocumentInf, 'id'>;
