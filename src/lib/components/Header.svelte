@@ -16,7 +16,7 @@
 </script>
 
 <header>
-  <nav>
+  <nav class="row-layout">
     <button id="logo-wrapper" onclick={goToMain} type="button">
       <img id="logo" src="/logo-tmp.png" alt="" />
     </button>
@@ -38,8 +38,6 @@
     justify-content: center;
   }
   nav {
-    display: flex;
-    flex-direction: row;
     width: 1200px;
     height: 80px;
     align-items: center;

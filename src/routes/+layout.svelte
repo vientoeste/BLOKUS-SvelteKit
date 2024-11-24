@@ -7,7 +7,7 @@
 </script>
 
 <Header />
-<main>
+<main class="row-layout">
   <article>
     {@render children()}
   </article>
@@ -20,8 +20,6 @@
 <style>
   main {
     margin: 50px 0;
-    display: flex;
-    flex-direction: row;
     width: 62.5%;
     height: auto;
     gap: 2%;
