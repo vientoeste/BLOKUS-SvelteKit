@@ -1,7 +1,7 @@
 <script>
   import Header from "$lib/components/Header.svelte";
   import Footer from "$lib/components/Footer.svelte";
-  import Login from "$lib/components/login.svelte";
+  import Login from "$lib/components/Login.svelte";
   import "../app.css";
   let { children } = $props();
 </script>
