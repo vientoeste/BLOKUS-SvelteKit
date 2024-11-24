@@ -9,6 +9,9 @@
     if ($modalStore.isOpen && dialog) {
       dialog.showModal();
     }
+    if (!$modalStore.isOpen && dialog) {
+      dialog.close();
+    }
   });
 
   function closeModal() {
