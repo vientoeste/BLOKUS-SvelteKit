@@ -1,8 +1,14 @@
 import type { RoomId } from '.';
 
-export interface BoardInf {
+export interface BoardDocumentInf {
   id: string;
   roomId: RoomId;
   board: string;
   isDone: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface UpdateBoardDTO {
+  board: string;
 }
