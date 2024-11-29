@@ -24,7 +24,7 @@
     }
 
     if (
-      isFormDataFieldsValid(data, [
+      !isFormDataFieldsValid(data, [
         "userId",
         "username",
         "password",
