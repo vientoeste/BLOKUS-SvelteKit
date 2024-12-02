@@ -14,7 +14,7 @@ export const isFormDataFieldsValid = (formData: FormData, allowed: string[]) => 
   for (const field of formData.keys()) {
     if (!allowed.includes(field)) disallowed.push(field);
   }
-  return disallowed.length !== 0;
+  return disallowed.length === 0;
 };
 
 type ValidationResult = { message: string, isValid: false } | { message: null, isValid: true };
