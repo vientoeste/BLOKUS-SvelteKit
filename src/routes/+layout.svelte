@@ -1,12 +1,29 @@
-<script>
+<script lang="ts">
+  import { onMount } from "svelte";
+
   import Header from "$lib/components/Header.svelte";
   import Footer from "$lib/components/Footer.svelte";
   import Login from "$lib/components/Login.svelte";
   import Modal from "$lib/components/Modal.svelte";
   import UserInfo from "$lib/components/UserInfo.svelte";
 
+  import { getUserInfoFromLocalStorage } from "$lib/utils";
   import { userStore } from "../Store";
   import "../app.css";
+
+  onMount(() => {
+    if (
+      $userStore.id !== undefined &&
+      $userStore.userId !== undefined &&
+      $userStore.username !== undefined
+    ) {
+      return;
+    }
+    const { id, userId, username } = getUserInfoFromLocalStorage(localStorage);
+    if (id !== null && userId !== null && username !== null) {
+      userStore.update(() => ({ id, userId, username }));
+    }
+  });
 
   let { children } = $props();
 </script>
