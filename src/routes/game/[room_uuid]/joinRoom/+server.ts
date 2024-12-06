@@ -1,10 +1,10 @@
 import { type RequestHandler, redirect } from '@sveltejs/kit';
-import { validate } from 'uuid';
+import { validate } from '@vientoeste/uuid-validate';
 import db from '$lib/database';
 
 export const PATCH = (async ({ params, request }) => {
   const { room_uuid } = params;
-  if (!room_uuid || !validate(room_uuid)) {
+  if (!room_uuid || !validate({ uuid: room_uuid })) {
     return new Response('invalid uuid', {
       status: 404,
     });

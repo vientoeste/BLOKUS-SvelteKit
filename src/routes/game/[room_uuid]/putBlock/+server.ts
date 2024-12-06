@@ -1,7 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { putBlockOnBoard } from '$lib/game';
 import db from '$lib/database';
-import { validate } from 'uuid';
+import { validate } from '@vientoeste/uuid-validate';
 
 interface ReqBody {
   currentBlock: number[][],
@@ -18,7 +18,7 @@ export const PATCH = (async ({ request, params }) => {
   } = await request.json() as ReqBody;
   if (!currentBlock || !position
     || (!rotation && rotation !== 0) || !player
-    || !/[a-d]/.test(player) || !room_uuid || !validate(room_uuid)) {
+    || !/[a-d]/.test(player) || !room_uuid || !validate({ uuid: room_uuid })) {
     throw new Error('invalid parameter');
   }
 
@@ -31,7 +31,7 @@ export const PATCH = (async ({ request, params }) => {
     return res.board;
   });
 
-  putBlockOnBoard(board, currentBlock, position, rotation, player, flip);
+  // putBlockOnBoard(board, currentBlock, position, rotation, player, flip);
 
   const res = await db.collection('room').updateOne({
     uuid: room_uuid,

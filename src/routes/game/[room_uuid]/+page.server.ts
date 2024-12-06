@@ -1,5 +1,5 @@
 import type { PageServerLoad } from "./$types";
-import { validate } from "uuid";
+import { validate } from "@vientoeste/uuid-validate";
 import db from '$lib/database';
 import { BLOCK, putBlockOnBoard } from "$lib/game";
 import { redirect, type Actions } from "@sveltejs/kit";
@@ -29,7 +29,7 @@ const makeTableContents = (e: (string | number)[][], pieceCount: string, index: 
 
 export const load = (async ({ params, cookies }) => {
   const { room_uuid } = params;
-  if (!validate(room_uuid)) {
+  if (!validate({ uuid: room_uuid })) {
     throw new Error('Invalid uuid');
   }
 
