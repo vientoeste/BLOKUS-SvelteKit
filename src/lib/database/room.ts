@@ -6,16 +6,13 @@ export const getRooms = async ({
   limit, lastDocId,
 }: {
   limit: number;
-  lastDocId: string;
+  lastDocId: string | null;
 }): Promise<RoomDocumentInf[]> => {
+  const query = lastDocId ? { _id: { $lt: lastDocId }, isDeleted: false } : { isDeleted: false };
   const rooms = await Rooms
-    .find({
-      isDeleted: false,
-      _id: { $lt: lastDocId },
-    }, {
-      limit,
-    })
+    .find(query)
     .sort({ _id: -1 })
+    .limit(limit)
     .toArray()
     .catch(handleMongoError);
 
