@@ -3,18 +3,21 @@ import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf } from "$lib/types";
 import { handleMongoError, Rooms } from "./mongo";
 
 export const getRooms = async ({
-  page,
-  offset
+  limit, lastDocId,
 }: {
-  page: number;
-  offset: number;
+  limit: number;
+  lastDocId: string;
 }): Promise<RoomDocumentInf[]> => {
-  const rooms = await Rooms.find({
-    isDeleted: false
-  }, {
-    limit: offset,
-    skip: page * offset,
-  }).toArray().catch(handleMongoError);
+  const rooms = await Rooms
+    .find({
+      isDeleted: false,
+      _id: { $lt: lastDocId },
+    }, {
+      limit,
+    })
+    .sort({ _id: -1 })
+    .toArray()
+    .catch(handleMongoError);
 
   return rooms;
 };

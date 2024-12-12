@@ -1,4 +1,4 @@
-import { json } from "@sveltejs/kit";
+import { error, json } from "@sveltejs/kit";
 import { uuidv7 } from "uuidv7";
 import type { RequestHandler } from "./$types";
 import { getRooms, insertRoom } from "$lib/database/room";
@@ -6,11 +6,11 @@ import { validateSessionToken } from "$lib/auth";
 import { CustomError } from "$lib/error";
 
 export const GET: RequestHandler = async ({ url }) => {
-  const page = url.searchParams.get('page') ?? '0';
-  if (page !== '0' && Number.isNaN(parseInt(page))) {
-    return json({ message: 'invalid page' }, { status: 404 });
+  const lastDocId = url.searchParams.get('lastDocId');
+  if (lastDocId === null) {
+    return error(400, { message: 'invalid page' });
   }
-  const rooms = await getRooms({ page: parseInt(page) ?? 0, offset: 15 });
+  const rooms = await getRooms({ limit: 15, lastDocId });
   return json(rooms);
 };
 
