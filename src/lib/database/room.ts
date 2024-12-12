@@ -16,7 +16,10 @@ export const getRooms = async ({
     .toArray()
     .catch(handleMongoError);
 
-  return rooms;
+  return rooms.map(room => ({
+    id: room._id,
+    ...room
+  }));
 };
 
 export const getRoomInfo = async (roomId: string): Promise<RoomDocumentInf> => {
