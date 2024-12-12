@@ -44,7 +44,7 @@ export const updateRoomInfo = async (
       id: roomId,
       isDeleted: false
     },
-    { $set: updateRoomDTO },
+    { $set: { ...updateRoomDTO, updatedAt: new Date() } },
     { returnDocument: 'after' }
   ).catch(handleMongoError);
 
@@ -82,6 +82,7 @@ export const insertRoom = async (
     _id: roomId,
     ...createRoomDTO,
     createdAt: new Date(),
+    updatedAt: new Date(),
   }).catch(handleMongoError);
 
   if (!acknowledged || !insertedId) {
