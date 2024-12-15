@@ -17,9 +17,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     throw new CustomError('sign in first', 401);
   }
   const userInfo = await validateSessionToken(token);
-  if (userInfo === null) {
-    throw new CustomError('not allowed: sign in again', 403);
-  }
   const { id, userId, username } = userInfo;
   const { name } = await request.json() as { name: string };
   const roomUuid = uuidv7();

@@ -36,15 +36,18 @@ export const PATCH: RequestHandler = async ({ request, cookies }) => {
       message: 'token missing',
     });
   }
-  const session = await validateSessionToken(sessionToken);
-  if (!session) {
-    error(403, {
-      message: 'session error',
-    });
+  const userInfo = await validateSessionToken(sessionToken);
+  const { userId } = userInfo;
+  try {
+    await updateUserInfo(userId, { username, password });
+    return new Response(null, { status: 204 });
+  } catch (e) {
+    if (e instanceof CustomError) {
+      error(e.status ?? 500, { message: e.message });
+    }
+    console.error(e);
+    error(500, e instanceof Error ? e.message : 'unknown error occured');
   }
-  const { userId } = session;
-  await updateUserInfo(userId, { username, password });
-  return new Response(null, { status: 204 });
 };
 
 export const DELETE: RequestHandler = async ({ cookies }) => {
@@ -54,14 +57,16 @@ export const DELETE: RequestHandler = async ({ cookies }) => {
       message: 'token missing',
     });
   }
-
-  const session = await validateSessionToken(sessionToken);
-  if (!session) {
-    error(403, {
-      message: 'session error',
-    });
+  const userInfo = await validateSessionToken(sessionToken);
+  const { userId } = userInfo;
+  try {
+    await deleteUserInfo(userId);
+    return new Response(null, { status: 204 });
+  } catch (e) {
+    if (e instanceof CustomError) {
+      error(e.status ?? 500, { message: e.message });
+    }
+    console.error(e);
+    error(500, e instanceof Error ? e.message : 'unknown error occured');
   }
-  const { userId } = session;
-  await deleteUserInfo(userId);
-  return new Response(null, { status: 204 });
 };

@@ -67,11 +67,18 @@ export const createSession = async ({ token, id, userId, username }: { token: st
   return session;
 }
 
-export const validateSessionToken = async (token: string): Promise<UserInfo | null> => {
+/**
+ * @example
+ * const userInfo = await validateSessionToken(token);
+ * const { id, userId, username } = userInfo;
+ * @param token token extracted from cookie
+ * @returns {UserInfo}
+ */
+export const validateSessionToken = async (token: string): Promise<UserInfo> => {
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
   const item = await redis.hGetAll(`session:${sessionId}`);
-  if (item.keys.length === 0 || !item.uid || !item.uname || !item.id) {
-    return null;
+  if (!item.keys || item.keys.length === 0 || !item.uid || !item.uname || !item.id) {
+    error(401, 'session not found. please sign in again');
   }
   const { id, uid, uname } = item;
 
