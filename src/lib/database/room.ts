@@ -80,6 +80,7 @@ export const insertRoom = async (
 ): Promise<string> => {
   const { insertedId, acknowledged } = await Rooms.insertOne({
     _id: roomId,
+    isStarted: false,
     ...createRoomDTO,
     createdAt: new Date(),
     updatedAt: new Date(),

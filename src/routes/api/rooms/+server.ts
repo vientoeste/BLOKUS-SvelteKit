@@ -4,6 +4,7 @@ import type { RequestHandler } from "./$types";
 import { getRooms, insertRoom } from "$lib/database/room";
 import { validateSessionToken } from "$lib/auth";
 import { CustomError } from "$lib/error";
+import type { CreateRoomRequestDTO } from "$lib/types";
 
 export const GET: RequestHandler = async ({ url }) => {
   const lastDocId = url.searchParams.get('lastDocId');
@@ -18,11 +19,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
   }
   const userInfo = await validateSessionToken(token);
   const { id, userId, username } = userInfo;
-  const { name } = await request.json() as { name: string };
+  const { name } = await request.json() as CreateRoomRequestDTO;
   const roomUuid = uuidv7();
 
   await insertRoom(roomUuid, {
-    isStarted: false,
     name,
     players: [{
       id, userId, username, playerIdx: 0,
