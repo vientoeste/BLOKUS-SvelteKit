@@ -81,7 +81,7 @@ export const validateSessionCookie = async (cookies: Cookies): Promise<UserInfo>
   }
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
   const item = await redis.hGetAll(`session:${sessionId}`);
-  if (!item.keys || item.keys.length === 0 || !item.uid || !item.uname || !item.id) {
+  if (Object.keys(item).length === 0 || !item.uid || !item.uname || !item.id) {
     error(401, 'session not found. please sign in again');
   }
   const { id, uid, uname } = item;
