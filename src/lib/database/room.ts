@@ -39,14 +39,17 @@ export const updateRoomInfo = async (
   roomId: string,
   updateRoomDTO: UpdateRoomDTO
 ): Promise<RoomDocumentInf> => {
-  const result = await Rooms.findOneAndUpdate(
-    {
-      id: roomId,
-      isDeleted: false
+  const result = await Rooms.findOneAndUpdate({
+    id: roomId,
+    isDeleted: false
+  }, {
+    $set: {
+      ...updateRoomDTO,
+      updatedAt: new Date(),
     },
-    { $set: { ...updateRoomDTO, updatedAt: new Date() } },
-    { returnDocument: 'after' }
-  ).catch(handleMongoError);
+  }, {
+    returnDocument: 'after'
+  }).catch(handleMongoError);
 
   if (!result.value) {
     throw new CustomError('not found', 404);
@@ -56,18 +59,15 @@ export const updateRoomInfo = async (
 };
 
 export const deleteRoomInfo = async (roomId: string): Promise<void> => {
-  const result = await Rooms.findOneAndUpdate(
-    {
-      id: roomId,
-      isDeleted: false
+  const result = await Rooms.findOneAndUpdate({
+    id: roomId,
+    isDeleted: false
+  }, {
+    $set: {
+      isDeleted: true,
+      deletedAt: new Date()
     },
-    {
-      $set: {
-        isDeleted: true,
-        deletedAt: new Date()
-      }
-    }
-  ).catch(handleMongoError);
+  }).catch(handleMongoError);
 
   if (!result.value) {
     throw new CustomError('not found', 404);
