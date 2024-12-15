@@ -1,14 +1,24 @@
 <script lang="ts">
   import CreateRoomForm from "$lib/components/CreateRoomForm.svelte";
   import Room from "$lib/components/RoomPreview.svelte";
+  import Alert from "$lib/components/Alert.svelte";
+  import { goto } from "$app/navigation";
+  import type { RoomInf } from "$lib/types";
   import { onMount } from "svelte";
   import { modalStore } from "../../Store";
-  import type { RoomInf } from "$lib/types";
 
   const storedRooms: RoomInf[] = [];
   const displayedRooms: RoomInf[] = $state([]);
   onMount(async () => {
     const response = await fetch("api/rooms");
+    if (response.status === 401) {
+      const { message } = await response.json();
+      modalStore.open(Alert, {
+        title: "need to sign in first",
+        message,
+      });
+      goto("/");
+    }
     const { rooms } = (await response.json()) as { rooms: RoomInf[] };
     displayedRooms.push(...rooms);
     storedRooms.push(...rooms);
