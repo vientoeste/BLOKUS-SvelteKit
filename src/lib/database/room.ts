@@ -1,5 +1,5 @@
 import { CustomError } from "$lib/error";
-import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf } from "$lib/types";
+import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId } from "$lib/types";
 import { handleMongoError, Rooms } from "./mongo";
 
 export const getRooms = async ({
@@ -75,9 +75,9 @@ export const deleteRoomInfo = async (roomId: string): Promise<void> => {
 };
 
 export const insertRoom = async (
-  roomId: string,
+  roomId: RoomId,
   createRoomDTO: CreateRoomDTO
-): Promise<string> => {
+): Promise<RoomId> => {
   const { insertedId, acknowledged } = await Rooms.insertOne({
     _id: roomId,
     isStarted: false,
