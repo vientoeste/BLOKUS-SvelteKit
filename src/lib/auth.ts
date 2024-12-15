@@ -6,6 +6,7 @@ import { getUserInfoByUserId, insertUser } from '$lib/database/user';
 import { CustomError } from '$lib/error';
 import { redis } from '$lib/database/redis';
 import type { CreateUserDTO, Session, SessionToken, SignInDTO, UserInfo } from '$lib/types';
+import { error, type Cookies } from '@sveltejs/kit';
 
 export const signUp = async ({ userId, username, password }: CreateUserDTO) => {
   const id = uuidv7();
@@ -69,12 +70,15 @@ export const createSession = async ({ token, id, userId, username }: { token: st
 
 /**
  * @example
- * const userInfo = await validateSessionToken(token);
- * const { id, userId, username } = userInfo;
- * @param token token extracted from cookie
+ * const { id, userId, username } = await validateSessionToken(cookies);
+ * @param cookies cookies of request
  * @returns {UserInfo}
  */
-export const validateSessionToken = async (token: string): Promise<UserInfo> => {
+export const validateSessionCookie = async (cookies: Cookies): Promise<UserInfo> => {
+  const token = cookies.get('token');
+  if (!token) {
+    error(401, 'sign in first');
+  }
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
   const item = await redis.hGetAll(`session:${sessionId}`);
   if (!item.keys || item.keys.length === 0 || !item.uid || !item.uname || !item.id) {
