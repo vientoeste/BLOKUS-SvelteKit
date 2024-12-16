@@ -6,7 +6,8 @@ import { validateSessionCookie } from "$lib/auth";
 import { CustomError } from "$lib/error";
 import type { CreateRoomRequestDTO } from "$lib/types";
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, cookies }) => {
+  await validateSessionCookie(cookies);
   const lastDocId = url.searchParams.get('lastDocId');
   const rooms = await getRooms({ limit: 15, lastDocId });
   return json({ rooms });
