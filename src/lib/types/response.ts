@@ -1,3 +1,5 @@
+import type { UserInfo } from ".";
+
 interface ApiResponseBase {
   status: number;
 }
@@ -11,3 +13,5 @@ export type ApiResponse<T = void>  = ApiResponseBase & ({
     message: string;
   };
 });
+
+export type SignInResponse = UserInfo;

@@ -1,5 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import type { ApiResponse, SignInResponse } from '$lib/types';
 import { signIn, signOut } from '$lib/auth';
 import { CustomError } from '$lib/error';
 
@@ -9,9 +10,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     const userId = reqBody.get('userId')?.toString();
     const password = reqBody.get('password')?.toString();
     if (!password || !userId) {
-      error(400, {
-        message: 'check req body',
-      });
+      throw new CustomError('check req body', 400);
     }
     const { token, id, username } = await signIn({ userId, password });
     cookies.set('token', token, {
@@ -19,18 +18,33 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
       maxAge: 2592000,
       httpOnly: true,
     });
-    return json({
-      message: 'ok', userInfo: {
+
+    const response: ApiResponse<SignInResponse> = {
+      type: 'success',
+      status: 201,
+      data: {
         id, userId, username,
       },
-    });
+    };
+    return json(response);
   } catch (e) {
     if (e instanceof CustomError) {
-      console.error(e.message);
-      error(e.status ?? 500, e.message);
+      const response: ApiResponse = {
+        type: 'failure',
+        status: e.status ?? 500,
+        error: { message: e.message },
+      };
+      return new Response(JSON.stringify(response), {
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
     console.error(e);
-    error(500, 'internal error');
+    const response: ApiResponse = {
+      type: 'failure',
+      status: 500,
+      error: { message: 'internal server error' },
+    };
+    return json(response);
   }
 };
 

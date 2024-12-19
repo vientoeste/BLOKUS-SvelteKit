@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { UserInfo } from "$lib/types";
-  import { validatePassword, validateUserId } from "$lib/utils";
+  import type { ApiResponse, SignInResponse } from "$lib/types";
+  import { parseJson, validatePassword, validateUserId } from "$lib/utils";
   import { writable } from "svelte/store";
   import { modalStore, userStore } from "../../Store";
   import Alert from "./Alert.svelte";
@@ -44,44 +44,61 @@
     localStorage.setItem("save", userId);
     $savedId = userId;
 
-    const { message, userInfo } = (await fetch(
+    const rawResponse = await fetch(
       (event.currentTarget as HTMLFormElement).action,
       {
         method: "POST",
         body: data,
       },
-    ).then(async (r) => await r.json())) as {
-      message: string;
-      userInfo?: UserInfo;
-    };
-    if (!message) {
+    );
+
+    const response = parseJson<ApiResponse<SignInResponse>>(
+      await rawResponse.text(),
+    );
+    if (typeof response === "string") {
       modalStore.open(Alert, {
         title: "sign in failed",
         message: "unknwon error occured: please try again",
       });
       return;
     }
-    if (message === "user not found") {
-      modalStore.open(Alert, {
-        title: "sign in failed",
-        message: `User with id ${userId} is not exists`,
-      });
-      return;
-    }
-    if (userInfo?.id && userInfo?.userId && userInfo?.username) {
-      localStorage.setItem("id", userInfo.id);
-      localStorage.setItem("userId", userInfo.userId);
-      localStorage.setItem("username", userInfo.username);
+    const { type, status } = response;
+    if (type === "success") {
+      if (status !== 201) {
+        modalStore.open(Alert, {
+          title: "sign in failed",
+          message: "unknwon error occured: please try again",
+        });
+        return;
+      }
+      const { id, userId, username } = response.data;
+      if (!id || !userId || !username) {
+        modalStore.open(Alert, {
+          title: "sign in failed",
+          message: "unknwon error occured: please try again",
+        });
+        return;
+      }
+      localStorage.setItem("id", id);
+      localStorage.setItem("userId", userId);
+      localStorage.setItem("username", username);
       userStore.update(() => ({
-        id: userInfo.id,
-        userId: userInfo.userId,
-        username: userInfo.username,
+        id,
+        userId,
+        username,
       }));
       modalStore.open(Alert, {
         title: "successfully signed up",
-        message: `welcome, ${userInfo.username}!`,
+        message: `welcome, ${username}!`,
       });
+      return;
     }
+
+    const { error } = response;
+    modalStore.open(Alert, {
+      title: "sign in failed",
+      message: error.message,
+    });
   };
 </script>
 
