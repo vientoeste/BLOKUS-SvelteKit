@@ -1,6 +1,7 @@
 import { CustomError } from "$lib/error";
-import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId } from "$lib/types";
+import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf } from "$lib/types";
 import { handleMongoError, Rooms } from "./mongo";
+import { redis } from "./redis";
 
 export const getRooms = async ({
   limit, lastDocId,
@@ -91,4 +92,23 @@ export const insertRoom = async (
   }
 
   return insertedId.toString();
+};
+
+export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
+  const room = await redis.hGetAll(`room:${roomId}`);
+  if (!room || room.keys.length === 0) {
+    throw new CustomError('room cache not found', 404);
+  }
+  const { id, name, turn, lastMove, started } = room;
+  return {
+    id,
+    name,
+    turn: parseInt(turn),
+    lastMove: lastMove,
+    started: Boolean(started),
+    p0: JSON.parse(room.p0) as { id: string, name: string, ready: boolean },
+    p1: JSON.parse(room.p1) as { id: string, name: string, ready: boolean },
+    p2: JSON.parse(room.p2) as { id: string, name: string, ready: boolean },
+    p3: JSON.parse(room.p3) as { id: string, name: string, ready: boolean },
+  };
 };
