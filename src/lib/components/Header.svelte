@@ -1,28 +1,21 @@
 <script>
-  function goToMain() {
-    window.location.href = "/";
-  }
-  function goToRooms() {
-    window.location.href = "/rooms";
-  }
-  function goToHistories() {
-    window.location.href = "/histories";
-  }
-  function goToRules() {
-    // [TODO] implement own rules page
-    // window.location.href = "/rules";
-    window.location.href = "https://en.wikipedia.org/wiki/Blokus";
-  }
+  import { goto } from "$app/navigation";
 </script>
 
 <header>
   <nav class="row-layout">
-    <button id="logo-wrapper" onclick={goToMain} type="button">
+    <button id="logo-wrapper" onclick={() => goto("/")} type="button">
       <img id="logo" src="/logo-tmp.png" alt="" />
     </button>
-    <button id="goto-room" onclick={goToRooms}>Rooms</button>
-    <button id="goto-histories" onclick={goToHistories}>Game Histories</button>
-    <button id="goto-rules" onclick={goToRules}>How To Play</button>
+    <button id="goto-room" onclick={() => goto("/rooms")}>Rooms</button>
+    <button id="goto-histories" onclick={() => goto("/histories")}
+      >Game Histories</button
+    >
+    <button
+      id="goto-rules"
+      onclick={() => goto("https://en.wikipedia.org/wiki/Blokus")}
+      >How To Play</button
+    >
   </nav>
 </header>
 
