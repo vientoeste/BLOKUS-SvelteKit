@@ -1,5 +1,7 @@
 <script>
   import { goto } from "$app/navigation";
+  import { modalStore } from "../../Store";
+  import Alert from "./Alert.svelte";
 </script>
 
 <header>
@@ -7,7 +9,19 @@
     <button id="logo-wrapper" onclick={() => goto("/")} type="button">
       <img id="logo" src="/logo-tmp.png" alt="" />
     </button>
-    <button id="goto-room" onclick={() => goto("/rooms")}>Rooms</button>
+    <button
+      id="goto-room"
+      onclick={() => {
+        if (localStorage.getItem("userId") === null) {
+          modalStore.open(Alert, {
+            title: "need to sign in first",
+            message: "please sign in with the form beside.",
+          });
+          return;
+        }
+        goto("/rooms");
+      }}>Rooms</button
+    >
     <button id="goto-histories" onclick={() => goto("/histories")}
       >Game Histories</button
     >
