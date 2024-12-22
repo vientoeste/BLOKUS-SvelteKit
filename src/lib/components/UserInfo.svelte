@@ -9,6 +9,7 @@
       (event.currentTarget as HTMLFormElement).action,
       {
         method: "DELETE",
+        credentials: "same-origin",
       },
     );
     if (response.status !== 204) {

@@ -15,7 +15,9 @@
   const storedRooms: RoomPreviewInf[] = [];
   const displayedRooms: RoomPreviewInf[] = $state([]);
   onMount(async () => {
-    const rawResponse = await fetch("api/rooms");
+    const rawResponse = await fetch("api/rooms", {
+      credentials: "same-origin",
+    });
     const response = parseJson<ApiResponse<FetchRoomPreviewsResponse>>(
       await rawResponse.text(),
     );

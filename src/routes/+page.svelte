@@ -21,6 +21,7 @@
       (event.currentTarget as HTMLFormElement).action,
       {
         method: "DELETE",
+        credentials: "same-origin",
       },
     );
     const response = parseJson<ApiResponse<SignOutResponse>>(

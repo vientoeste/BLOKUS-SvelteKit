@@ -66,6 +66,7 @@
       {
         method: "POST",
         body: data,
+        credentials: "same-origin",
       },
     );
     const response = parseJson<ApiResponse<CreateUserResponse>>(

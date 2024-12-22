@@ -49,6 +49,7 @@
       {
         method: "POST",
         body: data,
+        credentials: "same-origin",
       },
     );
 
