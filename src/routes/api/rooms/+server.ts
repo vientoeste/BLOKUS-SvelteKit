@@ -2,15 +2,20 @@ import { json } from "@sveltejs/kit";
 import { uuidv7 } from "uuidv7";
 import type { RequestHandler } from "./$types";
 import { validateSessionCookie } from "$lib/auth";
-import { CustomError } from "$lib/error";
-import type { CreateRoomRequestDTO } from "$lib/types";
+import type { ApiResponse, CreateRoomRequestDTO, CreateRoomResponse, FetchRoomPreviewsResponse, RoomDocumentInf } from "$lib/types";
 import { createRoom, getRoomsFromLastObj } from "$lib/room";
 
 export const GET: RequestHandler = async ({ url, cookies }) => {
   await validateSessionCookie(cookies);
   const lastDocId = url.searchParams.get('lastDocId');
   const rooms = await getRoomsFromLastObj(lastDocId);
-  return json({ rooms });
+
+  const response: ApiResponse<FetchRoomPreviewsResponse[]> = {
+    type: 'success',
+    status: 200,
+    data: { rooms },
+  };
+  return json(response);
 };
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
@@ -23,5 +28,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
       id, userId, username, playerIdx: 0,
     }],
   });
-  return json({ roomId: roomUuid }, { status: 201 });
+
+  const response: ApiResponse<CreateRoomResponse> = {
+    type: 'success',
+    status: 201,
+    data: { roomId: roomUuid },
+  };
+  return json(response, { status: 201 });
 };

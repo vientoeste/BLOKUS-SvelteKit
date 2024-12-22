@@ -3,23 +3,39 @@
   import Room from "$lib/components/RoomPreview.svelte";
   import Alert from "$lib/components/Alert.svelte";
   import { goto } from "$app/navigation";
-  import type { RoomInf } from "$lib/types";
+  import type {
+    ApiResponse,
+    FetchRoomPreviewsResponse,
+    RoomPreviewInf,
+  } from "$lib/types";
   import { onMount } from "svelte";
   import { modalStore } from "../../Store";
+  import { parseJson } from "$lib/utils";
 
-  const storedRooms: RoomInf[] = [];
-  const displayedRooms: RoomInf[] = $state([]);
+  const storedRooms: RoomPreviewInf[] = [];
+  const displayedRooms: RoomPreviewInf[] = $state([]);
   onMount(async () => {
-    const response = await fetch("api/rooms");
-    if (response.status === 401) {
-      const { message } = await response.json();
+    const rawResponse = await fetch("api/rooms");
+    const response = parseJson<ApiResponse<FetchRoomPreviewsResponse>>(
+      await rawResponse.text(),
+    );
+    if (typeof response === "string") {
       modalStore.open(Alert, {
-        title: "need to sign in first",
-        message,
+        title: "failed to get rooms",
+        message: "unknown error occured: please try again",
       });
-      goto("/");
+      return goto("/");
     }
-    const { rooms } = (await response.json()) as { rooms: RoomInf[] };
+
+    const { status, type } = response;
+    if (type === "failure") {
+      modalStore.open(Alert, {
+        title: "failed to get rooms",
+        message: response.error.message,
+      });
+      return goto("/");
+    }
+    const { rooms } = response.data;
     displayedRooms.push(...rooms);
     storedRooms.push(...rooms);
   });

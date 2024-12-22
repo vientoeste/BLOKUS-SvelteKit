@@ -1,6 +1,9 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { isFormDataFieldsValid } from "$lib/utils";
+  import type { ApiResponse, CreateRoomResponse } from "$lib/types";
+  import { isFormDataFieldsValid, parseJson } from "$lib/utils";
+  import { modalStore } from "../../Store";
+  import Alert from "./Alert.svelte";
 
   const submitCreateRoom = async (e: Event) => {
     e.preventDefault();
@@ -11,11 +14,29 @@
       alert("check the form: corrupted");
       return;
     }
-    const response = await fetch("api/rooms", {
+    const rawResponse = await fetch("api/rooms", {
       body: JSON.stringify({ name }),
       method: "POST",
     });
-    const { roomId } = await response.json();
+    const response = parseJson<ApiResponse<CreateRoomResponse>>(
+      await rawResponse.text(),
+    );
+    if (typeof response === "string") {
+      modalStore.open(Alert, {
+        title: "failed to create room",
+        message: "unknwon error occured: please try again",
+      });
+      return;
+    }
+    const { type, status } = response;
+    if (type === "failure") {
+      modalStore.open(Alert, {
+        title: "failed to create room",
+        message: response.error.message,
+      });
+      return;
+    }
+    const { roomId } = response.data;
     goto(`rooms/${roomId}`);
   };
 </script>

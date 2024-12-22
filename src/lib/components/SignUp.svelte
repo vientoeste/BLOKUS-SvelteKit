@@ -1,6 +1,8 @@
 <script lang="ts">
+  import type { ApiResponse, CreateUserResponse } from "$lib/types";
   import {
     isFormDataFieldsValid,
+    parseJson,
     validatePassword,
     validateUserId,
     validateUsername,
@@ -59,23 +61,28 @@
       return;
     }
 
-    const { message, id } = await fetch(
+    const rawResponse = await fetch(
       (event.currentTarget as HTMLFormElement).action,
       {
         method: "POST",
         body: data,
       },
-    ).then(async (r) => await r.json());
-    if (message === "duplicate userId") {
-      alert(`User with id ${userId} already exists`);
+    );
+    const response = parseJson<ApiResponse<CreateUserResponse>>(
+      await rawResponse.text(),
+    );
+    if (typeof response === "string") {
+      alert(`unknown error occured: please try again(${response})`);
       return;
     }
-
-    if (message === "ok") {
-      alert(
-        `welcome, ${username}! Please sign in again with the form beside for security.`,
-      );
+    const { type, status } = response;
+    if (type === "failure") {
+      alert(response.error.message);
+      return;
     }
+    alert(
+      `welcome, ${username}! Please sign in again with the form beside for security.`,
+    );
     modalStore.close();
   };
 </script>

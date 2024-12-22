@@ -1,10 +1,10 @@
-import type { UserInfo } from ".";
+import type { PlayerId, RoomId, RoomPreviewInf, UserInfo } from ".";
 
 interface ApiResponseBase {
   status: number;
 }
 
-export type ApiResponse<T = void>  = ApiResponseBase & ({
+export type ApiResponse<T = void> = ApiResponseBase & ({
   type: 'success';
   data: T;
 } | {
@@ -15,3 +15,17 @@ export type ApiResponse<T = void>  = ApiResponseBase & ({
 });
 
 export type SignInResponse = UserInfo;
+
+export interface CreateRoomResponse {
+  roomId: RoomId;
+}
+
+export interface CreateUserResponse {
+  id: PlayerId;
+}
+
+export interface FetchRoomPreviewsResponse {
+  rooms: RoomPreviewInf[];
+}
+
+export type SignOutResponse = null;

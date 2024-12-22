@@ -2,8 +2,8 @@ import type { PlayerId } from '.';
 
 export type RoomId = string;
 
-export interface RoomInf {
-  id: RoomId,
+export interface RoomPrimitiveInf {
+  id: RoomId;
   name: string,
   isStarted: boolean,
   startedAt?: Date,
@@ -16,10 +16,10 @@ export interface RoomInf {
   boardId?: string;
 }
 
-export type RoomDocumentInf = Omit<RoomInf, 'id'> & {
-  _id: RoomId;
-  createdAt: Date;
-  updatedAt: Date;
+export interface RoomDocumentInf extends Omit<RoomPrimitiveInf, 'id'> {
+  _id: RoomId,
+  createdAt: Date,
+  updatedAt: Date,
 }
 
 export interface CreateRoomRequestDTO {
@@ -36,7 +36,7 @@ export interface CreateRoomDTO {
   }],
 }
 
-export type UpdateRoomDTO = Partial<Omit<RoomInf, '_id'>>;
+export type UpdateRoomDTO = Partial<RoomPrimitiveInf>;
 
 export interface RoomCacheInf {
   id: RoomId;
@@ -49,3 +49,7 @@ export interface RoomCacheInf {
   p2: { id: string, name: string, ready: boolean },
   p3: { id: string, name: string, ready: boolean },
 }
+
+export type RoomInf = RoomCacheInf & RoomPrimitiveInf;
+
+export type RoomPreviewInf = RoomPrimitiveInf;

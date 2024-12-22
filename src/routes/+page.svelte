@@ -1,8 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { getUserInfoFromLocalStorage } from "$lib/utils";
+  import { getUserInfoFromLocalStorage, parseJson } from "$lib/utils";
   import { modalStore, userStore } from "../Store";
   import Alert from "$lib/components/Alert.svelte";
+  import type { ApiResponse, SignOutResponse } from "$lib/types";
 
   onMount(() => {
     const user = getUserInfoFromLocalStorage(localStorage);
@@ -16,16 +17,27 @@
 
   const submitSignOut = async (event: Event) => {
     event.preventDefault();
-    const response = await fetch(
+    const rawResponse = await fetch(
       (event.currentTarget as HTMLFormElement).action,
       {
         method: "DELETE",
       },
     );
-    if (response.status !== 204) {
+    const response = parseJson<ApiResponse<SignOutResponse>>(
+      await rawResponse.text(),
+    );
+    if (typeof response === "string") {
       modalStore.open(Alert, {
         title: "sign out failed",
         message: "unknown error occured: please try again.",
+      });
+      return;
+    }
+    const { type, status } = response;
+    if (type === "failure") {
+      modalStore.open(Alert, {
+        title: "sign out failed",
+        message: response.error.message,
       });
       return;
     }

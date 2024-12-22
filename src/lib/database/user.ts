@@ -13,7 +13,7 @@ export const getUserInfoByUserId = async (userId: string): Promise<UserInf> => {
   }).catch(handleMongoError);
 
   if (!user) {
-    throw new CustomError('not found', 404);
+    throw new CustomError('user not found', 404);
   }
 
   if (!user.username || !user.password) {

@@ -1,5 +1,5 @@
 import { CustomError } from "$lib/error";
-import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf } from "$lib/types";
+import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf } from "$lib/types";
 import { handleMongoError, Rooms } from "./mongo";
 import { redis } from "./redis";
 
@@ -8,7 +8,7 @@ export const getRooms = async ({
 }: {
   limit: number;
   lastDocId: string | null;
-}): Promise<RoomDocumentInf[]> => {
+}): Promise<RoomPreviewInf[]> => {
   const query = lastDocId ? { _id: { $lt: lastDocId }, isDeleted: false } : { isDeleted: false };
   const rooms = await Rooms
     .find(query)
