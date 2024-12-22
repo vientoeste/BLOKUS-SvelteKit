@@ -38,6 +38,7 @@
     }
     const { roomId } = response.data;
     goto(`rooms/${roomId}`);
+    modalStore.close();
   };
 </script>
 
