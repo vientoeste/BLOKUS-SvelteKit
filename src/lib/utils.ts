@@ -1,3 +1,5 @@
+import { CustomError } from "./error";
+
 export type Undefinedable<T> = {
   [K in keyof T]: T[K] | undefined;
 };
@@ -137,4 +139,19 @@ export const validatePassword = (password: string): ValidationResult => {
   }
 
   return { isValid: true, message: null };
+};
+
+export const parseJson = <T>(str: string): T | string => {
+  try {
+    if (str === null) {
+      throw new CustomError('cannot parse null', 400);
+    }
+    const result = JSON.parse(str);
+    return result;
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      return str;
+    }
+    throw new CustomError('parse failed', 500);
+  }
 };
