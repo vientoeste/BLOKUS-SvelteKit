@@ -17,10 +17,10 @@ export const getRooms = async ({
     .toArray()
     .catch(handleMongoError);
 
-  return rooms.map(room => ({
-    id: room._id,
-    ...room
-  }));
+  return rooms.map(({ _id, ...rest }) => ({
+    id: _id,
+    ...rest,
+  })) as RoomPreviewInf[];
 };
 
 export const getRoomInfo = async (roomId: string): Promise<RoomDocumentInf> => {
