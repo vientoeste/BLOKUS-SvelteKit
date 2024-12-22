@@ -24,7 +24,7 @@
     if (typeof response === "string") {
       modalStore.open(Alert, {
         title: "failed to create room",
-        message: "unknwon error occured: please try again",
+        message: "unknown error occured: please try again",
       });
       return;
     }

@@ -59,7 +59,7 @@
     if (typeof response === "string") {
       modalStore.open(Alert, {
         title: "sign in failed",
-        message: "unknwon error occured: please try again",
+        message: "unknown error occured: please try again",
       });
       return;
     }
@@ -68,7 +68,7 @@
       if (status !== 201) {
         modalStore.open(Alert, {
           title: "sign in failed",
-          message: "unknwon error occured: please try again",
+          message: "unknown error occured: please try again",
         });
         return;
       }
@@ -76,7 +76,7 @@
       if (!id || !userId || !username) {
         modalStore.open(Alert, {
           title: "sign in failed",
-          message: "unknwon error occured: please try again",
+          message: "unknown error occured: please try again",
         });
         return;
       }

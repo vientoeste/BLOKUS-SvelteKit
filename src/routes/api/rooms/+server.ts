@@ -10,10 +10,10 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
   const lastDocId = url.searchParams.get('lastDocId');
   const rooms = await getRoomsFromLastObj(lastDocId);
 
-  const response: ApiResponse<FetchRoomPreviewsResponse[]> = {
+  const response: ApiResponse<FetchRoomPreviewsResponse> = {
     type: 'success',
     status: 200,
-    data: { rooms },
+    data: { rooms, },
   };
   return json(response);
 };
