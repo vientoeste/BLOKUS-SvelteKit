@@ -1,39 +1,8 @@
-// import { checkAuthFromToken } from '$lib/auth';
-import { CustomError } from '$lib/error';
 import type { Handle } from '@sveltejs/kit'
-import { sequence } from '@sveltejs/kit/hooks';
-import type { ObjectId } from 'mongodb';
 
-interface User {
-  _id: ObjectId,
-  id: string,
-}
-
-const authCheck = (async ({ event, resolve }) => {
-  const authToken = event.cookies.get('AuthorizationToken');
-  if (!authToken) {
-    event.locals.user = {
-      id: '',
-    }
-    return await resolve(event);
-  }
-  if (event.url.pathname === '/') {
-    return await resolve(event);
-  }
-  if (authToken.slice(0, 6) !== 'Bearer') {
-    throw new CustomError('invalid token');
-  }
-
-  // const user: User | undefined = await checkAuthFromToken(authToken);
-  // if (!user) {
-  //   throw new CustomError('internal error');
-  // }
-  // event.locals.user = {
-  //   _id: user._id,
-  //   id: user.id,
-  // };
-
-  return await resolve(event);
+export const handle = (async ({ event, resolve }) => {
+  const response = await resolve(event);
+  response.headers.set('Access-Control-Allow-Credentials', 'true');
+  response.headers.set('Access-Control-Allow-Origin', process.env.ORIGIN as string);
+  return response
 }) satisfies Handle;
-
-// export const handle = sequence(authCheck);
