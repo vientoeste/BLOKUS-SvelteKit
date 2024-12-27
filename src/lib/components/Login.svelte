@@ -35,7 +35,7 @@
       validatePassword(password);
     if (!isPasswordValid) {
       modalStore.open(Alert, {
-        title: "invalid user id",
+        title: "invalid password",
         message: passwordValidationMessage,
       });
       return;
