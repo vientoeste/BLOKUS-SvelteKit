@@ -1,0 +1,26 @@
+{
+  "include": [
+    "src/websocket/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "src/routes",
+    "src/lib",
+    "src/tests"
+  ],
+  "compilerOptions": {
+    "outDir": "./websocket",
+    "module": "esnext",
+    "target": "esnext",
+    "allowJs": true,
+    "checkJs": false,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "ignoreDeprecations": "5.0"
+  }
+}
