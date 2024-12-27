@@ -20,6 +20,7 @@ export interface RoomDocumentInf extends Omit<RoomPrimitiveInf, 'id'> {
   _id: RoomId,
   createdAt: Date,
   updatedAt: Date,
+  isDeleted: boolean,
 }
 
 export interface CreateRoomRequestDTO {

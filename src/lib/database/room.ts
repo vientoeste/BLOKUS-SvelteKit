@@ -82,6 +82,7 @@ export const insertRoom = async (
   const { insertedId, acknowledged } = await Rooms.insertOne({
     _id: roomId,
     isStarted: false,
+    isDeleted: false,
     ...createRoomDTO,
     createdAt: new Date(),
     updatedAt: new Date(),
