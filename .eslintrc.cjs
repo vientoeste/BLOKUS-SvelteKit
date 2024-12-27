@@ -3,7 +3,11 @@ module.exports = {
 	parser: '@typescript-eslint/parser',
 	extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
 	plugins: ['eslint-plugin-svelte', '@typescript-eslint'],
-	ignorePatterns: ['*.cjs'],
+	ignorePatterns: [
+		'*.cjs',
+		"websocket/**/*",
+		"build/**/*"
+	],
 	settings: {
 		'svelte3/typescript': () => require('typescript')
 	},
