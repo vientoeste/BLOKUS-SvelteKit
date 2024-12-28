@@ -28,8 +28,10 @@
     }));
 
     localStorage.removeItem("id");
-    localStorage.removeItem("userId");
     localStorage.removeItem("username");
+    if (!Boolean(localStorage.getItem("save"))) {
+      localStorage.removeItem("userId");
+    }
   };
 </script>
 

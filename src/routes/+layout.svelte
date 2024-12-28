@@ -35,7 +35,7 @@
     {@render children()}
   </article>
   <aside>
-    {#if $userStore.userId === undefined}
+    {#if $userStore.id === undefined}
       <section id="login"><Login /></section>
     {:else}
       <section id="userInfo"><UserInfo /></section>

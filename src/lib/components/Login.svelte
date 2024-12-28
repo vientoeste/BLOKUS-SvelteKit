@@ -8,8 +8,12 @@
   import { onMount } from "svelte";
 
   let savedId = writable("");
+  let isSaved = $state(false);
   onMount(() => {
-    $savedId = localStorage.getItem("save") ?? "";
+    if (Boolean(localStorage.getItem("save"))) {
+      isSaved = true;
+      $savedId = localStorage.getItem("userId") ?? "";
+    }
   });
 
   const submitSignIn = async (event: Event) => {
@@ -41,8 +45,10 @@
       return;
     }
 
-    localStorage.setItem("save", userId);
-    $savedId = userId;
+    if (isSaved) {
+      localStorage.setItem("userId", userId);
+      $savedId = userId;
+    }
 
     const rawResponse = await fetch(
       (event.currentTarget as HTMLFormElement).action,
@@ -120,16 +126,7 @@
   </form>
   <div id="login-additionals" class="row-layout">
     <div id="login-save-id" class="row-layout">
-      <input
-        id="login-save-id-input"
-        type="checkbox"
-        onload={(e) => {
-          const saveId = localStorage.getItem("save");
-          if (saveId !== null) {
-            e.currentTarget.ariaChecked = "true";
-          }
-        }}
-      />
+      <input id="login-save-id-input" type="checkbox" bind:checked={isSaved} />
       <div>save</div>
     </div>
     <div id="register-container">
