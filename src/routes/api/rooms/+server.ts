@@ -2,7 +2,7 @@ import { json } from "@sveltejs/kit";
 import { uuidv7 } from "uuidv7";
 import type { RequestHandler } from "./$types";
 import { validateSessionCookie } from "$lib/auth";
-import type { ApiResponse, CreateRoomRequestDTO, CreateRoomResponse, FetchRoomPreviewsResponse, RoomDocumentInf } from "$lib/types";
+import type { ApiResponse, CreateRoomRequestDTO, CreateRoomResponse, FetchRoomPreviewsResponse } from "$lib/types";
 import { createRoom, getRoomsFromLastObj } from "$lib/room";
 
 export const GET: RequestHandler = async ({ url, cookies }) => {
