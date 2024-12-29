@@ -12,11 +12,16 @@
     <button
       id="goto-room"
       onclick={() => {
-        if (localStorage.getItem("userId") === null) {
+        const storedId = localStorage.getItem("id");
+        if (!storedId) {
           modalStore.open(Alert, {
             title: "need to sign in first",
             message: "please sign in with the form beside.",
           });
+          localStorage.removeItem("username");
+          localStorage.removeItem("id");
+          if (!Boolean(localStorage.getItem("save")))
+            localStorage.removeItem("userId");
           return;
         }
         goto("/rooms");
