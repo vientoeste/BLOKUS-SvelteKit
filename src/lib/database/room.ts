@@ -25,7 +25,7 @@ export const getRooms = async ({
 
 export const getRoomInfo = async (roomId: string): Promise<RoomDocumentInf> => {
   const room = await Rooms.findOne({
-    id: roomId,
+    _id: roomId,
     isDeleted: false,
   }).catch(handleMongoError);
 
