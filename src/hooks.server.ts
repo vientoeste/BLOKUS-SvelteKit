@@ -1,4 +1,6 @@
-import type { Handle } from '@sveltejs/kit'
+import type { Handle } from '@sveltejs/kit';
+
+// [TODO] use redis streams to save logs
 
 export const handle = (async ({ event, resolve }) => {
   const response = await resolve(event);

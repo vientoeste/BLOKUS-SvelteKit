@@ -3,10 +3,13 @@ import express from 'express';
 import { initWebSocketServer } from './websocket/index.js';
 import fs from 'fs';
 import https from 'https';
+import { createClient } from 'redis';
 
 const app = express();
 
 app.use(handler);
+
+const redis = await createClient({ password: process.env.VITE_REDIS_PW }).connect();
 
 if (process.env.NODE_ENV === 'production') {
   const key = process.env.KEY_FILE;
@@ -23,10 +26,10 @@ if (process.env.NODE_ENV === 'production') {
   };
   const server = https.createServer(option, app).listen(443);
   // [CHECK]
-  initWebSocketServer(server);
+  initWebSocketServer(server, redis);
 }
 if (process.env.NODE_ENV === 'development') {
   const server = app.listen(3000);
   // [CHECK]
-  initWebSocketServer(server);
+  initWebSocketServer(server, redis);
 }
