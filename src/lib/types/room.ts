@@ -46,9 +46,9 @@ export interface RoomCacheInf {
   lastMove: string;
   started: boolean;
   p0: { id: string, name: string, ready: boolean },
-  p1: { id: string, name: string, ready: boolean },
-  p2: { id: string, name: string, ready: boolean },
-  p3: { id: string, name: string, ready: boolean },
+  p1?: { id: string, name: string, ready: boolean },
+  p2?: { id: string, name: string, ready: boolean },
+  p3?: { id: string, name: string, ready: boolean },
 }
 
 export type RoomInf = RoomCacheInf & RoomPrimitiveInf;
