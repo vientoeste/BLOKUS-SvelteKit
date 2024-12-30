@@ -11,6 +11,7 @@
     "src/tests"
   ],
   "compilerOptions": {
+    "moduleResolution": "node",
     "outDir": "./websocket",
     "module": "esnext",
     "target": "esnext",
