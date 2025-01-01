@@ -84,7 +84,35 @@
       position,
       rotation,
     }: MoveMessage) {
-      throw new Error("not implemented");
+      const reason = putBlockOnBoard({
+        board,
+        blockInfo: {
+          type: block,
+          rotation: (rotation % 4) as 0 | 1 | 2 | 3,
+          flip,
+        },
+        playerIdx,
+        position,
+        turn: ++turn,
+      });
+      if (!reason) {
+        return;
+      }
+      modalStore.open(Alert, {
+        title: "inproper move detected",
+        message: `reporting to server<br>cause: ${reason}`,
+      });
+      const message: ReportMessage = {
+        type: "REPORT",
+        block,
+        flip,
+        playerIdx,
+        position,
+        rotation,
+        turn,
+        // [TODO] check the saved board to clarify the move is proper
+      };
+      socket.send(JSON.stringify(message));
     }
 
     private handleStart({}: StartMessage) {
