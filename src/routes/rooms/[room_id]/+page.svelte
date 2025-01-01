@@ -116,7 +116,17 @@
     }
 
     private handleStart({}: StartMessage) {
-      throw new Error("not implemented");
+      if (!isStarted) {
+        turn = 0;
+        if (playerIdx === 0) {
+          startTurn();
+        }
+        return;
+      }
+      modalStore.open(Alert, {
+        title: "someone started game again",
+        message: "reporting abusing",
+      });
     }
 
     handleMessage(message: WebSocketMessage) {
