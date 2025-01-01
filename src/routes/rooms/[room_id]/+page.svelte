@@ -180,3 +180,5 @@
     };
   });
 </script>
+
+<Board {board} />
