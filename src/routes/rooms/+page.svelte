@@ -11,10 +11,19 @@
   import { onMount } from "svelte";
   import { modalStore } from "../../Store";
   import { parseJson } from "$lib/utils";
+  import { page } from "$app/stores";
 
   const storedRooms: RoomPreviewInf[] = [];
   const displayedRooms: RoomPreviewInf[] = $state([]);
+
   onMount(async () => {
+    const error = $page.url.searchParams.get("error");
+    if (error !== null) {
+      modalStore.open(Alert, {
+        title: "error occured",
+        message: error.replace(/\_/g, " "),
+      });
+    }
     const rawResponse = await fetch("api/rooms", {
       credentials: "same-origin",
     });
