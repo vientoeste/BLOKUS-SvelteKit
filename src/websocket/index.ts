@@ -50,12 +50,7 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     // [CHECK] match redis pub/sub's event name, message, ... 
     redisInstanceForPubSub.subscribe('message', (message: string) => {
       const { roomId, rawMessage } = JSON.parse(message) as { roomId: string, rawMessage: string };
-      wss.clients.forEach((client: WebSocket & { roomId?: string }) => {
-        if (client.roomId) return;
-        if (client.roomId === roomId) {
-          client.send(rawMessage);
-        }
-      });
+      broadcastMessage(roomId, rawMessage);
     });
   });
 
