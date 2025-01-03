@@ -1,3 +1,5 @@
+import type { WebSocket as WebSocket_ } from "ws";
+
 type BlockType = '50' | '51' | '52' | '53' | '54' | '55' | '56' | '57' | '58' | '59' | '5a' | '5b' | '40' | '41' | '42' | '43' | '44' | '30' | '31' | '20' | '10';
 
 interface UserInfo {
@@ -57,3 +59,8 @@ export type WebSocketMessage = ConnectedMessage | LeaveMessage | StartMessage | 
 
 // since payload's type is defined as string, it must be WebSocketMessage after parsed
 export type WebSocketBrokerMessage = { payload: string, roomId: string };
+
+export interface WebSocket extends WebSocket_ {
+  roomId?: string;
+  userId?: string;
+}

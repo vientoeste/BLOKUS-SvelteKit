@@ -1,23 +1,18 @@
-import { WebSocket, WebSocketServer as WebSocketServer_ } from "ws";
+import { WebSocketServer as WebSocketServer_ } from "ws";
 import { Server as HttpServer } from 'http';
 import { Server as HttpsServer } from 'https';
 import type { RedisClientType } from "redis";
-import type { WebSocketMessage } from "./type";
+import type { WebSocket } from "./type";
+import { WebSocketConnectionManager, WebSocketMessageBroker, WebSocketMessageHandler } from "./handlers";
 
 interface WebSocketServer extends Omit<WebSocketServer_, 'clients'> {
-  clients: Set<WebSocket & { roomId?: string }>;
-}
-
-const broadcastMessage = (roomId: string, message: string) => {
-  wss.clients.forEach((client: WebSocket & { roomId?: string }) => {
-    if (!client.roomId) return;
-    if (client.roomId === roomId) {
-      client.send(message);
-    }
-  });
+  clients: Set<WebSocket>;
 }
 
 export let wss: WebSocketServer;
+export let webSocketMessageBroker: WebSocketMessageBroker;
+export const webSocketManager: WebSocketConnectionManager = new WebSocketConnectionManager();
+export const handler = new WebSocketMessageHandler();
 
 export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: RedisClientType) => {
   if (!wss) {
@@ -42,16 +37,13 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     });
   }
 
-  const redisInstanceForPubSub = redis.duplicate();
+  webSocketMessageBroker = new WebSocketMessageBroker(redis, webSocketManager);
 
   wss.on('listening', () => {
     // since clients' messages should be handled at each process in multi-processing environment
     // decided to use redis pub/sub to handle the message received at other process 
-    // [CHECK] match redis pub/sub's event name, message, ... 
-    redisInstanceForPubSub.subscribe('message', (message: string) => {
-      const { roomId, rawMessage } = JSON.parse(message) as { roomId: string, rawMessage: string };
-      broadcastMessage(roomId, rawMessage);
-    });
+    // [CHECK] match redis pub/sub's event name, message, ...
+    webSocketMessageBroker.subscribeMessage();
   });
 
   wss.on('connection', async (socket: WebSocket & { roomId: string }, request) => {
@@ -80,11 +72,8 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     socket.on('message', (rawMessage) => {
       try {
         const message = rawMessage.toString();
-        const { type } = JSON.parse(message) as WebSocketMessage;
-        // [TODO] clarify/specify some type to push request datas to DB
-        // [TODO] handle action
-        redis.publish('client-message', message);
-        broadcastMessage(roomId, message);
+        handler.handleMessage(socket, message);
+        webSocketMessageBroker.publishMessage({ message, roomId });
       } catch (e) {
         console.error(e);
       }
