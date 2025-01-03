@@ -1,25 +1,28 @@
 import type { RedisClientType } from "redis";
 import type { CancelReadyMessage, ConnectedMessage, ErrorMessage, LeaveMessage, MoveMessage, ReadyMessage, ReportMessage, StartMessage, WebSocket, WebSocketBrokerMessage, WebSocketMessage } from "./type";
+import { webSocketManager } from ".";
 
 export class WebSocketMessageHandler {
-  private handleUserConnected(client: WebSocket, {
-    id,
-    userId,
-    username,
-    playerIdx,
-  }: ConnectedMessage) {
-    throw new Error("not implemented");
+  private handleUserConnected(client: WebSocket, { userId }: ConnectedMessage) {
+    const { roomId } = client;
+    if (!roomId) return;
+    client.userId = userId;
+    webSocketManager.addClient({ roomId, client });
   }
 
   private handleUserLeave(client: WebSocket, { playerIdx }: LeaveMessage) {
-    throw new Error("not implemented");
+    const { userId, roomId } = client;
+    if (!roomId || !userId) return;
+    webSocketManager.removeClient({ roomId, userId });
   }
 
   private handleReady(client: WebSocket, { playerIdx }: ReadyMessage) {
+    // [TODO] save state to redis
     throw new Error("not implemented");
   }
 
   private handleCancelReady(client: WebSocket, { playerIdx }: CancelReadyMessage) {
+    // [TODO] save state to redis
     throw new Error("not implemented");
   }
 
@@ -30,14 +33,17 @@ export class WebSocketMessageHandler {
     position,
     rotation,
   }: MoveMessage) {
+    // [TODO] save move to DB
     throw new Error("not implemented");
   }
 
   private handleStart(client: WebSocket, message: StartMessage) {
+    // [TODO] save state to redis/DB
     throw new Error("not implemented");
   }
 
   private handleReport(client: WebSocket, message: ReportMessage) {
+    // [TODO] validate move here
     throw new Error("not implemented");
   }
 
