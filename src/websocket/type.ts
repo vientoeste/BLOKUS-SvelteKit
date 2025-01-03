@@ -48,4 +48,12 @@ export interface ReportMessage extends Omit<MoveMessage, 'type'> {
   turn: number;
 }
 
-export type WebSocketMessage = ConnectedMessage | LeaveMessage | StartMessage | ReadyMessage | CancelReadyMessage | MoveMessage | ConnectedMessage | ReportMessage;
+export interface ErrorMessage extends WebSocketMessageBase {
+  type: 'ERROR';
+  cause: string;
+}
+
+export type WebSocketMessage = ConnectedMessage | LeaveMessage | StartMessage | ReadyMessage | CancelReadyMessage | MoveMessage | ConnectedMessage | ReportMessage | ErrorMessage;
+
+// since payload's type is defined as string, it must be WebSocketMessage after parsed
+export type WebSocketBrokerMessage = { payload: string, roomId: string };

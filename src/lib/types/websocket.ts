@@ -42,4 +42,9 @@ export interface ReportMessage extends Omit<MoveMessage, 'type'> {
   turn: number;
 }
 
-export type WebSocketMessage = ConnectedMessage | LeaveMessage | StartMessage | ReadyMessage | CancelReadyMessage | MoveMessage | ConnectedMessage | ReportMessage;
+export interface ErrorMessage extends WebSocketMessageBase {
+  type: 'ERROR';
+  cause: string;
+}
+
+export type WebSocketMessage = ConnectedMessage | LeaveMessage | StartMessage | ReadyMessage | CancelReadyMessage | MoveMessage | ConnectedMessage | ReportMessage | ErrorMessage;
