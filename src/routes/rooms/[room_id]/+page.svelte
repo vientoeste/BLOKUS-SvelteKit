@@ -4,6 +4,7 @@
     BoardMatrix,
     CancelReadyMessage,
     ConnectedMessage,
+    ErrorMessage,
     LeaveMessage,
     MoveMessage,
     ReadyMessage,
@@ -129,6 +130,13 @@
       });
     }
 
+    private handleError({ cause }: ErrorMessage) {
+      modalStore.open(Alert, {
+        title: "error occured",
+        message: cause,
+      });
+    }
+
     handleMessage(message: WebSocketMessage) {
       switch (message.type) {
         case "LEAVE":
@@ -151,6 +159,12 @@
           break;
         case "CONNECTED":
           this.handleUserConnected(message);
+          break;
+        case "REPORT":
+          // client NEVER receive this event
+          break;
+        case "ERROR":
+          this.handleError(message);
           break;
         default:
           modalStore.open(Alert, {
