@@ -29,12 +29,11 @@ export interface CreateRoomRequestDTO {
 
 export interface CreateRoomDTO {
   name: string;
-  players: [{
+  user: {
     id: PlayerId;
     userId: string;
     username: string;
-    playerIdx: number;
-  }],
+  },
 }
 
 export type UpdateRoomDTO = Partial<RoomPrimitiveInf>;

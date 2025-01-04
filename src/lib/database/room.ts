@@ -80,11 +80,16 @@ export const insertRoom = async (
   roomId: RoomId,
   createRoomDTO: CreateRoomDTO
 ): Promise<RoomId> => {
+  const { name, user } = createRoomDTO;
   const { insertedId, acknowledged } = await Rooms.insertOne({
     _id: roomId,
+    name,
     isStarted: false,
     isDeleted: false,
-    ...createRoomDTO,
+    players: [{
+      ...user,
+      playerIdx: 0,
+    }],
     createdAt: new Date(),
     updatedAt: new Date(),
   }).catch(handleMongoError);
