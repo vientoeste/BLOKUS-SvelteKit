@@ -50,6 +50,14 @@ export interface RoomCacheInf {
   p3?: { id: string, name: string, ready: boolean },
 }
 
+export interface CreateRoomCacheDTO {
+  name: string;
+  user: {
+    id: PlayerId;
+    username: string;
+  },
+}
+
 export type RoomInf = RoomCacheInf & RoomPrimitiveInf;
 
 export type RoomPreviewInf = RoomPrimitiveInf;

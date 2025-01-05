@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import type { RoomPreviewInf } from "$lib/types";
+  import type { ApiResponse, RoomPreviewInf } from "$lib/types";
+  import { parseJson } from "$lib/utils";
   import { modalStore } from "../../Store";
   import Alert from "./Alert.svelte";
   interface $$Props extends RoomPreviewInf {}
@@ -12,7 +13,7 @@
 <a
   href="rooms/{id}"
   class="room row-layout"
-  onclick={(e) => {
+  onclick={async (e) => {
     e.preventDefault();
     if (isStarted) {
       modalStore.open(Alert, {
@@ -21,7 +22,20 @@
       });
       return;
     }
-    goto(`rooms/${id}`);
+    const rawResponse = await fetch(`api/rooms/${id}/join`, {
+      method: "POST",
+      credentials: "same-origin",
+    });
+    const response = parseJson<ApiResponse<{ idx: number }>>(
+      await rawResponse.text(),
+    );
+    if (typeof response === "string") {
+      return;
+    }
+    const { type } = response;
+    if (type === "success") {
+      goto(`rooms/${id}`);
+    }
   }}
   data-sveltekit-preload-data
 >

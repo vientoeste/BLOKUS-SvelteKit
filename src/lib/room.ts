@@ -1,4 +1,4 @@
-import { getRoomCache, getRoomInfo, getRooms, insertRoom } from "./database/room";
+import { getRoomCache, getRoomInfo, getRooms, insertRoom, insertRoomCache } from "./database/room";
 import { CustomError } from "./error";
 import type { CreateRoomDTO, RoomCacheInf, RoomId, RoomInf } from "./types";
 
@@ -7,6 +7,7 @@ export const createRoom = async (roomId: RoomId, createRoomDTO: CreateRoomDTO): 
   if (id !== roomId) {
     throw new CustomError('internal error', 500);
   }
+  await insertRoomCache(roomId, createRoomDTO);
   return id;
 };
 

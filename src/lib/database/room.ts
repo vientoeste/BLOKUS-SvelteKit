@@ -1,5 +1,5 @@
 import { CustomError } from "$lib/error";
-import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf } from "$lib/types";
+import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf, UserInfo, CreateRoomCacheDTO } from "$lib/types";
 import { parseJson } from "$lib/utils";
 import { handleMongoError, Rooms } from "./mongo";
 import { redis } from "./redis";
@@ -101,6 +101,29 @@ export const insertRoom = async (
   return insertedId.toString();
 };
 
+export const insertRoomCache = async (
+  roomId: RoomId,
+  createRoomCacheDTO: CreateRoomCacheDTO,
+) => {
+  const { name, user } = createRoomCacheDTO;
+  const result = await redis.hSet(`room:${roomId}`, {
+    id: roomId,
+    name,
+    turn: -1,
+    lastMove: '',
+    started: 0,
+    p0: JSON.stringify({ id: user.id, name: user.username, ready: 0 }),
+    p1: '',
+    p2: '',
+    p3: '',
+  });
+  console.log(result);
+  if (result === 0) {
+    // [TODO] flush?
+    throw new Error('room already existing');
+  }
+};
+
 export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
   const room = await redis.hGetAll(`room:${roomId}`);
   if (!room || Object.keys(room).length === 0) {
@@ -132,4 +155,21 @@ export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
     p2: p2_,
     p3: p3_,
   };
+};
+
+export const addUserToRoomCache = async ({ roomId, userInfo }: { userInfo: UserInfo, roomId: RoomId }) => {
+  const room = await getRoomCache(roomId);
+  const { p1, p2, p3 } = room;
+  if (p1 === undefined) {
+    await redis.hSet(`room:${roomId}`, 'p1', JSON.stringify(userInfo));
+    return 1;
+  } else if (p2 === undefined) {
+    await redis.hSet(`room:${roomId}`, 'p2', JSON.stringify(userInfo));
+    return 2;
+  } else if (p3 === undefined) {
+    await redis.hSet(`room:${roomId}`, 'p3', JSON.stringify(userInfo));
+    return 3;
+  } else {
+    throw new CustomError('room is full');
+  }
 };

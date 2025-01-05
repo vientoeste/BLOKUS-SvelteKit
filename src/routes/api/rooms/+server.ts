@@ -24,9 +24,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
   const roomUuid = uuidv7();
   await createRoom(roomUuid, {
     name,
-    players: [{
-      id, userId, username, playerIdx: 0,
-    }],
+    user: {
+      id, userId, username,
+    },
   });
 
   const response: ApiResponse<CreateRoomResponse> = {
