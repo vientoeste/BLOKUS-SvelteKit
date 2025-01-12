@@ -58,12 +58,7 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     socket.roomId = roomId;
 
     const playerIdx = url.searchParams.get('idx');
-    const id = url.searchParams.get('id');
-    const name = url.searchParams.get('name');
-    if (!playerIdx || !id || !name) throw new Error('query string is missing')
-    await redis.hSet(`room:${roomId}`, `p${playerIdx}`, JSON.stringify({
-      id, name, ready: false,
-    }));
+    if (!playerIdx) throw new Error('query string is missing')
 
     socket.on('error', (e) => {
       console.error(e);
