@@ -15,9 +15,10 @@
   import Board from "$lib/components/Board.svelte";
   import { parseJson } from "$lib/utils";
   import { putBlockOnBoard } from "$lib/game";
-  import { modalStore } from "../../../Store";
+  import { gameStore, modalStore } from "../../../Store";
   import Alert from "$lib/components/Alert.svelte";
   import type { PageData } from "./$types";
+  import { goto } from "$app/navigation";
 
   const { data: room }: { data: PageData } = $props();
 
@@ -28,10 +29,17 @@
     newArr.length = 20;
     return newArr.fill(false);
   });
-  let turn = -1;
-  let playerIdx: 0 | 1 | 2 | 3 = 0;
-  let isStarted = false;
-  let players = [];
+  if (
+    room.playerIdx === undefined ||
+    [0, 1, 2, 3].findIndex((e) => e === room.playerIdx) === -1
+  ) {
+    modalStore.open(Alert, {
+      title: "invalid approach",
+      message: "try again please",
+    });
+    goto("/rooms");
+  }
+  $gameStore.playerIdx = room.playerIdx as 0 | 1 | 2 | 3;
 
   const startTurn = () => {
     // [TODO] wait for user input
@@ -42,7 +50,7 @@
     // [TODO] throttle
     const message: ReadyMessage = {
       type: "READY",
-      playerIdx,
+      playerIdx: $gameStore.playerIdx,
     };
     socket.send(JSON.stringify(message));
   };
@@ -51,7 +59,7 @@
     // [TODO] throttle
     const message: CancelReadyMessage = {
       type: "CANCEL_READY",
-      playerIdx,
+      playerIdx: $gameStore.playerIdx,
     };
     socket.send(JSON.stringify(message));
   };
@@ -94,7 +102,7 @@
         },
         playerIdx,
         position,
-        turn: ++turn,
+        turn: ++$gameStore.turn,
       });
       if (!reason) {
         return;
@@ -107,21 +115,18 @@
         type: "REPORT",
         block,
         flip,
-        playerIdx,
+        playerIdx: $gameStore.playerIdx,
         position,
         rotation,
-        turn,
+        turn: $gameStore.turn,
         // [TODO] check the saved board to clarify the move is proper
       };
       socket.send(JSON.stringify(message));
     }
 
     private handleStart({}: StartMessage) {
-      if (!isStarted) {
-        turn = 0;
-        if (playerIdx === 0) {
-          startTurn();
-        }
+      if (!$gameStore.isStarted) {
+        $gameStore.turn = 0;
         return;
       }
       modalStore.open(Alert, {
@@ -150,7 +155,7 @@
           break;
         case "MOVE":
           this.handleMove(message);
-          if (playerIdx === turn % 3) {
+          if ($gameStore.playerIdx === $gameStore.turn % 3) {
             startTurn();
           }
           break;
@@ -195,4 +200,9 @@
   });
 </script>
 
-<Board {board} />
+<Board
+  relayMove={({ position, blockType, rotation, flip }) => {
+    // [TODO] send MOVE message when user is in the 'turn' sequence
+  }}
+  {board}
+/>
