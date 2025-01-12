@@ -1,6 +1,6 @@
 import type { Block, BlockMatrix, BlockType, PlaceBlockDTO, PutBlockDTO } from "./types";
 
-const preset: Record<BlockType, BlockMatrix> = {
+export const preset: Record<BlockType, BlockMatrix> = {
   '50': [[true, true, true, true, true]],
   '51': [
     [true, true, true],
