@@ -186,7 +186,7 @@
     const url = new URL(window.location.href);
 
     socket = new WebSocket(
-      `${url.protocol === "http:" ? "ws" : "wss"}://${url.host}${url.pathname}`,
+      `${url.protocol === "http:" ? "ws" : "wss"}://${url.host}${url.pathname}?idx=${room.playerIdx}`,
     );
     const webSocketMessageHandler = new WebSocketMessageHandler();
 
