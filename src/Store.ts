@@ -1,4 +1,5 @@
-import type { UserInfo } from '$lib/types';
+import { preset } from '$lib/game';
+import type { BlockMatrix, BlockType, UserInfo } from '$lib/types';
 import type { Undefinedable } from '$lib/utils';
 import { writable } from 'svelte/store';
 
@@ -50,3 +51,24 @@ const createModalStore = () => {
 }
 
 export const modalStore = createModalStore();
+
+export const gameStore = writable<{
+  turn: number,
+  unusedBlocks: Map<BlockType, BlockMatrix>,
+  playerIdx: 0 | 1 | 2 | 3,
+  players: { id: string, userId: string, username: string }[],
+  isStarted: boolean,
+}>({
+  turn: -1,
+  unusedBlocks: new Map(Object.entries(preset) as [BlockType, BlockMatrix][]),
+  playerIdx: 0,
+  players: [],
+  isStarted: false,
+});
+
+/**
+ * handles block[0][0]'s center - where center of the block determines the whole block's position on the board
+ */
+export const dragPositionOffsetStore = writable<[number, number]>([0, 0]);
+
+export const draggedBlockMatrixStore = writable<BlockMatrix>();
