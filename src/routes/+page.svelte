@@ -1,38 +1,27 @@
 <script lang="ts">
-  import type { PageData } from "./$types";
-  import { io } from "socket.io-client";
+  import { onMount } from "svelte";
+  import { getUserInfoFromLocalStorage, parseJson } from "$lib/utils";
+  import { userStore } from "../Store";
 
-  const socket = io();
-  export let data: PageData;
+  onMount(() => {
+    const user = getUserInfoFromLocalStorage(localStorage);
+    $userStore = {
+      id: user.id ?? undefined,
+      userId: user.userId ?? undefined,
+      username: user.username ?? undefined,
+    };
+    return;
+  });
 </script>
 
-{#if data.signedIn === true}
-  <h1>Welcome, {data.id}!</h1>
-  <form action="?/signOut" method="post">
-    <button type="submit">sign out</button>
-  </form>
+{#if $userStore.id !== undefined}
+  <h1>Welcome, {$userStore.username}!</h1>
 {:else}
   <h1>Welcome to Blokus!</h1>
   <p>
     You have to sign in first. <br />
-    If you don't have an account, sign in first using the form below.
+    If you don't have an account, sign in first using the form beside.
   </p>
 {/if}
 <br />
 <br />
-
-<form action="?/signIn" method="post">
-  <label for="id">ID</label>
-  <input id="id" type="text" name="id" />
-  <label for="password">PWD</label>
-  <input id="password" type="password" name="password" />
-  <button type="submit">sign in</button>
-</form>
-<br />
-<form action="?/signUp" method="post">
-  <label for="id">ID</label>
-  <input id="id" type="text" name="id" />
-  <label for="password">PWD</label>
-  <input id="password" type="password" name="password" />
-  <button type="submit">sign up</button>
-</form>

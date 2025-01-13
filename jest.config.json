@@ -1,0 +1,13 @@
+{
+    "testPathIgnorePatterns": [
+        "/node_modules/",
+        "/dist/",
+        "/.js$/"
+    ],
+    "transform": {
+        "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "moduleNameMapper": {
+        "^\\$lib/(.*)$": "<rootDir>/src/lib/$1"
+    }
+}
