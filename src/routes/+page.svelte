@@ -1,9 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { getUserInfoFromLocalStorage, parseJson } from "$lib/utils";
-  import { modalStore, userStore } from "../Store";
-  import Alert from "$lib/components/Alert.svelte";
-  import type { ApiResponse, SignOutResponse } from "$lib/types";
+  import { userStore } from "../Store";
 
   onMount(() => {
     const user = getUserInfoFromLocalStorage(localStorage);

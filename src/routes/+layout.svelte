@@ -8,8 +8,9 @@
   import UserInfo from "$lib/components/UserInfo.svelte";
 
   import { getUserInfoFromLocalStorage } from "$lib/utils";
-  import { userStore } from "../Store";
+  import { gameStore, userStore } from "../Store";
   import "../app.css";
+  import BlocksContainer from "$lib/components/BlocksContainer.svelte";
 
   onMount(() => {
     if (
@@ -35,6 +36,10 @@
     {@render children()}
   </article>
   <aside>
+    <!-- [TODO] need to replace this component: dynamically render the components when sub-pages want to -->
+    {#if $gameStore.turn > -1}
+      <BlocksContainer />
+    {/if}
     {#if $userStore.id === undefined}
       <section id="login"><Login /></section>
     {:else}
