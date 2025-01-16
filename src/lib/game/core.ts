@@ -1,4 +1,6 @@
-import type { Block, BlockMatrix, BlockType, PlaceBlockDTO, PutBlockDTO } from "./types";
+// [TODO] game core must only be called by game-client; not outbounds 
+
+import type { Block, BlockMatrix, BlockType, PlaceBlockDTO, PutBlockDTO } from "../types";
 
 export const preset: Record<BlockType, BlockMatrix> = {
   '50': [[true, true, true, true, true]],
