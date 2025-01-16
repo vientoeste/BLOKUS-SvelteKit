@@ -1,4 +1,4 @@
-import { getBlockMatrix, hasDiagonalConnection, hasEdgeConnection, hasOverlap, isFirstMoveValid, isWithinBoardBounds, placeBlock } from '$lib/game';
+import { getBlockMatrix, hasDiagonalConnection, hasEdgeConnection, hasOverlap, isFirstMoveValid, isWithinBoardBounds, placeBlock } from '$lib/game/core';
 import type { BlockMatrix, BoardMatrix, PlaceBlockDTO } from '$lib/types';
 
 describe('isBlockPlaceable 내부 로직 검사', () => {

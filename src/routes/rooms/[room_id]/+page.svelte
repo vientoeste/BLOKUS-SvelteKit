@@ -14,7 +14,7 @@
   } from "$lib/types";
   import Board from "$lib/components/Board.svelte";
   import { parseJson } from "$lib/utils";
-  import { putBlockOnBoard } from "$lib/game";
+  import { putBlockOnBoard } from "$lib/game/core";
   import { gameStore, modalStore } from "../../../Store";
   import Alert from "$lib/components/Alert.svelte";
   import type { PageData } from "./$types";

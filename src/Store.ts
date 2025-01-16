@@ -1,4 +1,4 @@
-import { preset } from '$lib/game';
+import { preset } from '$lib/game/core';
 import type { BlockMatrix, BlockType, UserInfo } from '$lib/types';
 import type { Undefinedable } from '$lib/utils';
 import { writable } from 'svelte/store';
