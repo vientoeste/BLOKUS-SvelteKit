@@ -12,7 +12,7 @@ export const createRoom = async (roomId: RoomId, createRoomDTO: CreateRoomDTO): 
 };
 
 export const getRoomsFromLastObj = async (lastDocId: string | null) => {
-  const rooms = await getRooms({ lastDocId, limit: 2 });
+  const rooms = await getRooms({ lastDocId, limit: 10 });
   return rooms;
 };
 
