@@ -7,6 +7,7 @@
   import type { PageData } from "./$types";
   import { goto } from "$app/navigation";
   import { GameManager } from "$lib/game/client";
+  import Controller from "$lib/components/Controller.svelte";
   import {
     WebSocketMessageDispatcher,
     WebSocketMessageReceiver,
@@ -62,3 +63,5 @@
   }}
   {board}
 />
+
+<Controller startGame={() => gameManager?.startGame()}></Controller>
