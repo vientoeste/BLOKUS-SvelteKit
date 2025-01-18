@@ -119,12 +119,15 @@ export class GameManager {
       turn,
     });
     if (!reason) {
-      gameStore.update(({ turn, isStarted, playerIdx, players, unusedBlocks }) => ({
+      gameStore.update(({ turn, ...rest }) => ({
+        ...rest,
         turn: turn + 1,
-        isStarted, playerIdx, players, unusedBlocks
       }));
       this.turn += 1;
-      if (this.isMyTurn()) this.waitTurnResolution();
+      if (this.isMyTurn()) {
+        // [TODO] separate
+        this.waitTurnResolution();
+      }
       return;
     }
     return reason;
