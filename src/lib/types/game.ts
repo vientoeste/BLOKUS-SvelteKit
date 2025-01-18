@@ -24,9 +24,12 @@ export interface PlaceBlockDTO {
   turn: number;
 }
 
-export interface MoveDTO {
+export interface SubmitMoveDTO {
   blockInfo: Block;
-  position: number[];
+  position: [number, number];
+}
+
+export type MoveDTO = SubmitMoveDTO & {
   playerIdx: 0 | 1 | 2 | 3;
   turn: number;
 }

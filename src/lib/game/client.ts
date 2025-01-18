@@ -9,6 +9,7 @@ import type {
   MoveDTO,
   ReadyMessage,
   StartMessage,
+  SubmitMoveDTO,
   WebSocketMessage,
 } from "$lib/types";
 import { gameStore, modalStore } from "../../Store";
@@ -147,10 +148,8 @@ export class GameManager {
 
   submitMove({
     blockInfo,
-    playerIdx = this.playerIdx,
     position,
-    turn = this.turn,
-  }: MoveDTO) {
+  }: SubmitMoveDTO) {
     if (
       !this.isMyTurn()
       || this.turnPromise === null
@@ -164,16 +163,16 @@ export class GameManager {
     const reason = putBlockOnBoard({
       board: this.board,
       blockInfo,
-      playerIdx,
+      playerIdx: this.playerIdx,
       position,
-      turn,
+      turn: this.turn,
     });
     if (reason) {
       this.turnPromiseRejecter(reason);
       return;
     }
     this.turnPromiseResolver({
-      blockInfo, playerIdx, position, turn,
+      blockInfo, playerIdx: this.playerIdx, position, turn: this.turn,
     });
     return;
   }

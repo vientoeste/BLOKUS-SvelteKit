@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { BoardMatrix } from "$lib/types";
+  import type { BoardMatrix, SubmitMoveDTO } from "$lib/types";
   import Board from "$lib/components/Board.svelte";
   import { gameStore, modalStore } from "../../../Store";
   import Alert from "$lib/components/Alert.svelte";
@@ -58,12 +58,15 @@
 </script>
 
 <Board
-  relayMove={({ position, blockType, rotation, flip }) => {
+  relayMove={({
+    position,
+    blockInfo: { type, rotation, flip },
+  }: SubmitMoveDTO) => {
     gameManager?.submitMove({
       blockInfo: {
-        type: blockType,
+        type,
         flip,
-        rotation,
+        rotation: (rotation % 4) as 0 | 1 | 2 | 3,
       },
       position,
     });
