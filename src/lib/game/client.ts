@@ -59,7 +59,7 @@ export class GameManager {
         this.updateReadyState(message);
         break;
       case "MOVE":
-        this.handleMove(message);
+        this.applyOpponentMove(message);
         break;
       case "START":
         this.handleStart(message);
@@ -103,7 +103,7 @@ export class GameManager {
   private turnPromiseResolver: ((dto: MoveDTO) => void) | null = null;
   private turnPromiseRejecter: ((reason: string) => void) | null = null;
 
-  handleMove({
+  applyOpponentMove({
     blockInfo,
     playerIdx,
     position,
@@ -122,7 +122,7 @@ export class GameManager {
         isStarted, playerIdx, players, unusedBlocks
       }));
       this.turn += 1;
-      if (this.isMyTurn()) this.startTurn();
+      if (this.isMyTurn()) this.waitTurnResolution();
       return;
     }
     return reason;
@@ -140,7 +140,7 @@ export class GameManager {
     this.reservedMove = moveDTO;
   }
 
-  makeMove({
+  submitMove({
     blockInfo,
     playerIdx = this.playerIdx,
     position,
@@ -173,7 +173,7 @@ export class GameManager {
     return;
   }
 
-  async startTurn() {
+  async waitTurnResolution() {
     if (this.reservedMove !== null) {
       // [TODO] confirm modal comes here
       // and if confirmed, dispatch reserved move
@@ -191,14 +191,14 @@ export class GameManager {
   handleStart({ blockInfo, playerIdx, position, turn }: StartMessage) {
     this.turn = 0;
     gameStore.update(({ turn, ...rest }) => ({ turn: turn += 1, ...rest }));
-    this.handleMove({ blockInfo, playerIdx, position, turn });
+    this.applyOpponentMove({ blockInfo, playerIdx, position, turn });
   }
 
   async startGame() {
     if (this.playerIdx === 0) {
       this.turn = 0;
       gameStore.update((gameInfo) => ({ ...gameInfo, turn: 0 }));
-      const move = await this.startTurn();
+      const move = await this.waitTurnResolution();
       const startMessage: StartMessage = {
         type: 'START',
         ...move,

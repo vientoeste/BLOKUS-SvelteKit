@@ -59,7 +59,7 @@
 
 <Board
   relayMove={({ position, blockType, rotation, flip }) => {
-    gameManager?.makeMove({
+    gameManager?.submitMove({
       blockInfo: {
         type: blockType,
         flip,
