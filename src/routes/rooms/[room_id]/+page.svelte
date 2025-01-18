@@ -59,7 +59,14 @@
 
 <Board
   relayMove={({ position, blockType, rotation, flip }) => {
-    // [TODO] send MOVE message when user is in the 'turn' sequence
+    gameManager?.makeMove({
+      blockInfo: {
+        type: blockType,
+        flip,
+        rotation,
+      },
+      position,
+    });
   }}
   {board}
 />

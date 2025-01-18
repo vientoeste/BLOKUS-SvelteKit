@@ -1,8 +1,20 @@
-import type { BoardMatrix, CancelReadyMessage, ConnectedMessage, ErrorMessage, LeaveMessage, MoveMessage, ReadyMessage, StartMessage, WebSocketMessage } from "$lib/types";
-import { get } from "svelte/store";
+import type {
+  BoardMatrix,
+  CancelReadyMessage,
+  ConnectedMessage,
+  ErrorMessage,
+  LeaveMessage,
+  MoveDTO,
+  ReadyMessage,
+  StartMessage,
+  WebSocketMessage,
+} from "$lib/types";
 import { gameStore, modalStore } from "../../Store";
 import { putBlockOnBoard } from "./core";
-import type { WebSocketMessageDispatcher, WebSocketMessageReceiver } from "$lib/websocket/client";
+import type {
+  WebSocketMessageDispatcher,
+  WebSocketMessageReceiver,
+} from "$lib/websocket/client";
 import Alert from "$lib/components/Alert.svelte";
 
 // [TODO] room state?
@@ -87,48 +99,112 @@ export class GameManager {
     return this.turn % 4 === this.playerIdx;
   }
 
+  private turnPromise: Promise<MoveDTO> | null = null;
+  private turnPromiseResolver: ((dto: MoveDTO) => void) | null = null;
+  private turnPromiseRejecter: ((reason: string) => void) | null = null;
+
   handleMove({
-    block,
-    flip,
+    blockInfo,
     playerIdx,
     position,
-    rotation,
-  }: MoveMessage) {
+    turn,
+  }: MoveDTO) {
     const reason = putBlockOnBoard({
       board: this.board,
-      blockInfo: {
-        type: block,
-        rotation: (rotation % 4) as 0 | 1 | 2 | 3,
-        flip,
-      },
+      blockInfo,
       playerIdx,
       position,
-      turn: get(gameStore).turn,
+      turn,
     });
     if (!reason) {
       gameStore.update(({ turn, isStarted, playerIdx, players, unusedBlocks }) => ({
         turn: turn + 1,
         isStarted, playerIdx, players, unusedBlocks
       }));
+      this.turn += 1;
+      if (this.isMyTurn()) this.startTurn();
       return;
     }
     return reason;
   }
 
-  startTurn() {
-    throw new Error('not implemented');
+  initializeTurnPromise() {
+    this.turnPromise = null;
+    this.turnPromiseResolver = null;
+    this.turnPromiseRejecter = null;
   }
 
-  handleStart(message: StartMessage) {
-    if (this.playerIdx === 0) {
-      this.startTurn();
-    }
+  private reservedMove: MoveDTO | null = null;
+
+  reserveMove(moveDTO: MoveDTO) {
+    this.reservedMove = moveDTO;
   }
 
-  startGame() {
-    if (this.playerIdx === 0) {
-      this.startTurn();
+  makeMove({
+    blockInfo,
+    playerIdx = this.playerIdx,
+    position,
+    turn = this.turn,
+  }: MoveDTO) {
+    if (
+      !this.isMyTurn()
+      || this.turnPromise === null
+      || this.turnPromiseResolver === null
+      || this.turnPromiseRejecter === null
+    ) {
+      this.turnPromiseRejecter?.('invalid environment');
+      return;
     }
-    // [TODO] dispatcher - send start message
+
+    const reason = putBlockOnBoard({
+      board: this.board,
+      blockInfo,
+      playerIdx,
+      position,
+      turn,
+    });
+    if (reason) {
+      this.turnPromiseRejecter(reason);
+      return;
+    }
+    this.turnPromiseResolver({
+      blockInfo, playerIdx, position, turn,
+    });
+    return;
+  }
+
+  async startTurn() {
+    if (this.reservedMove !== null) {
+      // [TODO] confirm modal comes here
+      // and if confirmed, dispatch reserved move
+      // if not, wait for new move
+    }
+    this.turnPromise = new Promise<MoveDTO>((res, rej) => {
+      this.turnPromiseResolver = res;
+      this.turnPromiseRejecter = rej;
+    });
+    const result = await this.turnPromise;
+    this.initializeTurnPromise();
+    return result;
+  }
+
+  handleStart({ blockInfo, playerIdx, position, turn }: StartMessage) {
+    this.turn = 0;
+    gameStore.update(({ turn, ...rest }) => ({ turn: turn += 1, ...rest }));
+    this.handleMove({ blockInfo, playerIdx, position, turn });
+  }
+
+  async startGame() {
+    if (this.playerIdx === 0) {
+      this.turn = 0;
+      gameStore.update(({ turn, ...rest }) => ({ turn: 0, ...rest }));
+      console.log(get(gameStore))
+      const move = await this.startTurn();
+      const startMessage: StartMessage = {
+        type: 'START',
+        ...move,
+      };
+      this.messageDispatcher.dispatch(startMessage);
+    }
   }
 }
