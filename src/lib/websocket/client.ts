@@ -31,6 +31,6 @@ export class WebSocketMessageDispatcher {
 
   // [TODO] improve/separate
   dispatch(message: WebSocketMessage) {
-    this.websocket?.send(String(message));
+    this.websocket?.send(JSON.stringify(message));
   }
 }
