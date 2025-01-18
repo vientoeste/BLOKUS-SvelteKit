@@ -197,7 +197,7 @@ export class GameManager {
   async startGame() {
     if (this.playerIdx === 0) {
       this.turn = 0;
-      gameStore.update(({ turn, ...rest }) => ({ turn: 0, ...rest }));
+      gameStore.update((gameInfo) => ({ ...gameInfo, turn: 0 }));
       const move = await this.startTurn();
       const startMessage: StartMessage = {
         type: 'START',
