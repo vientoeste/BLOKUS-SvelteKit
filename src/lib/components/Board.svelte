@@ -98,7 +98,7 @@
           return;
         }
 
-        relayMove("blockDrop", {
+        relayMove({
           position: getPosition({ x: e.clientX, y: e.clientY }),
           blockType: data.type,
         });
@@ -106,7 +106,7 @@
         unhighlightCells();
       }
     } catch (error) {
-      console.error("Drop 처리 중 에러:", error);
+      console.error("DnD(drop):", error);
     }
   }
 </script>
