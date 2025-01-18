@@ -1,4 +1,6 @@
 import type {
+  BlockMatrix,
+  BlockType,
   BoardMatrix,
   CancelReadyMessage,
   ConnectedMessage,
@@ -10,7 +12,7 @@ import type {
   WebSocketMessage,
 } from "$lib/types";
 import { gameStore, modalStore } from "../../Store";
-import { putBlockOnBoard } from "./core";
+import { createNewBoard, preset, putBlockOnBoard } from "./core";
 import type {
   WebSocketMessageDispatcher,
   WebSocketMessageReceiver,
@@ -62,7 +64,7 @@ export class GameManager {
         this.applyOpponentMove(message);
         break;
       case "START":
-        this.handleStart(message);
+        this.handleStartMessage(message);
         break;
       case "REPORT":
         // client NEVER receive this event
@@ -188,16 +190,25 @@ export class GameManager {
     return result;
   }
 
-  handleStart({ blockInfo, playerIdx, position, turn }: StartMessage) {
+  initiateGameStatus() {
     this.turn = 0;
-    gameStore.update(({ turn, ...rest }) => ({ turn: turn += 1, ...rest }));
+    this.board = createNewBoard();
+    gameStore.update((gameInfo) => ({
+      ...gameInfo,
+      turn: 0,
+      isStarted: true,
+      unusedBlocks: new Map(Object.entries(preset) as [BlockType, BlockMatrix][]),
+    }));
+  }
+
+  handleStartMessage({ blockInfo, playerIdx, position, turn }: StartMessage) {
+    this.initiateGameStatus();
     this.applyOpponentMove({ blockInfo, playerIdx, position, turn });
   }
 
   async startGame() {
     if (this.playerIdx === 0) {
-      this.turn = 0;
-      gameStore.update((gameInfo) => ({ ...gameInfo, turn: 0 }));
+      this.initiateGameStatus();
       const move = await this.waitTurnResolution();
       const startMessage: StartMessage = {
         type: 'START',
