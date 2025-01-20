@@ -28,8 +28,6 @@ export interface SignInDTO {
   password: string;
 }
 
-export interface ParticipantInf {
-  id: PlayerId;
-  name: string;
+export interface ParticipantInf extends Omit<UserInfo, 'userId'> {
   ready: boolean;
 }
