@@ -100,7 +100,12 @@
 
         relayMove({
           position: getPosition({ x: e.clientX, y: e.clientY }),
-          blockType: data.type,
+          blockInfo: {
+            type: data.type,
+            // [TODO]
+            // rotation: data.rotation,
+            // flip: data.flip,
+          },
         });
 
         unhighlightCells();
