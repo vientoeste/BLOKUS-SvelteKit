@@ -7,6 +7,7 @@ import type {
   ErrorMessage,
   LeaveMessage,
   MoveDTO,
+  MoveMessage,
   ReadyMessage,
   StartMessage,
   SubmitMoveDTO,
@@ -98,6 +99,66 @@ export class GameManager {
     // when does this method be called?
   }
 
+  initiateNextTurn(): Promise<void> | void {
+    gameStore.update(({ turn, ...rest }) => ({
+      ...rest,
+      turn: turn + 1,
+    }));
+    this.turn += 1;
+    if (this.isMyTurn()) {
+      return this.processMyTurn();
+    }
+  }
+
+  async processMyTurn() {
+    // using duck typing, let runtime determine this type:
+    // in-browser - number
+    // nodejs - Timeout
+    let timeoutId: Parameters<typeof clearTimeout>[0];
+    let timeoutRejecter: (() => void) | undefined = undefined;
+    const result = await Promise.race([
+      new Promise<boolean>((res, rej) => {
+        while (true as boolean) {
+          this.waitTurnResolution().then((move) => {
+            const reason = putBlockOnBoard({
+              board: this.board,
+              playerIdx: this.playerIdx,
+              turn: this.turn,
+              blockInfo: move.blockInfo,
+              position: move.position,
+            });
+            if (!reason) {
+              const moveMessage: MoveMessage = {
+                type: 'MOVE',
+                ...move,
+              };
+              this.messageDispatcher.dispatch(moveMessage);
+              if (timeoutRejecter !== undefined) {
+                timeoutRejecter?.();
+                clearTimeout(timeoutId);
+              }
+              res(true);
+            }
+            modalStore.open(Alert, {
+              title: 'invalid move',
+              content: 'please try again',
+            });
+            return;
+          });
+        }
+      }),
+      new Promise<boolean>((res, rej) => {
+        timeoutRejecter = rej;
+        timeoutId = setTimeout(() => {
+          res(false);
+        }, 60000);
+      }),
+    ]);
+    if (!result) {
+      // [TODO] dispatch turn-skip message
+    }
+  }
+
   isMyTurn() {
     return this.turn % 4 === this.playerIdx;
   }
@@ -120,15 +181,7 @@ export class GameManager {
       turn,
     });
     if (!reason) {
-      gameStore.update(({ turn, ...rest }) => ({
-        ...rest,
-        turn: turn + 1,
-      }));
-      this.turn += 1;
-      if (this.isMyTurn()) {
-        // [TODO] separate
-        this.waitTurnResolution();
-      }
+      this.initiateNextTurn();
       return;
     }
     return reason;
