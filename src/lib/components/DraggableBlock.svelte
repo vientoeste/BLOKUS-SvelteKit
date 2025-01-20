@@ -42,11 +42,19 @@
     element.style.opacity = "1";
     // [TODO] clear highlightedCells
   }
+
+  let controllerVisibillity = $state(false);
+
+  function rotateBlock() {}
+
+  function flipBlock() {}
 </script>
 
+<!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
   class="block"
   role="button"
+  onclick={() => (controllerVisibillity = !controllerVisibillity)}
   draggable="true"
   tabindex="0"
   ondragstart={handleDragStart}
@@ -54,6 +62,13 @@
   aria-label="draggable"
 >
   <Block {block}></Block>
+
+  {#if controllerVisibillity}
+    <div class="block-control-panel">
+      <button onclick={rotateBlock}>rotate</button>
+      <button onclick={flipBlock}>flip</button>
+    </div>
+  {/if}
 </div>
 
 <style>
