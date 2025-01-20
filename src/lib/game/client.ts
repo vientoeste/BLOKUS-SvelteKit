@@ -89,15 +89,25 @@ export class GameManager {
   }
 
   addUser(message: ConnectedMessage) {
-    throw new Error("not implemented");
+    const { id, playerIdx, username } = message;
+    // [TODO] integrate field username-name
+    this.users[playerIdx] = {
+      id,
+      name: username,
+      ready: false,
+    };
   }
 
   removeUser(message: LeaveMessage) {
-    throw new Error("not implemented");
+    const { playerIdx } = message;
+    this.users[playerIdx] = undefined;
   }
 
   updateReadyState(message: ReadyMessage | CancelReadyMessage) {
-    throw new Error("not implemented");
+    const { type, playerIdx } = message;
+    if (this.users[playerIdx]) {
+      this.users[playerIdx].ready = type === 'READY';
+    }
   }
 
   handleError(message: ErrorMessage) {
