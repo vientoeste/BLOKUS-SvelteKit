@@ -2,11 +2,7 @@
   import { getBlockMatrix } from "$lib/game/core";
   import type { BlockMatrix, BlockType } from "$lib/types";
   import { parseJson } from "$lib/utils";
-  import {
-    draggedBlockMatrixStore,
-    dragPositionOffsetStore,
-    moveStore,
-  } from "../../Store";
+  import { dragPositionOffsetStore, moveStore } from "../../Store";
 
   const { board, relayMove } = $props();
 

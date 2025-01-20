@@ -1,10 +1,6 @@
 <script lang="ts">
   import type { BlockMatrix, BlockType } from "$lib/types";
-  import {
-    draggedBlockMatrixStore,
-    dragPositionOffsetStore,
-    moveStore,
-  } from "../../Store";
+  import { dragPositionOffsetStore, moveStore } from "../../Store";
   import Block from "./Block.svelte";
 
   let { type, block } = $props<{
@@ -47,8 +43,6 @@
       blockRect.left + 16 - event.clientX,
       blockRect.top + 16 - event.clientY,
     ]);
-
-    draggedBlockMatrixStore.set(block);
   }
 
   function handleDragEnd(event: DragEvent) {
