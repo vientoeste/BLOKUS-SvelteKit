@@ -94,7 +94,7 @@ export class GameManager {
     // [TODO] integrate field username-name
     this.users[playerIdx] = {
       id,
-      name: username,
+      username,
       ready: false,
     };
   }
