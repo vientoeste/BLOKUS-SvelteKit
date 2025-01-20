@@ -1,4 +1,3 @@
-<!-- DraggableBox.svelte -->
 <script lang="ts">
   import type { BlockMatrix, BlockType } from "$lib/types";
   import {
