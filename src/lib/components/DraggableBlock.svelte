@@ -11,6 +11,13 @@
     block: ({ u: boolean; r: boolean; b: boolean; l: boolean } | null)[][];
   }>();
 
+  let blockMatrix: ({
+    u: boolean;
+    r: boolean;
+    b: boolean;
+    l: boolean;
+  } | null)[][] = $state(block);
+
   function handleDragStart(event: DragEvent) {
     if (!event.dataTransfer) return;
 
@@ -45,9 +52,48 @@
 
   let controllerVisibillity = $state(false);
 
-  function rotateBlock() {}
+  // [TODO] please refactor this stinky things
+  function rotateBlock() {
+    const rotated = Array.from(Array(blockMatrix[0].length), () => {
+      const newArr: ({
+        u: boolean;
+        r: boolean;
+        b: boolean;
+        l: boolean;
+      } | null)[] = [];
+      newArr.length = blockMatrix.length;
+      return newArr.fill(null);
+    });
 
-  function flipBlock() {}
+    blockMatrix.forEach((blockLine, rowIdx) => {
+      blockLine.forEach((cell, colIdx) => {
+        rotated[colIdx][blockMatrix.length - rowIdx - 1] =
+          cell === null
+            ? null
+            : {
+                u: cell?.l,
+                r: cell?.u,
+                b: cell?.r,
+                l: cell?.b,
+              };
+      });
+    });
+    blockMatrix = rotated;
+  }
+
+  function flipBlock() {
+    blockMatrix = blockMatrix.reverse().map((blockLine) =>
+      blockLine.map((cell) =>
+        cell === null
+          ? null
+          : {
+              ...cell,
+              u: cell?.b,
+              b: cell?.u,
+            },
+      ),
+    );
+  }
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -61,7 +107,7 @@
   ondragend={handleDragEnd}
   aria-label="draggable"
 >
-  <Block {block}></Block>
+  <Block block={blockMatrix}></Block>
 
   {#if controllerVisibillity}
     <div class="block-control-panel">
