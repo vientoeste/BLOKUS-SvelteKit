@@ -1,6 +1,6 @@
 // [TODO] game core must only be called by game-client; not outbounds 
 
-import type { Block, BlockMatrix, BlockType, PlaceBlockDTO, PutBlockDTO } from "../types";
+import type { Block, BlockMatrix, BlockType, BoardMatrix, PlaceBlockDTO, PutBlockDTO } from "../types";
 
 export const preset: Record<BlockType, BlockMatrix> = {
   '50': [[true, true, true, true, true]],
@@ -82,10 +82,10 @@ export const preset: Record<BlockType, BlockMatrix> = {
   '10': [[true]],
 };
 
-export const createNewBoard = (): (string | number)[][] => Array.from(Array(20), () => {
-  const newArr: (string | number)[] = [];
+export const createNewBoard = (): BoardMatrix => Array.from(Array(20), () => {
+  const newArr: (number | false)[] = [];
   newArr.length = 20;
-  return newArr.fill(0);
+  return newArr.fill(false);
 });
 
 const createBlock = (type: BlockType) => preset[type].map(row => Array.from(row)) as BlockMatrix;

@@ -1,4 +1,4 @@
-import type { BlockType, UserInfo } from ".";
+import type { MoveDTO, UserInfo } from '.';
 
 interface WebSocketMessageBase {
   type: string;
@@ -14,7 +14,7 @@ export interface ConnectedMessage extends WebSocketMessageBase, UserInfo {
   playerIdx: 0 | 1 | 2 | 3;
 }
 
-export interface StartMessage extends WebSocketMessageBase {
+export interface StartMessage extends WebSocketMessageBase, Omit<MoveMessage, 'type'> {
   type: 'START';
 }
 
@@ -28,13 +28,8 @@ export interface CancelReadyMessage extends WebSocketMessageBase {
   playerIdx: 0 | 1 | 2 | 3;
 }
 
-export interface MoveMessage extends WebSocketMessageBase {
+export interface MoveMessage extends WebSocketMessageBase, MoveDTO {
   type: 'MOVE';
-  block: BlockType;
-  rotation: number;
-  flip: boolean;
-  position: [number, number];
-  playerIdx: 0 | 1 | 2 | 3;
 }
 
 export interface ReportMessage extends Omit<MoveMessage, 'type'> {

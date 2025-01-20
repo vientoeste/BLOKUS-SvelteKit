@@ -1,12 +1,13 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { BoardMatrix } from "$lib/types";
+  import type { BoardMatrix, SubmitMoveDTO } from "$lib/types";
   import Board from "$lib/components/Board.svelte";
   import { gameStore, modalStore } from "../../../Store";
   import Alert from "$lib/components/Alert.svelte";
   import type { PageData } from "./$types";
   import { goto } from "$app/navigation";
   import { GameManager } from "$lib/game/client";
+  import Controller from "$lib/components/Controller.svelte";
   import {
     WebSocketMessageDispatcher,
     WebSocketMessageReceiver,
@@ -50,6 +51,7 @@
       board,
       turn: room.turn ?? -1,
       playerIdx: $gameStore.playerIdx,
+      users: [room.p0, room.p1, room.p2, room.p3],
       messageReceiver,
       messageDispatcher,
     });
@@ -57,8 +59,20 @@
 </script>
 
 <Board
-  relayMove={({ position, blockType, rotation, flip }) => {
-    // [TODO] send MOVE message when user is in the 'turn' sequence
+  relayMove={({
+    position,
+    blockInfo: { type, rotation, flip },
+  }: SubmitMoveDTO) => {
+    gameManager?.submitMove({
+      blockInfo: {
+        type,
+        flip,
+        rotation: (rotation % 4) as 0 | 1 | 2 | 3,
+      },
+      position,
+    });
   }}
   {board}
 />
+
+<Controller startGame={() => gameManager?.startGame()}></Controller>
