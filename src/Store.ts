@@ -71,4 +71,4 @@ export const gameStore = writable<{
  */
 export const dragPositionOffsetStore = writable<[number, number]>([0, 0]);
 
-export const draggedBlockMatrixStore = writable<BlockMatrix>();
+export const moveStore = writable<({ type: BlockType, rotation: 0 | 1 | 2 | 3, flip: boolean }) | null>(null);

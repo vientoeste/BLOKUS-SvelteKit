@@ -1,10 +1,8 @@
 <script lang="ts">
+  import { getBlockMatrix } from "$lib/game/core";
   import type { BlockMatrix, BlockType } from "$lib/types";
   import { parseJson } from "$lib/utils";
-  import {
-    draggedBlockMatrixStore,
-    dragPositionOffsetStore,
-  } from "../../Store";
+  import { dragPositionOffsetStore, moveStore } from "../../Store";
 
   const { board, relayMove } = $props();
 
@@ -50,7 +48,7 @@
     ) {
       block.forEach((blockLine, rowIdx) => {
         blockLine.forEach((cell, colIdx) => {
-          if (cell !== null) {
+          if (cell) {
             const currentCell =
               cellElements[position[0] + rowIdx][position[1] + colIdx];
             highlightedCells.push(currentCell);
@@ -72,15 +70,17 @@
 
   function handleDragOver(e: DragEvent, rowIdx: number, colIdx: number) {
     e.preventDefault();
-    // getPosition();
+    if ($moveStore === null) return;
     highlightCells({
-      block: $draggedBlockMatrixStore,
+      block: getBlockMatrix($moveStore),
       position: getPosition({ x: e.clientX, y: e.clientY }),
     });
   }
 
   function handleDrop(e: DragEvent, rowIdx: number, colIdx: number) {
     e.preventDefault();
+
+    const position = getPosition({ x: e.clientX, y: e.clientY });
 
     dragPositionOffsetStore.set([0, 0]);
     highlightedCells.forEach((e) => {
@@ -89,22 +89,17 @@
     highlightedCells.length = 0;
 
     try {
-      // [TODO] extend dataTrasfer's data to contain rotate, flip, ...
-      if (e.dataTransfer) {
-        const data = parseJson<{ type: BlockType }>(
-          e.dataTransfer.getData("application/json"),
-        );
-        if (typeof data === "string") {
-          return;
-        }
-
-        relayMove({
-          position: getPosition({ x: e.clientX, y: e.clientY }),
-          blockType: data.type,
-        });
-
-        unhighlightCells();
+      if ($moveStore === null) throw new Error("move store is empty");
+      const { type, rotation, flip } = $moveStore;
+      if (type === undefined || rotation === undefined || flip === undefined) {
+        throw new Error("missing blockInfo");
       }
+      // [TODO] determine-modal
+      relayMove({
+        position,
+        blockInfo: { type, rotation, flip },
+      });
+      unhighlightCells();
     } catch (error) {
       console.error("DnD(drop):", error);
     }
