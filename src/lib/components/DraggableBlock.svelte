@@ -3,6 +3,7 @@
   import {
     draggedBlockMatrixStore,
     dragPositionOffsetStore,
+    moveStore,
   } from "../../Store";
   import Block from "./Block.svelte";
 
@@ -21,8 +22,14 @@
   function handleDragStart(event: DragEvent) {
     if (!event.dataTransfer) return;
 
-    const blockData = { type };
-    event.dataTransfer.setData("application/json", JSON.stringify(blockData));
+    if ($moveStore === null) {
+      moveStore.set({
+        flip: false,
+        rotation: 0,
+        type,
+      });
+    }
+
     event.dataTransfer.effectAllowed = "move";
 
     const element = event.target as HTMLElement;
@@ -54,6 +61,19 @@
 
   // [TODO] please refactor this stinky things
   function rotateBlock() {
+    moveStore.update((move) => {
+      if (move === null || move.type !== type)
+        return {
+          type,
+          flip: false,
+          rotation: 1,
+        };
+      return {
+        type,
+        flip: move.flip,
+        rotation: ((move.rotation + 1) % 4) as 0 | 1 | 2 | 3,
+      };
+    });
     const rotated = Array.from(Array(blockMatrix[0].length), () => {
       const newArr: ({
         u: boolean;
@@ -82,6 +102,19 @@
   }
 
   function flipBlock() {
+    moveStore.update((move) => {
+      if (move === null || move.type !== type)
+        return {
+          type,
+          flip: true,
+          rotation: 0,
+        };
+      return {
+        type,
+        flip: !move.flip,
+        rotation: move.rotation,
+      };
+    });
     blockMatrix = blockMatrix.reverse().map((blockLine) =>
       blockLine.map((cell) =>
         cell === null
