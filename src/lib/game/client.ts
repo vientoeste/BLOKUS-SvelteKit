@@ -11,6 +11,7 @@ import type {
   ReadyMessage,
   StartMessage,
   SubmitMoveDTO,
+  ParticipantInf,
   WebSocketMessage,
 } from "$lib/types";
 import { gameStore, modalStore } from "../../Store";
@@ -24,15 +25,17 @@ import Alert from "$lib/components/Alert.svelte";
 // [TODO] room state?
 export class GameManager {
   constructor({
-    board, playerIdx, turn, messageDispatcher, messageReceiver
+    board, playerIdx, turn, users, messageDispatcher, messageReceiver,
   }: {
     board: BoardMatrix, playerIdx: 0 | 1 | 2 | 3, turn?: number,
+    users: (ParticipantInf | undefined)[],
     messageDispatcher: WebSocketMessageDispatcher,
     messageReceiver: WebSocketMessageReceiver
   }) {
     this.board = board;
     this.turn = turn ?? -1;
     this.playerIdx = playerIdx;
+    this.users.push(...users);
     gameStore.subscribe((store) => {
       this.turn = store.turn;
     });
@@ -47,6 +50,8 @@ export class GameManager {
   private playerIdx: 0 | 1 | 2 | 3;
   private board: BoardMatrix;
   private turn: number;
+
+  private users: (ParticipantInf | undefined)[] = [undefined, undefined, undefined, undefined];
 
   handleIncomingMessage(message: WebSocketMessage) {
     switch (message.type) {

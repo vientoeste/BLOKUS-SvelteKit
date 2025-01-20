@@ -27,3 +27,9 @@ export interface SignInDTO {
   userId: string;
   password: string;
 }
+
+export interface ParticipantInf {
+  id: PlayerId;
+  name: string;
+  ready: boolean;
+}

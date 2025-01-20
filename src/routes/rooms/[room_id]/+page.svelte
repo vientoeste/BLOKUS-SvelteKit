@@ -51,6 +51,7 @@
       board,
       turn: room.turn ?? -1,
       playerIdx: $gameStore.playerIdx,
+      users: [room.p0, room.p1, room.p2, room.p3],
       messageReceiver,
       messageDispatcher,
     });
