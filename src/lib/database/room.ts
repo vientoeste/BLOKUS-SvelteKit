@@ -112,7 +112,7 @@ export const insertRoomCache = async (
     turn: -1,
     lastMove: '',
     started: 0,
-    p0: JSON.stringify({ id: user.id, name: user.username, ready: 0 }),
+    p0: JSON.stringify({ id: user.id, username: user.username, ready: 0 }),
     p1: '',
     p2: '',
     p3: '',
@@ -131,10 +131,10 @@ export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
   }
   const { id, name, turn, lastMove, started } = room;
   const { p0, p1, p2, p3 } = room;
-  const p0_ = parseJson<{ id: string, name: string, ready: boolean }>(p0);
-  const p1_ = p1 ? parseJson<{ id: string, name: string, ready: boolean }>(p1) : undefined;
-  const p2_ = p2 ? parseJson<{ id: string, name: string, ready: boolean }>(p2) : undefined;
-  const p3_ = p3 ? parseJson<{ id: string, name: string, ready: boolean }>(p3) : undefined;
+  const p0_ = parseJson<{ id: string, username: string, ready: boolean }>(p0);
+  const p1_ = p1 ? parseJson<{ id: string, username: string, ready: boolean }>(p1) : undefined;
+  const p2_ = p2 ? parseJson<{ id: string, username: string, ready: boolean }>(p2) : undefined;
+  const p3_ = p3 ? parseJson<{ id: string, username: string, ready: boolean }>(p3) : undefined;
   if (
     typeof p0_ === 'string' ||
     typeof p1_ === 'string' ||
