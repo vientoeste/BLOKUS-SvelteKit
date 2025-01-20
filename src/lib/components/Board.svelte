@@ -82,6 +82,8 @@
   function handleDrop(e: DragEvent, rowIdx: number, colIdx: number) {
     e.preventDefault();
 
+    const position = getPosition({ x: e.clientX, y: e.clientY });
+
     dragPositionOffsetStore.set([0, 0]);
     highlightedCells.forEach((e) => {
       e.classList.remove("highlighted");
@@ -99,7 +101,7 @@
         }
 
         relayMove({
-          position: getPosition({ x: e.clientX, y: e.clientY }),
+          position,
           blockInfo: {
             type: data.type,
             // [TODO]
