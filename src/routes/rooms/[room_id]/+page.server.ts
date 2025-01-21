@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
     const room = await getRoomById(roomId);
     const { p0, p1, p2, p3 } = room;
     if (p1 !== undefined && p2 !== undefined && p3 !== undefined) {
-      throw redirect(303, '/rooms?error=room_is_full');
+      throw new Error('room is full');
     }
 
     const playerIdx = p0?.id === id ?
@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
           2 : p3?.id === id ?
             3 : -1;
     if (playerIdx === -1) {
-      throw redirect(303, '/rooms?error=not_allowed');
+      throw new Error('not allowed to join the room');
     }
     redis.publish('message', JSON.stringify({
       id,
@@ -34,5 +34,9 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
   } catch (e) {
     // [TODO] handle error
     console.error(e);
+    if (e instanceof Error) {
+      throw redirect(303, `/rooms?error=${e.message}`);
+    }
+    throw redirect(303, `/rooms?error=unknown_error_occured`);
   }
 };
