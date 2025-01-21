@@ -37,7 +37,6 @@
       goto(`rooms/${id}`);
     }
   }}
-  data-sveltekit-preload-data
 >
   <div class="room-title">{name}</div>
   <div class="room-creator">{players[0].username}</div>
