@@ -72,7 +72,7 @@ export class GameManager {
         this.applyOpponentMove(message);
         break;
       case "START":
-        this.handleStartMessage(message);
+        this.handleStartMessage();
         break;
       case "REPORT":
         // client NEVER receive this event
@@ -272,20 +272,19 @@ export class GameManager {
     }));
   }
 
-  handleStartMessage({ blockInfo, playerIdx, position, turn }: StartMessage) {
+  handleStartMessage() {
     this.initiateGameStatus();
-    this.applyOpponentMove({ blockInfo, playerIdx, position, turn });
   }
 
   async startGame() {
     if (this.playerIdx === 0) {
       this.initiateGameStatus();
-      const move = await this.waitTurnResolution();
       const startMessage: StartMessage = {
         type: 'START',
-        ...move,
       };
       this.messageDispatcher.dispatch(startMessage);
+
+      this.processMyTurn();
     }
   }
 }

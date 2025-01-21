@@ -14,7 +14,7 @@ export interface ConnectedMessage extends WebSocketMessageBase, UserInfo {
   playerIdx: 0 | 1 | 2 | 3;
 }
 
-export interface StartMessage extends WebSocketMessageBase, Omit<MoveMessage, 'type'> {
+export interface StartMessage extends WebSocketMessageBase {
   type: 'START';
 }
 
