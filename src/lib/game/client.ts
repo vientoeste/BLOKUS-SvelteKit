@@ -72,7 +72,7 @@ export class GameManager {
         this.applyOpponentMove(message);
         break;
       case "START":
-        this.handleStartMessage(message);
+        this.handleStartMessage();
         break;
       case "REPORT":
         // client NEVER receive this event
@@ -132,47 +132,31 @@ export class GameManager {
     // nodejs - Timeout
     let timeoutId: Parameters<typeof clearTimeout>[0];
     let timeoutRejecter: (() => void) | undefined = undefined;
-    const result = await Promise.race([
-      new Promise<boolean>((res, rej) => {
-        while (true as boolean) {
-          this.waitTurnResolution().then((move) => {
-            const reason = putBlockOnBoard({
-              board: this.board,
-              playerIdx: this.playerIdx,
-              turn: this.turn,
-              blockInfo: move.blockInfo,
-              position: move.position,
-            });
-            if (!reason) {
-              const moveMessage: MoveMessage = {
-                type: 'MOVE',
-                ...move,
-              };
-              this.messageDispatcher.dispatch(moveMessage);
-              if (timeoutRejecter !== undefined) {
-                timeoutRejecter?.();
-                clearTimeout(timeoutId);
-              }
-              res(true);
-            }
-            modalStore.open(Alert, {
-              title: 'invalid move',
-              content: 'please try again',
-            });
-            return;
-          });
-        }
-      }),
-      new Promise<boolean>((res, rej) => {
+    await Promise.race([
+      this.waitTurnResolution(),
+      new Promise<false>((res, rej) => {
         timeoutRejecter = rej;
         timeoutId = setTimeout(() => {
           res(false);
         }, 60000);
       }),
-    ]);
-    if (!result) {
-      // [TODO] dispatch turn-skip message
-    }
+    ]).then((move: MoveDTO | false) => {
+      console.log(move);
+      if (!move) {
+        // [TODO] dispatch turn-skip message
+        return;
+      }
+      clearTimeout(timeoutId);
+      if (timeoutRejecter) timeoutRejecter();
+      const moveMessage: MoveMessage = {
+        type: 'MOVE',
+        blockInfo: move.blockInfo,
+        playerIdx: this.playerIdx,
+        position: move.position,
+        turn: this.turn,
+      };
+      this.messageDispatcher.dispatch(moveMessage);
+    });
   }
 
   isMyTurn() {
@@ -246,19 +230,36 @@ export class GameManager {
     return;
   }
 
-  async waitTurnResolution() {
-    if (this.reservedMove !== null) {
-      // [TODO] confirm modal comes here
-      // and if confirmed, dispatch reserved move
-      // if not, wait for new move
-    }
+  async waitTurnResolution(): Promise<MoveDTO> {
     this.turnPromise = new Promise<MoveDTO>((res, rej) => {
       this.turnPromiseResolver = res;
       this.turnPromiseRejecter = rej;
     });
-    const result = await this.turnPromise;
+    const move = await this.turnPromise;
+
     this.initializeTurnPromise();
-    return result;
+    if (!move) {
+      modalStore.open(Alert, {
+        title: 'invalid move',
+        content: 'please do your move again',
+      });
+      return this.waitTurnResolution();
+    }
+    const failedReason = putBlockOnBoard({
+      board: this.board,
+      blockInfo: move.blockInfo,
+      playerIdx: this.playerIdx,
+      position: move.position,
+      turn: this.turn,
+    });
+    if (!failedReason) {
+      return move;
+    }
+    modalStore.open(Alert, {
+      title: 'try other move',
+      content: failedReason,
+    });
+    return this.waitTurnResolution();
   }
 
   initiateGameStatus() {
@@ -272,20 +273,19 @@ export class GameManager {
     }));
   }
 
-  handleStartMessage({ blockInfo, playerIdx, position, turn }: StartMessage) {
+  handleStartMessage() {
     this.initiateGameStatus();
-    this.applyOpponentMove({ blockInfo, playerIdx, position, turn });
   }
 
   async startGame() {
     if (this.playerIdx === 0) {
       this.initiateGameStatus();
-      const move = await this.waitTurnResolution();
       const startMessage: StartMessage = {
         type: 'START',
-        ...move,
       };
       this.messageDispatcher.dispatch(startMessage);
+
+      this.processMyTurn();
     }
   }
 }
