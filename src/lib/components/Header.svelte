@@ -30,9 +30,12 @@
     <button id="goto-histories" onclick={() => goto("/histories")}
       >Game Histories</button
     >
+    <!-- [TODO] replace href = ... to goto after info page implementation
+     https://svelte.dev/docs/kit/migrating-to-sveltekit-2#goto()-changes -->
     <button
       id="goto-rules"
-      onclick={() => goto("https://en.wikipedia.org/wiki/Blokus")}
+      onclick={() =>
+        (window.location.href = "https://en.wikipedia.org/wiki/Blokus")}
       >How To Play</button
     >
   </nav>

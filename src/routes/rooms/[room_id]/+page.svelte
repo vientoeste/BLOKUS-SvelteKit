@@ -22,22 +22,26 @@
     newArr.length = 20;
     return newArr.fill(false);
   });
-  if (
-    room.playerIdx === undefined ||
-    [0, 1, 2, 3].findIndex((e) => e === room.playerIdx) === -1
-  ) {
-    modalStore.open(Alert, {
-      title: "invalid approach",
-      message: "try again please",
-    });
-    goto("/rooms");
-  }
-  $gameStore.playerIdx = room.playerIdx as 0 | 1 | 2 | 3;
 
   let gameManager: GameManager | null = $state(null);
   let messageReceiver: WebSocketMessageReceiver;
   let messageDispatcher: WebSocketMessageDispatcher;
+
   onMount(() => {
+    // if goto called at the outside of onMount, it would be considered as server-side
+    // so 'throw redirect' at client side is unnecessary, just call goto after mounted
+    if (
+      room.playerIdx === undefined ||
+      [0, 1, 2, 3].findIndex((e) => e === room.playerIdx) === -1
+    ) {
+      modalStore.open(Alert, {
+        title: "invalid approach",
+        message: "try again please",
+      });
+      goto("/rooms");
+    }
+    $gameStore.playerIdx = room.playerIdx as 0 | 1 | 2 | 3;
+
     // [TODO] consider reconnect
     const url = new URL(window.location.href);
 
