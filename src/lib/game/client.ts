@@ -141,7 +141,6 @@ export class GameManager {
         }, 60000);
       }),
     ]).then((move: MoveDTO | false) => {
-      console.log(move);
       if (!move) {
         // [TODO] dispatch turn-skip message
         return;
