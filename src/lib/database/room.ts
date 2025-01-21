@@ -160,16 +160,28 @@ export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
 export const addUserToRoomCache = async ({ roomId, userInfo }: { userInfo: UserInfo, roomId: RoomId }) => {
   const room = await getRoomCache(roomId);
   const { p1, p2, p3 } = room;
+
+  if (p1 && p1.id === userInfo.id) {
+    return 1;
+  }
+  if (p2 && p2.id === userInfo.id) {
+    return 2;
+  }
+  if (p3 && p3.id === userInfo.id) {
+    return 3;
+  }
+
   if (p1 === undefined) {
     await redis.hSet(`room:${roomId}`, 'p1', JSON.stringify(userInfo));
     return 1;
-  } else if (p2 === undefined) {
+  }
+  if (p2 === undefined) {
     await redis.hSet(`room:${roomId}`, 'p2', JSON.stringify(userInfo));
     return 2;
-  } else if (p3 === undefined) {
+  }
+  if (p3 === undefined) {
     await redis.hSet(`room:${roomId}`, 'p3', JSON.stringify(userInfo));
     return 3;
-  } else {
-    throw new CustomError('room is full');
   }
+  throw new CustomError('room is full');
 };
