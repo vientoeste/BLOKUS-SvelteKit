@@ -1,6 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import type { ApiResponse, SignInResponse } from '$lib/types';
+import type { ApiResponse, SignInResponse } from '$types';
 import { signIn, signOut } from '$lib/auth';
 import { CustomError } from '$lib/error';
 

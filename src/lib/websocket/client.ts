@@ -1,4 +1,4 @@
-import type { WebSocketMessage } from "$lib/types";
+import type { WebSocketMessage } from "$types";
 import { parseJson } from "$lib/utils";
 
 export class WebSocketMessageReceiver {

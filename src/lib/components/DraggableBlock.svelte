@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { BlockMatrix, BlockType } from "$lib/types";
+  import type { BlockMatrix, BlockType } from "$types";
   import { dragPositionOffsetStore, moveStore } from "../../Store";
   import Block from "./Block.svelte";
 

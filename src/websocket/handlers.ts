@@ -1,6 +1,6 @@
 import type { RedisClientType } from "redis";
-import type { CancelReadyMessage, ConnectedMessage, ErrorMessage, LeaveMessage, MoveMessage, ReadyMessage, ReportMessage, StartMessage, WebSocket, WebSocketBrokerMessage, WebSocketMessage } from "./type.js";
-import { webSocketManager } from "./index.js";
+import type { CancelReadyMessage, ConnectedMessage, ErrorMessage, LeaveMessage, MoveMessage, ReadyMessage, ReportMessage, StartMessage, WebSocket, WebSocketBrokerMessage, WebSocketMessage } from "$types";
+import { webSocketManager } from ".";
 
 export class WebSocketMessageHandler {
   private handleUserConnected(client: WebSocket, { userId }: ConnectedMessage) {
@@ -27,11 +27,11 @@ export class WebSocketMessageHandler {
   }
 
   private handleMove(client: WebSocket, {
-    block,
-    flip,
     playerIdx,
     position,
-    rotation,
+    blockInfo,
+    turn,
+    type,
   }: MoveMessage) {
     // [TODO] save move to DB
     throw new Error("not implemented");
