@@ -218,17 +218,6 @@ export class GameManager {
       return;
     }
 
-    const reason = putBlockOnBoard({
-      board: this.board,
-      blockInfo,
-      playerIdx: this.playerIdx,
-      position,
-      turn: this.turn,
-    });
-    if (reason) {
-      this.turnPromiseRejecter(reason);
-      return;
-    }
     this.turnPromiseResolver({
       blockInfo, playerIdx: this.playerIdx, position, turn: this.turn,
     });
