@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { BlockType } from "$lib/types";
+  import type { BlockType } from "$types";
   import { gameStore } from "../../Store";
   import DraggableBlock from "./DraggableBlock.svelte";
 

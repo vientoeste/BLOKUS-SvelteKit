@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ApiResponse, SignInResponse } from "$lib/types";
+  import type { ApiResponse, SignInResponse } from "$types";
   import { parseJson, validatePassword, validateUserId } from "$lib/utils";
   import { writable } from "svelte/store";
   import { modalStore, userStore } from "../../Store";

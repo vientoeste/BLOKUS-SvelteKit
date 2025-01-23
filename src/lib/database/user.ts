@@ -1,4 +1,4 @@
-import type { CreateUserDTO, UpdateUserDTO, UserInf } from '$lib/types';
+import type { CreateUserDTO, UpdateUserDTO, UserInf } from '$types';
 import { handleMongoError, Users } from './mongo';
 import { CustomError } from '$lib/error';
 

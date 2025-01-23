@@ -5,7 +5,7 @@ import { uuidv7 } from 'uuidv7';
 import { getUserInfoByUserId, insertUser } from '$lib/database/user';
 import { CustomError } from '$lib/error';
 import { redis } from '$lib/database/redis';
-import type { CreateUserDTO, Session, SessionToken, SignInDTO, UserInfo } from '$lib/types';
+import type { CreateUserDTO, Session, SessionToken, SignInDTO, UserInfo } from '$types';
 import { error, type Cookies } from '@sveltejs/kit';
 
 export const signUp = async ({ userId, username, password }: CreateUserDTO) => {

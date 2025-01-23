@@ -1,5 +1,5 @@
 import { getBlockMatrix, hasDiagonalConnection, hasEdgeConnection, hasOverlap, isFirstMoveValid, isWithinBoardBounds, placeBlock } from '$lib/game/core';
-import type { BlockMatrix, BoardMatrix, PlaceBlockDTO } from '$lib/types';
+import type { BlockMatrix, BoardMatrix, PlaceBlockDTO } from '$types';
 
 describe('isBlockPlaceable 내부 로직 검사', () => {
   const createEmptyBoard = (): BoardMatrix =>

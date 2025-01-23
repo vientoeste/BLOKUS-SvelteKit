@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { BoardMatrix, SubmitMoveDTO } from "$lib/types";
+  import type { BoardMatrix, SubmitMoveDTO } from "$types";
   import Board from "$lib/components/Board.svelte";
   import { gameStore, modalStore } from "../../../Store";
   import Alert from "$lib/components/Alert.svelte";

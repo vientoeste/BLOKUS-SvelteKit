@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ApiResponse, CreateUserResponse } from "$lib/types";
+  import type { ApiResponse, CreateUserResponse } from "$types";
   import {
     isFormDataFieldsValid,
     parseJson,
