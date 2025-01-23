@@ -117,7 +117,6 @@ export const insertRoomCache = async (
     p2: '',
     p3: '',
   });
-  console.log(result);
   if (result === 0) {
     // [TODO] flush?
     throw new Error('room already existing');

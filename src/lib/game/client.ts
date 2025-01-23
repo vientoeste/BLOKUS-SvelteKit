@@ -135,7 +135,6 @@ export class GameManager {
     // using duck typing, let runtime determine this type:
     // in-browser - number
     // nodejs - Timeout
-    console.log('stated my turn')
     let timeoutId: Parameters<typeof clearTimeout>[0];
     let timeoutRejecter: (() => void) | undefined = undefined;
     await Promise.race([
@@ -251,7 +250,7 @@ export class GameManager {
     }
     modalStore.open(Alert, {
       title: 'try other move',
-      content: failedReason,
+      message: failedReason,
     });
     return this.waitTurnResolution();
   }
@@ -272,7 +271,6 @@ export class GameManager {
   }
 
   async startGame() {
-    console.log('start game triggered')
     if (this.playerIdx === 0) {
       this.initiateGameStatus();
       const startMessage: OutboundStartMessage = {
