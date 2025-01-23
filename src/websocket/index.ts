@@ -2,7 +2,7 @@ import { WebSocketServer as WebSocketServer_ } from "ws";
 import { Server as HttpServer } from 'http';
 import { Server as HttpsServer } from 'https';
 import type { RedisClientType } from "redis";
-import type { WebSocket } from "./type.js";
+import type { WebSocket } from "$types";
 import { WebSocketConnectionManager, WebSocketMessageBroker, WebSocketMessageHandler } from "./handlers.js";
 
 interface WebSocketServer extends Omit<WebSocketServer_, 'clients'> {

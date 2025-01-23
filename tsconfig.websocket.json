@@ -1,18 +1,23 @@
 {
   "include": [
-    "src/websocket/**/*"
+    "src/websocket/**/*",
+    "src/lib/types/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "build",
     "src/routes",
-    "src/lib",
-    "src/tests"
+    "src/lib/!(types)**/*"
   ],
   "compilerOptions": {
+    "paths": {
+      "$types/*": [
+        "./src/lib/types/*"
+      ]
+    },
     "moduleResolution": "node",
-    "outDir": "./websocket",
+    "outDir": "./dist",
     "module": "esnext",
     "target": "esnext",
     "allowJs": true,
@@ -22,6 +27,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "ignoreDeprecations": "5.0"
+    "ignoreDeprecations": "5.0",
+    "rootDir": "src"
   }
 }

@@ -1,5 +1,5 @@
 import type { RedisClientType } from "redis";
-import type { CancelReadyMessage, ConnectedMessage, ErrorMessage, LeaveMessage, MoveMessage, ReadyMessage, ReportMessage, StartMessage, WebSocket, WebSocketBrokerMessage, WebSocketMessage } from "./type.js";
+import type { CancelReadyMessage, ConnectedMessage, ErrorMessage, LeaveMessage, MoveMessage, ReadyMessage, ReportMessage, StartMessage, WebSocket, WebSocketBrokerMessage, WebSocketMessage } from "$types/index.js";
 import { webSocketManager } from "./index.js";
 
 export class WebSocketMessageHandler {

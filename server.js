@@ -1,6 +1,6 @@
 import { handler } from './build/handler.js';
 import express from 'express';
-import { initWebSocketServer } from './websocket/index.js';
+import { initWebSocketServer } from './dist/websocket/index.js';
 import fs from 'fs';
 import https from 'https';
 import { createClient } from 'redis';

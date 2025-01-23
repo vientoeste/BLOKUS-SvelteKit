@@ -1,3 +1,4 @@
+import type { WebSocket as WebSocket_ } from 'ws';
 import type { MoveDTO, UserInfo } from '.';
 
 interface WebSocketMessageBase {
@@ -43,3 +44,10 @@ export interface ErrorMessage extends WebSocketMessageBase {
 }
 
 export type WebSocketMessage = ConnectedMessage | LeaveMessage | StartMessage | ReadyMessage | CancelReadyMessage | MoveMessage | ConnectedMessage | ReportMessage | ErrorMessage;
+
+export type WebSocketBrokerMessage = { payload: string, roomId: string };
+
+export interface WebSocket extends WebSocket_ {
+  roomId?: string;
+  userId?: string;
+}
