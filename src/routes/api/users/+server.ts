@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import { signUp, validateSessionCookie } from '$lib/auth';
 import { deleteUserInfo, updateUserInfo } from '$lib/database/user';
 import { CustomError } from '$lib/error';
-import type { ApiResponse, CreateUserResponse } from '$lib/types';
+import type { ApiResponse, CreateUserResponse } from '$types';
 
 export const POST: RequestHandler = async ({ request }) => {
   const data = await request.formData();

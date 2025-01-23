@@ -7,7 +7,7 @@
     ApiResponse,
     FetchRoomPreviewsResponse,
     RoomPreviewInf,
-  } from "$lib/types";
+  } from "$types";
   import { onMount } from "svelte";
   import { modalStore } from "../../Store";
   import { parseJson } from "$lib/utils";

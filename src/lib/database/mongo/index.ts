@@ -1,5 +1,5 @@
 import { CustomError } from "$lib/error";
-import type { BoardDocumentInf, RoomDocumentInf, UserDocumentInf } from "$lib/types";
+import type { BoardDocumentInf, RoomDocumentInf, UserDocumentInf } from "$types";
 import { MongoClient, MongoError } from "mongodb";
 
 export const client = await new MongoClient(import.meta.env.VITE_MONGO_URL).connect();

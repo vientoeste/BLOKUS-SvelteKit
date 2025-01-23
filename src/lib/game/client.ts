@@ -13,7 +13,7 @@ import type {
   SubmitMoveDTO,
   ParticipantInf,
   WebSocketMessage,
-} from "$lib/types";
+} from "$types";
 import { gameStore, modalStore } from "../../Store";
 import { createNewBoard, preset, putBlockOnBoard } from "./core";
 import type {

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import type { ApiResponse, CreateRoomResponse } from "$lib/types";
+  import type { ApiResponse, CreateRoomResponse } from "$types";
   import { isFormDataFieldsValid, parseJson } from "$lib/utils";
   import { modalStore } from "../../Store";
   import Alert from "./Alert.svelte";
