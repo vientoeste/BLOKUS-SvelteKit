@@ -1,9 +1,9 @@
-import { WebSocketServer as WebSocketServer_ } from "ws";
+import { WebSocketServer as WebSocketServer_, type RawData } from "ws";
 import { Server as HttpServer } from 'http';
 import { Server as HttpsServer } from 'https';
 import type { RedisClientType } from "redis";
 import type { WebSocket } from "$types";
-import { WebSocketConnectionManager, WebSocketMessageBroker, WebSocketMessageHandler } from "./handlers.js";
+import { WebSocketConnectionManager, WebSocketMessageBroker, WebSocketMessageHandler } from "./handlers";
 
 interface WebSocketServer extends Omit<WebSocketServer_, 'clients'> {
   clients: Set<WebSocket>;
@@ -60,11 +60,11 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     const playerIdx = url.searchParams.get('idx');
     if (!playerIdx) throw new Error('query string is missing')
 
-    socket.on('error', (e) => {
+    socket.on('error', (e: Error) => {
       console.error(e);
     });
 
-    socket.on('message', (rawMessage) => {
+    socket.on('message', (rawMessage: RawData) => {
       try {
         const message = rawMessage.toString();
         handler.handleMessage(socket, message);
