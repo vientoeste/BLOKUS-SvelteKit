@@ -61,3 +61,5 @@ export interface CreateRoomCacheDTO {
 export type RoomInf = RoomCacheInf & RoomPrimitiveInf;
 
 export type RoomPreviewInf = RoomPrimitiveInf;
+
+export type PlayerIdx = 0 | 1 | 2 | 3;

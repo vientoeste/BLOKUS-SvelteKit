@@ -1,4 +1,4 @@
-import type { WebSocketMessage } from "$types";
+import type { InboundWebSocketMessage, OutboundWebSocketMessage } from "$types";
 import { parseJson } from "$lib/utils";
 
 export class WebSocketMessageReceiver {
@@ -8,10 +8,10 @@ export class WebSocketMessageReceiver {
 
   private websocket: WebSocket | null = null;
 
-  onMessage(callback: (message: WebSocketMessage) => void): void {
+  onMessage(callback: (message: OutboundWebSocketMessage) => void): void {
     if (this.websocket !== null) {
       this.websocket.onmessage = (e) => {
-        const data = parseJson<WebSocketMessage>(e.data);
+        const data = parseJson<OutboundWebSocketMessage>(e.data);
         if (typeof data === 'string') {
           throw new Error('received unknown message');
         }
@@ -30,7 +30,7 @@ export class WebSocketMessageDispatcher {
   }
 
   // [TODO] improve/separate
-  dispatch(message: WebSocketMessage) {
+  dispatch(message: InboundWebSocketMessage) {
     this.websocket?.send(JSON.stringify(message));
   }
 }
