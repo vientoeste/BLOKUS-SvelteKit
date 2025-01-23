@@ -1,27 +1,27 @@
 import type { RedisClientType } from "redis";
-import type { CancelReadyMessage, ConnectedMessage, ErrorMessage, LeaveMessage, MoveMessage, ReadyMessage, ReportMessage, StartMessage, WebSocket, WebSocketBrokerMessage, WebSocketMessage } from "$types";
+import type { InboundCancelReadyMessage, InboundConnectedMessage, InboundLeaveMessage, InboundMoveMessage, InboundReadyMessage, InboundReportMessage, InboundStartMessage, InboundWebSocketMessage, OutboundErrorMessage, WebSocket, WebSocketBrokerMessage } from "$types";
 import { webSocketManager } from ".";
 
 export class WebSocketMessageHandler {
-  private handleUserConnected(client: WebSocket, { userId }: ConnectedMessage) {
+  private handleUserConnected(client: WebSocket, { userId }: InboundConnectedMessage) {
     const { roomId } = client;
     if (!roomId) return;
     client.userId = userId;
     webSocketManager.addClient({ roomId, client });
   }
 
-  private handleUserLeave(client: WebSocket, { playerIdx }: LeaveMessage) {
+  private handleUserLeave(client: WebSocket, message: InboundLeaveMessage) {
     const { userId, roomId } = client;
     if (!roomId || !userId) return;
     webSocketManager.removeClient({ roomId, userId });
   }
 
-  private handleReady(client: WebSocket, { playerIdx }: ReadyMessage) {
+  private handleReady(client: WebSocket, message: InboundReadyMessage) {
     // [TODO] save state to redis
     throw new Error("not implemented");
   }
 
-  private handleCancelReady(client: WebSocket, { playerIdx }: CancelReadyMessage) {
+  private handleCancelReady(client: WebSocket, message: InboundCancelReadyMessage) {
     // [TODO] save state to redis
     throw new Error("not implemented");
   }
@@ -32,24 +32,24 @@ export class WebSocketMessageHandler {
     blockInfo,
     turn,
     type,
-  }: MoveMessage) {
+  }: InboundMoveMessage) {
     // [TODO] save move to DB
     throw new Error("not implemented");
   }
 
-  private handleStart(client: WebSocket, message: StartMessage) {
+  private handleStart(client: WebSocket, message: InboundStartMessage) {
     // [TODO] save state to redis/DB
     throw new Error("not implemented");
   }
 
-  private handleReport(client: WebSocket, message: ReportMessage) {
+  private handleReport(client: WebSocket, message: InboundReportMessage) {
     // [TODO] validate move here
     throw new Error("not implemented");
   }
 
   // [TODO] log the websocket messages here or upper scope
   handleMessage(client: WebSocket, rawMessage: string) {
-    const message = JSON.parse(rawMessage) as WebSocketMessage;
+    const message = JSON.parse(rawMessage) as InboundWebSocketMessage;
     switch (message.type) {
       case 'START':
         this.handleStart(client, message);
@@ -76,7 +76,7 @@ export class WebSocketMessageHandler {
         client.send(JSON.stringify({
           type: "ERROR",
           cause: 'unknown message type'
-        } as ErrorMessage));
+        } as OutboundErrorMessage));
         break;
     }
   }

@@ -2,17 +2,19 @@ import type {
   BlockMatrix,
   BlockType,
   BoardMatrix,
-  CancelReadyMessage,
-  ConnectedMessage,
-  ErrorMessage,
-  LeaveMessage,
   MoveDTO,
-  MoveMessage,
-  ReadyMessage,
-  StartMessage,
   SubmitMoveDTO,
   ParticipantInf,
-  WebSocketMessage,
+  OutboundWebSocketMessage,
+  OutboundConnectedMessage,
+  OutboundLeaveMessage,
+  OutboundReadyMessage,
+  OutboundCancelReadyMessage,
+  OutboundMoveMessage,
+  OutboundStartMessage,
+  InboundMoveMessage,
+  OutboundErrorMessage,
+  OutboundMediateMessage,
 } from "$types";
 import { gameStore, modalStore } from "../../Store";
 import { createNewBoard, preset, putBlockOnBoard } from "./core";
@@ -21,6 +23,7 @@ import type {
   WebSocketMessageReceiver,
 } from "$lib/websocket/client";
 import Alert from "$lib/components/Alert.svelte";
+import Confirm from "$lib/components/Confirm.svelte";
 
 // [TODO] room state?
 // [TODO] message validations
@@ -54,7 +57,7 @@ export class GameManager {
 
   private users: (ParticipantInf | undefined)[] = [undefined, undefined, undefined, undefined];
 
-  handleIncomingMessage(message: WebSocketMessage) {
+  handleIncomingMessage(message: OutboundWebSocketMessage) {
     switch (message.type) {
       case "LEAVE":
         this.removeUser(message);
@@ -74,11 +77,9 @@ export class GameManager {
       case "START":
         this.handleStartMessage();
         break;
-      case "REPORT":
-        // client NEVER receive this event
+      case "MEDIATE":
         break;
       case "ERROR":
-        this.handleError(message);
         break;
       default:
         modalStore.open(Alert, {
@@ -89,7 +90,7 @@ export class GameManager {
     }
   }
 
-  addUser(message: ConnectedMessage) {
+  addUser(message: OutboundConnectedMessage) {
     const { id, playerIdx, username } = message;
     // [TODO] integrate field username-name
     this.users[playerIdx] = {
@@ -99,20 +100,24 @@ export class GameManager {
     };
   }
 
-  removeUser(message: LeaveMessage) {
+  removeUser(message: OutboundLeaveMessage) {
     const { playerIdx } = message;
     this.users[playerIdx] = undefined;
   }
 
-  updateReadyState(message: ReadyMessage | CancelReadyMessage) {
+  updateReadyState(message: OutboundReadyMessage | OutboundCancelReadyMessage) {
     const { type, playerIdx } = message;
     if (this.users[playerIdx]) {
       this.users[playerIdx].ready = type === 'READY';
     }
   }
 
-  handleError(message: ErrorMessage) {
-    // when does this method be called?
+  handleError(message: OutboundErrorMessage) {
+    // 
+  }
+
+  handleMediate(message: OutboundMediateMessage) {
+    // 
   }
 
   initiateNextTurn(): Promise<void> | void {
@@ -130,6 +135,7 @@ export class GameManager {
     // using duck typing, let runtime determine this type:
     // in-browser - number
     // nodejs - Timeout
+    console.log('stated my turn')
     let timeoutId: Parameters<typeof clearTimeout>[0];
     let timeoutRejecter: (() => void) | undefined = undefined;
     await Promise.race([
@@ -147,7 +153,7 @@ export class GameManager {
       }
       clearTimeout(timeoutId);
       if (timeoutRejecter) timeoutRejecter();
-      const moveMessage: MoveMessage = {
+      const moveMessage: InboundMoveMessage = {
         type: 'MOVE',
         blockInfo: move.blockInfo,
         playerIdx: this.playerIdx,
@@ -277,9 +283,10 @@ export class GameManager {
   }
 
   async startGame() {
+    console.log('start game triggered')
     if (this.playerIdx === 0) {
       this.initiateGameStatus();
-      const startMessage: StartMessage = {
+      const startMessage: OutboundStartMessage = {
         type: 'START',
       };
       this.messageDispatcher.dispatch(startMessage);

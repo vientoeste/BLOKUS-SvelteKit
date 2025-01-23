@@ -1,49 +1,99 @@
 import type { WebSocket as WebSocket_ } from 'ws';
-import type { MoveDTO, UserInfo } from '.';
+import type { MoveDTO, PlayerId, PlayerIdx, UserInfo } from '.';
 
 interface WebSocketMessageBase {
   type: string;
 }
 
-export interface LeaveMessage extends WebSocketMessageBase {
-  type: 'LEAVE';
-  playerIdx: 0 | 1 | 2 | 3;
-}
-
-export interface ConnectedMessage extends WebSocketMessageBase, UserInfo {
-  type: 'CONNECTED';
-  playerIdx: 0 | 1 | 2 | 3;
-}
-
-export interface StartMessage extends WebSocketMessageBase {
+export interface OutboundStartMessage extends WebSocketMessageBase {
   type: 'START';
 }
 
-export interface ReadyMessage extends WebSocketMessageBase {
+export interface OutboundConnectedMessage extends WebSocketMessageBase {
+  type: 'CONNECTED';
+  playerIdx: PlayerIdx;
+  id: PlayerId;
+  username: string;
+}
+
+export interface OutboundLeaveMessage extends WebSocketMessageBase {
+  type: 'LEAVE';
+  playerIdx: PlayerIdx;
+}
+
+export interface OutboundReadyMessage extends WebSocketMessageBase {
   type: 'READY';
-  playerIdx: 0 | 1 | 2 | 3;
+  playerIdx: PlayerIdx;
 }
 
-export interface CancelReadyMessage extends WebSocketMessageBase {
+export interface OutboundCancelReadyMessage extends WebSocketMessageBase {
   type: 'CANCEL_READY';
-  playerIdx: 0 | 1 | 2 | 3;
+  playerIdx: PlayerIdx;
 }
 
-export interface MoveMessage extends WebSocketMessageBase, MoveDTO {
+export interface OutboundMoveMessage extends WebSocketMessageBase, MoveDTO {
   type: 'MOVE';
 }
 
-export interface ReportMessage extends Omit<MoveMessage, 'type'> {
-  type: 'REPORT';
-  turn: number;
+export interface OutboundMediateMessage extends WebSocketMessageBase {
+  type: 'MEDIATE';
+  board?: string;
+  currentTurn?: number;
 }
 
-export interface ErrorMessage extends WebSocketMessageBase {
+export interface OutboundErrorMessage extends WebSocketMessageBase {
   type: 'ERROR';
-  cause: string;
+  // [TODO] how to resolve error? chronobreak? or any other actions?
 }
 
-export type WebSocketMessage = ConnectedMessage | LeaveMessage | StartMessage | ReadyMessage | CancelReadyMessage | MoveMessage | ConnectedMessage | ReportMessage | ErrorMessage;
+export interface InboundConnectedMessage extends WebSocketMessageBase, UserInfo {
+  type: 'CONNECTED';
+  playerIdx: PlayerIdx;
+}
+
+export interface InboundLeaveMessage extends WebSocketMessageBase {
+  type: 'LEAVE';
+}
+
+export interface InboundReadyMessage extends WebSocketMessageBase {
+  type: 'READY';
+}
+
+export interface InboundCancelReadyMessage extends WebSocketMessageBase {
+  type: 'CANCEL_READY';
+}
+
+export interface InboundMoveMessage extends WebSocketMessageBase, MoveDTO {
+  type: 'MOVE';
+}
+
+export interface InboundReportMessage extends WebSocketMessageBase {
+  type: 'REPORT';
+  board: string;
+  currentTurn: number;
+}
+
+export interface InboundStartMessage extends WebSocketMessageBase {
+  type: 'START';
+}
+
+/**
+ * client -> server
+ */
+export type InboundWebSocketMessage =
+  InboundCancelReadyMessage | InboundConnectedMessage |
+  InboundLeaveMessage | InboundMoveMessage |
+  InboundReadyMessage | InboundReportMessage |
+  InboundStartMessage;
+
+/**
+ * server -> clients
+ */
+export type OutboundWebSocketMessage =
+  OutboundCancelReadyMessage | OutboundConnectedMessage |
+  OutboundLeaveMessage | OutboundMoveMessage |
+  OutboundReadyMessage | OutboundMediateMessage |
+  OutboundErrorMessage | OutboundStartMessage;
 
 export type WebSocketBrokerMessage = { payload: string, roomId: string };
 
