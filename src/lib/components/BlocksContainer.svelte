@@ -3,6 +3,11 @@
   import { gameStore } from "../../Store";
   import DraggableBlock from "./DraggableBlock.svelte";
 
+  // [TODO] refactor to display blocks based on blockState
+  let blockState: Map<BlockType, { rotation: number; flip: boolean }> = $state(
+    new Map(),
+  );
+
   const preset: Record<
     BlockType,
     ({ u: boolean; r: boolean; b: boolean; l: boolean } | null)[][]
@@ -200,7 +205,7 @@
 
 <div id="blocks-container">
   {#each $gameStore.unusedBlocks as block}
-    <DraggableBlock block={preset[block[0]]} type={block[0]} />
+    <DraggableBlock block={preset[block[0]]} type={block[0]} {blockState} />
   {/each}
 </div>
 
