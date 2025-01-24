@@ -213,5 +213,7 @@
   #blocks-container {
     position: relative;
     max-width: 350px;
+    display: flex;
+    flex-wrap: wrap;
   }
 </style>
