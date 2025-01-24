@@ -17,14 +17,13 @@
 
   function handleDragStart(event: DragEvent) {
     if (!event.dataTransfer) return;
+    const state = blockState.get(type);
 
-    if ($moveStore === null) {
-      moveStore.set({
-        flip: false,
-        rotation: 0,
-        type,
-      });
-    }
+    moveStore.set({
+      type,
+      flip: state?.flip ?? false,
+      rotation: (state?.rotation ?? 0) as 0 | 1 | 2 | 3,
+    });
 
     event.dataTransfer.effectAllowed = "move";
 
@@ -55,19 +54,6 @@
 
   // [TODO] please refactor this stinky things
   function rotateBlock() {
-    moveStore.update((move) => {
-      if (move === null || move.type !== type)
-        return {
-          type,
-          flip: false,
-          rotation: 1,
-        };
-      return {
-        type,
-        flip: move.flip,
-        rotation: ((move.rotation + 1) % 4) as 0 | 1 | 2 | 3,
-      };
-    });
     const rotated = Array.from(Array(blockMatrix[0].length), () => {
       const newArr: ({
         u: boolean;
@@ -93,22 +79,22 @@
       });
     });
     blockMatrix = rotated;
+
+    const state = blockState.get(type);
+    if (state === undefined) {
+      blockState.set(type, {
+        rotation: 1,
+        flip: false,
+      });
+      return;
+    }
+    blockState.set(type, {
+      rotation: (state.rotation + 1) % 4,
+      flip: state.flip,
+    });
   }
 
   function flipBlock() {
-    moveStore.update((move) => {
-      if (move === null || move.type !== type)
-        return {
-          type,
-          flip: true,
-          rotation: 0,
-        };
-      return {
-        type,
-        flip: !move.flip,
-        rotation: move.rotation,
-      };
-    });
     blockMatrix = blockMatrix.reverse().map((blockLine) =>
       blockLine.map((cell) =>
         cell === null
@@ -120,6 +106,19 @@
             },
       ),
     );
+
+    const state = blockState.get(type);
+    if (state === undefined) {
+      blockState.set(type, {
+        rotation: 0,
+        flip: true,
+      });
+      return;
+    }
+    blockState.set(type, {
+      rotation: state.rotation,
+      flip: !state.flip,
+    });
   }
 </script>
 
