@@ -7,9 +7,6 @@
   const { board, relayMove } = $props();
 
   let boardElement: HTMLElement;
-  const cellElements: HTMLElement[][] = Array(20)
-    .fill([])
-    .map(() => Array(20).fill({} as HTMLElement));
 
   class CellHighlightManager {
     // [TODO] implement this class for optimization:
@@ -49,8 +46,8 @@
       block.forEach((blockLine, rowIdx) => {
         blockLine.forEach((cell, colIdx) => {
           if (cell) {
-            const currentCell =
-              cellElements[position[0] + rowIdx][position[1] + colIdx];
+            const currentCell = boardElement.children[position[0] + rowIdx]
+              .children[position[1] + colIdx].children[0] as HTMLElement;
             highlightedCells.push(currentCell);
             currentCell.classList.add("highlighted");
           }
@@ -116,7 +113,6 @@
             class="cell cell-{cell}"
             role="button"
             tabindex="0"
-            bind:this={cellElements[rowIdx][colIdx]}
             ondragover={(e) => {
               handleDragOver(e, rowIdx, colIdx);
             }}
