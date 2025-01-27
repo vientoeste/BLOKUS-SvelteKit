@@ -3,7 +3,7 @@ import { Server as HttpServer } from 'http';
 import { Server as HttpsServer } from 'https';
 import type { RedisClientType } from "redis";
 import type { WebSocket } from "$types";
-import { WebSocketConnectionManager, WebSocketMessageBroker, WebSocketMessageHandler } from "./handlers";
+import { WebSocketConnectionManager, WebSocketMessageBroker, WebSocketMessageHandler, WebSocketResponseDispatcher } from "./handlers";
 
 interface WebSocketServer extends Omit<WebSocketServer_, 'clients'> {
   clients: Set<WebSocket>;
@@ -11,6 +11,7 @@ interface WebSocketServer extends Omit<WebSocketServer_, 'clients'> {
 
 export let wss: WebSocketServer;
 export let webSocketMessageBroker: WebSocketMessageBroker;
+export let responseDispatcher: WebSocketResponseDispatcher;
 export const webSocketManager: WebSocketConnectionManager = new WebSocketConnectionManager();
 export const handler = new WebSocketMessageHandler();
 
@@ -37,7 +38,8 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     });
   }
 
-  webSocketMessageBroker = new WebSocketMessageBroker(redis, webSocketManager);
+  responseDispatcher = new WebSocketResponseDispatcher(webSocketManager);
+  webSocketMessageBroker = new WebSocketMessageBroker(redis, responseDispatcher);
 
   wss.on('listening', () => {
     // since clients' messages should be handled at each process in multi-processing environment

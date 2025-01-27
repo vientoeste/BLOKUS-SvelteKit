@@ -100,34 +100,24 @@ export class WebSocketConnectionManager {
     connections.splice(connections.findIndex((e) => e.userId === userId), 1);
   }
 
-  private getClientsByRoomId(roomId: string) {
+  getClientsByRoomId(roomId: string) {
     return this.clientPool.get(roomId);
-  }
-
-  sendMessageToClients({
-    roomId, payload: message,
-  }: WebSocketBrokerMessage) {
-    const clients = this.getClientsByRoomId(roomId);
-    if (clients === undefined) {
-      return;
-    }
-    clients.forEach(client => {
-      client.send(JSON.stringify(message));
-    });
   }
 }
 
 export class WebSocketMessageBroker {
-  // pub/sub
-  constructor(redis: RedisClientType, webSocketManager: WebSocketConnectionManager) {
+  constructor(
+    redis: RedisClientType,
+    responseDispatcher: WebSocketResponseDispatcher,
+  ) {
     this.publisher = redis;
     this.subscriber = redis.duplicate();
-    this.webSocketManager = webSocketManager;
+    this.responseDispatcher = responseDispatcher;
   }
 
-  private webSocketManager: WebSocketConnectionManager;
   private subscriber: RedisClientType;
   private publisher: RedisClientType;
+  private responseDispatcher: WebSocketResponseDispatcher;
 
   // [CHECK] message's type
   publishMessage({ message, roomId }: { roomId: string, message: string }) {
@@ -137,7 +127,29 @@ export class WebSocketMessageBroker {
   subscribeMessage() {
     this.subscriber.subscribe('message', (message) => {
       const { roomId, payload } = JSON.parse(message) as WebSocketBrokerMessage;
-      this.webSocketManager.sendMessageToClients({ roomId, payload });
+      this.responseDispatcher.dispatch({ roomId, payload });
+    });
+  }
+}
+
+export class WebSocketResponseDispatcher {
+  constructor(
+    connectionManager: WebSocketConnectionManager,
+  ) {
+    this.connectionManager = connectionManager;
+  }
+
+  private connectionManager: WebSocketConnectionManager;
+
+  dispatch({
+    roomId, payload,
+  }: WebSocketBrokerMessage) {
+    const clients = this.connectionManager.getClientsByRoomId(roomId);
+    if (clients === undefined) {
+      return;
+    }
+    clients.forEach(client => {
+      client.send(JSON.stringify(payload));
     });
   }
 }
