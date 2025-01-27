@@ -1,12 +1,17 @@
 <script lang="ts">
-  import type { BlockMatrix, BlockType } from "$types";
+  import type { BlockType } from "$types";
   import { dragPositionOffsetStore, moveStore } from "../../Store";
   import Block from "./Block.svelte";
 
-  let { type, block } = $props<{
+  let {
+    type,
+    block,
+    blockState,
+  }: {
     type: BlockType;
     block: ({ u: boolean; r: boolean; b: boolean; l: boolean } | null)[][];
-  }>();
+    blockState: Map<BlockType, { rotation: number; flip: boolean }>;
+  } = $props();
 
   let blockMatrix: ({
     u: boolean;
