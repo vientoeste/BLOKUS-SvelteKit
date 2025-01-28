@@ -2,15 +2,17 @@ import { WebSocketServer as WebSocketServer_, type RawData } from "ws";
 import { Server as HttpServer } from 'http';
 import { Server as HttpsServer } from 'https';
 import type { RedisClientType } from "redis";
-import type { WebSocket } from "$types";
-import { WebSocketConnectionManager, WebSocketMessageBroker, WebSocketMessageHandler } from "./handlers";
+import type { ActiveWebSocket, PendingWebSocket, PlayerIdx } from "$types";
+import { WebSocketConnectionManager, WebSocketConnectionOrchestrator, WebSocketMessageBroker, WebSocketMessageHandler, WebSocketResponseDispatcher } from "./handlers.js";
 
 interface WebSocketServer extends Omit<WebSocketServer_, 'clients'> {
-  clients: Set<WebSocket>;
+  clients: Set<PendingWebSocket>;
 }
 
 export let wss: WebSocketServer;
 export let webSocketMessageBroker: WebSocketMessageBroker;
+export let responseDispatcher: WebSocketResponseDispatcher;
+export let connectionOrchestrator: WebSocketConnectionOrchestrator;
 export const webSocketManager: WebSocketConnectionManager = new WebSocketConnectionManager();
 export const handler = new WebSocketMessageHandler();
 
@@ -37,7 +39,9 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     });
   }
 
-  webSocketMessageBroker = new WebSocketMessageBroker(redis, webSocketManager);
+  responseDispatcher = new WebSocketResponseDispatcher(webSocketManager);
+  webSocketMessageBroker = new WebSocketMessageBroker(redis, responseDispatcher);
+  connectionOrchestrator = new WebSocketConnectionOrchestrator(handler, webSocketMessageBroker, responseDispatcher);
 
   wss.on('listening', () => {
     // since clients' messages should be handled at each process in multi-processing environment
@@ -46,7 +50,7 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     webSocketMessageBroker.subscribeMessage();
   });
 
-  wss.on('connection', async (socket: WebSocket & { roomId: string }, request) => {
+  wss.on('connection', async (socket: PendingWebSocket, request) => {
     if (!request.url) throw new Error('request url is empty')
     const url = new URL(`${process.env.ORIGIN}${request.url}`);
 
@@ -57,8 +61,30 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     }
     socket.roomId = roomId;
 
-    const playerIdx = url.searchParams.get('idx');
-    if (!playerIdx) throw new Error('query string is missing')
+    // [TODO] sequence totally went wrong. Extract user id from cookies first, and then get playerIdx from redis
+    const rawPlayerIdx = url.searchParams.get('idx');
+    if (!rawPlayerIdx) throw new Error('query string is missing');
+    const playerIdx = parseInt(rawPlayerIdx);
+    if (Number.isNaN(playerIdx) || playerIdx < 0 || playerIdx > 3) throw new Error('received inproper query string');
+    socket.playerIdx = playerIdx as PlayerIdx;
+
+    // [TODO] $lib/database couldn't be resolved at websocket's transpiling time
+    const rawRoomCache = await redis.hGetAll(`room:${roomId}`);
+    if (!rawRoomCache || Object.keys(rawRoomCache).length === 0) {
+      socket.send(JSON.stringify({ type: 'ERROR', message: 'room doesn\'t exist' }));
+      socket.close();
+      return;
+    }
+    const { p0, p1, p2, p3 } = rawRoomCache;
+    const userId = playerIdx === 0 ? JSON.parse(p0).id :
+      playerIdx === 1 ? JSON.parse(p1).id :
+        playerIdx === 2 ? JSON.parse(p2).id : JSON.parse(p3).id;
+    if (!userId) throw new Error('user not found');
+    socket.userId = userId;
+
+    const activeSocket = socket as ActiveWebSocket;
+
+    webSocketManager.addClient({ roomId, client: activeSocket });
 
     socket.on('error', (e: Error) => {
       console.error(e);
@@ -67,8 +93,7 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     socket.on('message', (rawMessage: RawData) => {
       try {
         const message = rawMessage.toString();
-        handler.handleMessage(socket, message);
-        webSocketMessageBroker.publishMessage({ message, roomId });
+        connectionOrchestrator.handleClientMessage(activeSocket, message);
       } catch (e) {
         console.error(e);
       }

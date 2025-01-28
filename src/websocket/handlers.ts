@@ -1,91 +1,95 @@
 import type { RedisClientType } from "redis";
-import type { InboundCancelReadyMessage, InboundConnectedMessage, InboundLeaveMessage, InboundMoveMessage, InboundReadyMessage, InboundReportMessage, InboundStartMessage, InboundWebSocketMessage, OutboundErrorMessage, WebSocket, WebSocketBrokerMessage } from "$types";
-import { webSocketManager } from ".";
+import type {
+  InboundCancelReadyMessage,
+  InboundConnectedMessage,
+  InboundLeaveMessage,
+  InboundMoveMessage,
+  InboundReadyMessage,
+  InboundReportMessage,
+  InboundStartMessage,
+  InboundWebSocketMessage,
+  OutboundBadReqMessage,
+  OutboundErrorMessage,
+  OutboundWebSocketMessage,
+  ActiveWebSocket,
+  WebSocketBrokerMessage,
+} from "$types";
+
+interface MessageProcessResult {
+  success: boolean;
+  payload: OutboundWebSocketMessage;
+}
 
 export class WebSocketMessageHandler {
-  private handleUserConnected(client: WebSocket, { userId }: InboundConnectedMessage) {
-    const { roomId } = client;
-    if (!roomId) return;
-    client.userId = userId;
-    webSocketManager.addClient({ roomId, client });
+  private handleUserConnected(client: ActiveWebSocket, { userId, username }: InboundConnectedMessage): MessageProcessResult {
+    throw new Error("not implemented");
   }
 
-  private handleUserLeave(client: WebSocket, message: InboundLeaveMessage) {
-    const { userId, roomId } = client;
-    if (!roomId || !userId) return;
-    webSocketManager.removeClient({ roomId, userId });
+  private handleUserLeave(client: ActiveWebSocket, message: InboundLeaveMessage): MessageProcessResult {
+    throw new Error("not implemented");
   }
 
-  private handleReady(client: WebSocket, message: InboundReadyMessage) {
+  private handleReady(client: ActiveWebSocket, message: InboundReadyMessage): MessageProcessResult {
     // [TODO] save state to redis
     throw new Error("not implemented");
   }
 
-  private handleCancelReady(client: WebSocket, message: InboundCancelReadyMessage) {
+  private handleCancelReady(client: ActiveWebSocket, message: InboundCancelReadyMessage): MessageProcessResult {
     // [TODO] save state to redis
     throw new Error("not implemented");
   }
 
-  private handleMove(client: WebSocket, {
+  private handleMove(client: ActiveWebSocket, {
     playerIdx,
     position,
     blockInfo,
     turn,
     type,
-  }: InboundMoveMessage) {
+  }: InboundMoveMessage): MessageProcessResult {
     // [TODO] save move to DB
     throw new Error("not implemented");
   }
 
-  private handleStart(client: WebSocket, message: InboundStartMessage) {
+  private handleStart(client: ActiveWebSocket, message: InboundStartMessage): MessageProcessResult {
     // [TODO] save state to redis/DB
     throw new Error("not implemented");
   }
 
-  private handleReport(client: WebSocket, message: InboundReportMessage) {
+  private handleReport(client: ActiveWebSocket, message: InboundReportMessage): MessageProcessResult {
     // [TODO] validate move here
     throw new Error("not implemented");
   }
 
   // [TODO] log the websocket messages here or upper scope
-  handleMessage(client: WebSocket, rawMessage: string) {
-    const message = JSON.parse(rawMessage) as InboundWebSocketMessage;
+  async processMessage(client: ActiveWebSocket, message: InboundWebSocketMessage): Promise<MessageProcessResult> {
     switch (message.type) {
       case 'START':
-        this.handleStart(client, message);
-        break;
+        return this.handleStart(client, message);
       case "CONNECTED":
-        this.handleUserConnected(client, message);
-        break;
+        return this.handleUserConnected(client, message);
       case "LEAVE":
-        this.handleUserLeave(client, message);
-        break;
+        return this.handleUserLeave(client, message);
       case "READY":
-        this.handleReady(client, message);
-        break;
+        return this.handleReady(client, message);
       case "CANCEL_READY":
-        this.handleCancelReady(client, message);
-        break;
+        return this.handleCancelReady(client, message);
       case "MOVE":
-        this.handleMove(client, message);
-        break;
+        return this.handleMove(client, message);
       case "REPORT":
-        this.handleReport(client, message);
-        break;
+        return this.handleReport(client, message);
       default:
-        client.send(JSON.stringify({
-          type: "ERROR",
-          cause: 'unknown message type'
-        } as OutboundErrorMessage));
-        break;
+        return {
+          success: false,
+          payload: { type: 'ERROR', }
+        };
     }
   }
 }
 
 export class WebSocketConnectionManager {
-  private clientPool: Map<string, WebSocket[]> = new Map();
+  private clientPool: Map<string, ActiveWebSocket[]> = new Map();
 
-  addClient({ roomId, client }: { roomId: string, client: WebSocket }) {
+  addClient({ roomId, client }: { roomId: string, client: ActiveWebSocket }) {
     const connections = this.clientPool.get(roomId);
     if (connections === undefined) {
       this.clientPool.set(roomId, [client]);
@@ -100,44 +104,97 @@ export class WebSocketConnectionManager {
     connections.splice(connections.findIndex((e) => e.userId === userId), 1);
   }
 
-  private getClientsByRoomId(roomId: string) {
+  getClientsByRoomId(roomId: string) {
     return this.clientPool.get(roomId);
-  }
-
-  sendMessageToClients({
-    roomId, payload: message,
-  }: WebSocketBrokerMessage) {
-    const clients = this.getClientsByRoomId(roomId);
-    if (clients === undefined) {
-      return;
-    }
-    clients.forEach(client => {
-      client.send(JSON.stringify(message));
-    });
   }
 }
 
 export class WebSocketMessageBroker {
-  // pub/sub
-  constructor(redis: RedisClientType, webSocketManager: WebSocketConnectionManager) {
+  constructor(
+    redis: RedisClientType,
+    responseDispatcher: WebSocketResponseDispatcher,
+  ) {
     this.publisher = redis;
     this.subscriber = redis.duplicate();
-    this.webSocketManager = webSocketManager;
+    this.responseDispatcher = responseDispatcher;
   }
 
-  private webSocketManager: WebSocketConnectionManager;
   private subscriber: RedisClientType;
   private publisher: RedisClientType;
+  private responseDispatcher: WebSocketResponseDispatcher;
 
   // [CHECK] message's type
-  publishMessage({ message, roomId }: { roomId: string, message: string }) {
-    this.publisher.publish(roomId, JSON.stringify({ message, roomId }));
+  publishMessage({ message, roomId }: { roomId: string, message: OutboundWebSocketMessage }) {
+    this.publisher.publish('message', JSON.stringify({ message, roomId }));
   }
 
   subscribeMessage() {
     this.subscriber.subscribe('message', (message) => {
       const { roomId, payload } = JSON.parse(message) as WebSocketBrokerMessage;
-      this.webSocketManager.sendMessageToClients({ roomId, payload });
+      this.responseDispatcher.dispatch({ roomId, payload });
     });
+  }
+}
+
+export class WebSocketResponseDispatcher {
+  constructor(
+    connectionManager: WebSocketConnectionManager,
+  ) {
+    this.connectionManager = connectionManager;
+  }
+
+  private connectionManager: WebSocketConnectionManager;
+
+  dispatch({
+    roomId, payload,
+  }: WebSocketBrokerMessage) {
+    const clients = this.connectionManager.getClientsByRoomId(roomId);
+    if (clients === undefined) {
+      return;
+    }
+    clients.forEach(client => {
+      client.send(JSON.stringify(payload));
+    });
+  }
+}
+
+export class WebSocketConnectionOrchestrator {
+  constructor(
+    messageHandler: WebSocketMessageHandler,
+    messageBroker: WebSocketMessageBroker,
+    responseDispatcher: WebSocketResponseDispatcher,
+  ) {
+    this.messageHandler = messageHandler;
+    this.messageBroker = messageBroker;
+    this.responseDispatcher = responseDispatcher;
+  }
+
+  private messageHandler: WebSocketMessageHandler;
+  private messageBroker: WebSocketMessageBroker;
+  private responseDispatcher: WebSocketResponseDispatcher;
+
+  async handleClientMessage(client: ActiveWebSocket, rawMessage: string) {
+    try {
+      const message = JSON.parse(rawMessage) as InboundWebSocketMessage;
+      if (typeof message === 'string') {
+        client.send(JSON.stringify({ type: 'BAD_REQ' } as OutboundBadReqMessage));
+        return;
+      }
+      // const traceId = uuidv7();
+      // [TODO] log
+      const result = await this.messageHandler.processMessage(client, message);
+      if (result.success) {
+        this.messageBroker.publishMessage({ message: result.payload, roomId: client.roomId });
+        this.responseDispatcher.dispatch({ roomId: client.roomId, payload: result.payload });
+        return;
+      }
+
+      const errorMessage: OutboundErrorMessage = {
+        type: 'ERROR',
+      }
+      client.send(JSON.stringify(errorMessage));
+    } catch (e) {
+      // [TODO] log
+    }
   }
 }
