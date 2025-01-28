@@ -14,7 +14,6 @@ import type {
   ActiveWebSocket,
   WebSocketBrokerMessage,
 } from "$types";
-import { parseJson } from "$lib/utils";
 
 interface MessageProcessResult {
   success: boolean;
@@ -176,7 +175,7 @@ export class WebSocketConnectionOrchestrator {
 
   async handleClientMessage(client: ActiveWebSocket, rawMessage: string) {
     try {
-      const message = parseJson<InboundWebSocketMessage>(rawMessage);
+      const message = JSON.parse(rawMessage) as InboundWebSocketMessage;
       if (typeof message === 'string') {
         client.send(JSON.stringify({ type: 'BAD_REQ' } as OutboundBadReqMessage));
         return;
