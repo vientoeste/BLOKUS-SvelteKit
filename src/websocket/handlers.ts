@@ -14,23 +14,28 @@ import type {
   ActiveWebSocket,
   WebSocketBrokerMessage,
 } from "$types";
-import { webSocketManager } from ".";
+import { parseJson } from "$lib/utils";
+
+interface MessageProcessResult {
+  success: boolean;
+  payload: OutboundWebSocketMessage;
+}
 
 export class WebSocketMessageHandler {
-  private handleUserConnected(client: ActiveWebSocket, { userId }: InboundConnectedMessage) {
+  private handleUserConnected(client: ActiveWebSocket, { userId, username }: InboundConnectedMessage): MessageProcessResult {
     throw new Error("not implemented");
   }
 
-  private handleUserLeave(client: ActiveWebSocket, message: InboundLeaveMessage) {
+  private handleUserLeave(client: ActiveWebSocket, message: InboundLeaveMessage): MessageProcessResult {
     throw new Error("not implemented");
   }
 
-  private handleReady(client: ActiveWebSocket, message: InboundReadyMessage) {
+  private handleReady(client: ActiveWebSocket, message: InboundReadyMessage): MessageProcessResult {
     // [TODO] save state to redis
     throw new Error("not implemented");
   }
 
-  private handleCancelReady(client: ActiveWebSocket, message: InboundCancelReadyMessage) {
+  private handleCancelReady(client: ActiveWebSocket, message: InboundCancelReadyMessage): MessageProcessResult {
     // [TODO] save state to redis
     throw new Error("not implemented");
   }
@@ -41,52 +46,43 @@ export class WebSocketMessageHandler {
     blockInfo,
     turn,
     type,
-  }: InboundMoveMessage) {
+  }: InboundMoveMessage): MessageProcessResult {
     // [TODO] save move to DB
     throw new Error("not implemented");
   }
 
-  private handleStart(client: ActiveWebSocket, message: InboundStartMessage) {
+  private handleStart(client: ActiveWebSocket, message: InboundStartMessage): MessageProcessResult {
     // [TODO] save state to redis/DB
     throw new Error("not implemented");
   }
 
-  private handleReport(client: ActiveWebSocket, message: InboundReportMessage) {
+  private handleReport(client: ActiveWebSocket, message: InboundReportMessage): MessageProcessResult {
     // [TODO] validate move here
     throw new Error("not implemented");
   }
 
   // [TODO] log the websocket messages here or upper scope
-  processMessage(client: ActiveWebSocket, rawMessage: string) {
-    const message = JSON.parse(rawMessage) as InboundWebSocketMessage;
+  async processMessage(client: ActiveWebSocket, message: InboundWebSocketMessage): Promise<MessageProcessResult> {
     switch (message.type) {
       case 'START':
-        this.handleStart(client, message);
-        break;
+        return this.handleStart(client, message);
       case "CONNECTED":
-        this.handleUserConnected(client, message);
-        break;
+        return this.handleUserConnected(client, message);
       case "LEAVE":
-        this.handleUserLeave(client, message);
-        break;
+        return this.handleUserLeave(client, message);
       case "READY":
-        this.handleReady(client, message);
-        break;
+        return this.handleReady(client, message);
       case "CANCEL_READY":
-        this.handleCancelReady(client, message);
-        break;
+        return this.handleCancelReady(client, message);
       case "MOVE":
-        this.handleMove(client, message);
-        break;
+        return this.handleMove(client, message);
       case "REPORT":
-        this.handleReport(client, message);
-        break;
+        return this.handleReport(client, message);
       default:
-        client.send(JSON.stringify({
-          type: "ERROR",
-          cause: 'unknown message type'
-        } as OutboundErrorMessage));
-        break;
+        return {
+          success: false,
+          payload: { type: 'ERROR', }
+        };
     }
   }
 }
@@ -129,7 +125,7 @@ export class WebSocketMessageBroker {
   private responseDispatcher: WebSocketResponseDispatcher;
 
   // [CHECK] message's type
-  publishMessage({ message, roomId }: { roomId: string, message: string }) {
+  publishMessage({ message, roomId }: { roomId: string, message: OutboundWebSocketMessage }) {
     this.publisher.publish(roomId, JSON.stringify({ message, roomId }));
   }
 
@@ -160,5 +156,46 @@ export class WebSocketResponseDispatcher {
     clients.forEach(client => {
       client.send(JSON.stringify(payload));
     });
+  }
+}
+
+export class WebSocketConnectionOrchestrator {
+  constructor(
+    messageHandler: WebSocketMessageHandler,
+    messageBroker: WebSocketMessageBroker,
+    responseDispatcher: WebSocketResponseDispatcher,
+  ) {
+    this.messageHandler = messageHandler;
+    this.messageBroker = messageBroker;
+    this.responseDispatcher = responseDispatcher;
+  }
+
+  private messageHandler: WebSocketMessageHandler;
+  private messageBroker: WebSocketMessageBroker;
+  private responseDispatcher: WebSocketResponseDispatcher;
+
+  async handleClientMessage(client: ActiveWebSocket, rawMessage: string) {
+    try {
+      const message = parseJson<InboundWebSocketMessage>(rawMessage);
+      if (typeof message === 'string') {
+        client.send(JSON.stringify({ type: 'BAD_REQ' } as OutboundBadReqMessage));
+        return;
+      }
+      // const traceId = uuidv7();
+      // [TODO] log
+      const result = await this.messageHandler.processMessage(client, message);
+      if (result.success) {
+        this.messageBroker.publishMessage({ message: result.payload, roomId: client.roomId });
+        this.responseDispatcher.dispatch({ roomId: client.roomId, payload: result.payload });
+        return;
+      }
+
+      const errorMessage: OutboundErrorMessage = {
+        type: 'ERROR',
+      }
+      client.send(JSON.stringify(errorMessage));
+    } catch (e) {
+      // [TODO] log
+    }
   }
 }

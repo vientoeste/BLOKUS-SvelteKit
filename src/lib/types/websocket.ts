@@ -101,7 +101,7 @@ export type OutboundWebSocketMessage =
   OutboundErrorMessage | OutboundStartMessage |
   OutboundBadReqMessage;
 
-export type WebSocketBrokerMessage = { payload: string, roomId: string };
+export type WebSocketBrokerMessage = { payload: OutboundWebSocketMessage, roomId: string };
 
 export interface WebSocket extends WebSocket_ {
   roomId?: string;

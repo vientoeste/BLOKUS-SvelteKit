@@ -3,7 +3,7 @@ import { Server as HttpServer } from 'http';
 import { Server as HttpsServer } from 'https';
 import type { RedisClientType } from "redis";
 import type { ActiveWebSocket, PendingWebSocket, PlayerIdx } from "$types";
-import { WebSocketConnectionManager, WebSocketMessageBroker, WebSocketMessageHandler, WebSocketResponseDispatcher } from "./handlers";
+import { WebSocketConnectionManager, WebSocketConnectionOrchestrator, WebSocketMessageBroker, WebSocketMessageHandler, WebSocketResponseDispatcher } from "./handlers";
 import { getRoomCache } from "$lib/database/room";
 
 interface WebSocketServer extends Omit<WebSocketServer_, 'clients'> {
@@ -13,6 +13,7 @@ interface WebSocketServer extends Omit<WebSocketServer_, 'clients'> {
 export let wss: WebSocketServer;
 export let webSocketMessageBroker: WebSocketMessageBroker;
 export let responseDispatcher: WebSocketResponseDispatcher;
+export let connectionOrchestrator: WebSocketConnectionOrchestrator;
 export const webSocketManager: WebSocketConnectionManager = new WebSocketConnectionManager();
 export const handler = new WebSocketMessageHandler();
 
@@ -41,6 +42,7 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
 
   responseDispatcher = new WebSocketResponseDispatcher(webSocketManager);
   webSocketMessageBroker = new WebSocketMessageBroker(redis, responseDispatcher);
+  connectionOrchestrator = new WebSocketConnectionOrchestrator(handler, webSocketMessageBroker, responseDispatcher);
 
   wss.on('listening', () => {
     // since clients' messages should be handled at each process in multi-processing environment
@@ -85,8 +87,7 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     socket.on('message', (rawMessage: RawData) => {
       try {
         const message = rawMessage.toString();
-        handler.processMessage(activeSocket, message);
-        webSocketMessageBroker.publishMessage({ message, roomId });
+        connectionOrchestrator.handleClientMessage(activeSocket, message);
       } catch (e) {
         console.error(e);
       }
