@@ -46,6 +46,11 @@ export interface OutboundErrorMessage extends WebSocketMessageBase {
   // [TODO] how to resolve error? chronobreak? or any other actions?
 }
 
+export interface OutboundBadReqMessage extends WebSocketMessageBase {
+  type: 'BAD_REQ';
+  message: string;
+}
+
 export interface InboundConnectedMessage extends WebSocketMessageBase, UserInfo {
   type: 'CONNECTED';
   playerIdx: PlayerIdx;
@@ -93,7 +98,8 @@ export type OutboundWebSocketMessage =
   OutboundCancelReadyMessage | OutboundConnectedMessage |
   OutboundLeaveMessage | OutboundMoveMessage |
   OutboundReadyMessage | OutboundMediateMessage |
-  OutboundErrorMessage | OutboundStartMessage;
+  OutboundErrorMessage | OutboundStartMessage |
+  OutboundBadReqMessage;
 
 export type WebSocketBrokerMessage = { payload: string, roomId: string };
 
