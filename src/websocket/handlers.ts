@@ -93,13 +93,34 @@ export class WebSocketMessageHandler {
     };
   }
 
-  private handleStart(client: ActiveWebSocket): MessageProcessResult {
+  private async handleStart(client: ActiveWebSocket): Promise<MessageProcessResult> {
     if (client.playerIdx !== 0) {
       return {
         success: false,
         payload: { type: 'BAD_REQ', message: 'unauthorized' },
       };
     }
+
+    const roomCache = await this.redis.hGetAll(`room:${client.roomId}`);
+    const isStarted = '1' === roomCache.started;
+    if (isStarted) {
+      return {
+        success: false,
+        payload: { type: 'BAD_REQ', message: 'game already started' },
+      };
+    }
+    // [TODO] consider the case that number of user is lower than 4
+    const isReadied = JSON.parse(roomCache.p1).ready === 1
+      && JSON.parse(roomCache.p2).ready === 1
+      && JSON.parse(roomCache.p3).ready === 1;
+    if (!isReadied) {
+      return {
+        success: false,
+        payload: { type: 'BAD_REQ', message: 'not readied' },
+      };
+    }
+
+    await this.redis.hSet(`room:${client.roomId}`, 'started', '1');
     const startMessage: OutboundStartMessage = {
       type: 'START',
     };
