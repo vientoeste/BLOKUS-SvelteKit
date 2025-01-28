@@ -17,6 +17,7 @@ import type {
   OutboundLeaveMessage,
   OutboundReadyMessage,
   OutboundCancelReadyMessage,
+  OutboundMoveMessage,
 } from "$types";
 
 interface MessageProcessResult {
@@ -72,14 +73,21 @@ export class WebSocketMessageHandler {
   }
 
   private handleMove(client: ActiveWebSocket, {
-    playerIdx,
     position,
     blockInfo,
     turn,
-    type,
   }: InboundMoveMessage): MessageProcessResult {
-    // [TODO] save move to DB
-    throw new Error("not implemented");
+    const moveMessage: OutboundMoveMessage = {
+      type: 'MOVE',
+      blockInfo,
+      playerIdx: client.playerIdx,
+      position,
+      turn,
+    };
+    return {
+      success: true,
+      payload: moveMessage,
+    };
   }
 
   private handleStart(client: ActiveWebSocket, message: InboundStartMessage): MessageProcessResult {
