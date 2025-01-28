@@ -3,8 +3,7 @@ import { Server as HttpServer } from 'http';
 import { Server as HttpsServer } from 'https';
 import type { RedisClientType } from "redis";
 import type { ActiveWebSocket, PendingWebSocket, PlayerIdx } from "$types";
-import { WebSocketConnectionManager, WebSocketConnectionOrchestrator, WebSocketMessageBroker, WebSocketMessageHandler, WebSocketResponseDispatcher } from "./handlers";
-import { getRoomCache } from "$lib/database/room";
+import { WebSocketConnectionManager, WebSocketConnectionOrchestrator, WebSocketMessageBroker, WebSocketMessageHandler, WebSocketResponseDispatcher } from "./handlers.js";
 
 interface WebSocketServer extends Omit<WebSocketServer_, 'clients'> {
   clients: Set<PendingWebSocket>;
@@ -69,10 +68,17 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     if (Number.isNaN(playerIdx) || playerIdx < 0 || playerIdx > 3) throw new Error('received inproper query string');
     socket.playerIdx = playerIdx as PlayerIdx;
 
-    const roomCache = await getRoomCache(roomId);
-    const userId = playerIdx === 0 ? roomCache.p0.id :
-      playerIdx === 1 ? roomCache.p1?.id :
-        playerIdx === 2 ? roomCache.p2?.id : roomCache.p3?.id;
+    // [TODO] $lib/database couldn't be resolved at websocket's transpiling time
+    const rawRoomCache = await redis.hGetAll(`room:${roomId}`);
+    if (!rawRoomCache || Object.keys(rawRoomCache).length === 0) {
+      socket.send(JSON.stringify({ type: 'ERROR', message: 'room doesn\'t exist' }));
+      socket.close();
+      return;
+    }
+    const { p0, p1, p2, p3 } = rawRoomCache;
+    const userId = playerIdx === 0 ? JSON.parse(p0).id :
+      playerIdx === 1 ? JSON.parse(p1).id :
+        playerIdx === 2 ? JSON.parse(p2).id : JSON.parse(p3).id;
     if (!userId) throw new Error('user not found');
     socket.userId = userId;
 
