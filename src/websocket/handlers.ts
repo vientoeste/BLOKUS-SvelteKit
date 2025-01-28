@@ -13,6 +13,7 @@ import type {
   OutboundWebSocketMessage,
   ActiveWebSocket,
   WebSocketBrokerMessage,
+  OutboundConnectedMessage,
 } from "$types";
 
 interface MessageProcessResult {
@@ -21,8 +22,17 @@ interface MessageProcessResult {
 }
 
 export class WebSocketMessageHandler {
-  private handleUserConnected(client: ActiveWebSocket, { userId, username }: InboundConnectedMessage): MessageProcessResult {
-    throw new Error("not implemented");
+  private handleUserConnected(client: ActiveWebSocket, { username }: InboundConnectedMessage): MessageProcessResult {
+    const connectedMessage: OutboundConnectedMessage = {
+      type: 'CONNECTED',
+      id: client.userId,
+      username,
+      playerIdx: client.playerIdx,
+    };
+    return {
+      success: true,
+      payload: connectedMessage,
+    };
   }
 
   private handleUserLeave(client: ActiveWebSocket, message: InboundLeaveMessage): MessageProcessResult {
