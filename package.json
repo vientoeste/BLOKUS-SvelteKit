@@ -12,7 +12,7 @@
 		"lint": "eslint .",
 		"test": "jest",
 		"prestart": "npm run build",
-		"start": "node --env-file=.env server.js"
+		"start": "pm2 start server.js --node-args \"--env-file=.env\" -i max"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.3.1",
