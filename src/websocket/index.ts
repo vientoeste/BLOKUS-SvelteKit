@@ -85,7 +85,7 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     socket.on('message', (rawMessage: RawData) => {
       try {
         const message = rawMessage.toString();
-        handler.handleMessage(activeSocket, message);
+        handler.processMessage(activeSocket, message);
         webSocketMessageBroker.publishMessage({ message, roomId });
       } catch (e) {
         console.error(e);

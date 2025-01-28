@@ -57,7 +57,7 @@ export class WebSocketMessageHandler {
   }
 
   // [TODO] log the websocket messages here or upper scope
-  handleMessage(client: ActiveWebSocket, rawMessage: string) {
+  processMessage(client: ActiveWebSocket, rawMessage: string) {
     const message = JSON.parse(rawMessage) as InboundWebSocketMessage;
     switch (message.type) {
       case 'START':
