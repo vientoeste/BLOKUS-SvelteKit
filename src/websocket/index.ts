@@ -2,11 +2,12 @@ import { WebSocketServer as WebSocketServer_, type RawData } from "ws";
 import { Server as HttpServer } from 'http';
 import { Server as HttpsServer } from 'https';
 import type { RedisClientType } from "redis";
-import type { PlayerIdx, WebSocket } from "$types";
+import type { ActiveWebSocket, PendingWebSocket, PlayerIdx } from "$types";
 import { WebSocketConnectionManager, WebSocketMessageBroker, WebSocketMessageHandler, WebSocketResponseDispatcher } from "./handlers";
+import { getRoomCache } from "$lib/database/room";
 
 interface WebSocketServer extends Omit<WebSocketServer_, 'clients'> {
-  clients: Set<WebSocket>;
+  clients: Set<PendingWebSocket>;
 }
 
 export let wss: WebSocketServer;
@@ -48,7 +49,7 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     webSocketMessageBroker.subscribeMessage();
   });
 
-  wss.on('connection', async (socket: WebSocket & { roomId: string }, request) => {
+  wss.on('connection', async (socket: PendingWebSocket, request) => {
     if (!request.url) throw new Error('request url is empty')
     const url = new URL(`${process.env.ORIGIN}${request.url}`);
 
@@ -59,11 +60,23 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     }
     socket.roomId = roomId;
 
+    // [TODO] sequence totally went wrong. Extract user id from cookies first, and then get playerIdx from redis
     const rawPlayerIdx = url.searchParams.get('idx');
     if (!rawPlayerIdx) throw new Error('query string is missing');
     const playerIdx = parseInt(rawPlayerIdx);
     if (Number.isNaN(playerIdx) || playerIdx < 0 || playerIdx > 3) throw new Error('received inproper query string');
     socket.playerIdx = playerIdx as PlayerIdx;
+
+    const roomCache = await getRoomCache(roomId);
+    const userId = playerIdx === 0 ? roomCache.p0.id :
+      playerIdx === 1 ? roomCache.p1?.id :
+        playerIdx === 2 ? roomCache.p2?.id : roomCache.p3?.id;
+    if (!userId) throw new Error('user not found');
+    socket.userId = userId;
+
+    const activeSocket = socket as ActiveWebSocket;
+
+    webSocketManager.addClient({ roomId, client: activeSocket });
 
     socket.on('error', (e: Error) => {
       console.error(e);
@@ -72,7 +85,7 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     socket.on('message', (rawMessage: RawData) => {
       try {
         const message = rawMessage.toString();
-        handler.handleMessage(socket, message);
+        handler.handleMessage(activeSocket, message);
         webSocketMessageBroker.publishMessage({ message, roomId });
       } catch (e) {
         console.error(e);

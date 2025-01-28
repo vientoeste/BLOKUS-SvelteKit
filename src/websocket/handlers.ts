@@ -1,32 +1,41 @@
 import type { RedisClientType } from "redis";
-import type { InboundCancelReadyMessage, InboundConnectedMessage, InboundLeaveMessage, InboundMoveMessage, InboundReadyMessage, InboundReportMessage, InboundStartMessage, InboundWebSocketMessage, OutboundErrorMessage, WebSocket, WebSocketBrokerMessage } from "$types";
+import type {
+  InboundCancelReadyMessage,
+  InboundConnectedMessage,
+  InboundLeaveMessage,
+  InboundMoveMessage,
+  InboundReadyMessage,
+  InboundReportMessage,
+  InboundStartMessage,
+  InboundWebSocketMessage,
+  OutboundBadReqMessage,
+  OutboundErrorMessage,
+  OutboundWebSocketMessage,
+  ActiveWebSocket,
+  WebSocketBrokerMessage,
+} from "$types";
 import { webSocketManager } from ".";
 
 export class WebSocketMessageHandler {
-  private handleUserConnected(client: WebSocket, { userId }: InboundConnectedMessage) {
-    const { roomId } = client;
-    if (!roomId) return;
-    client.userId = userId;
-    webSocketManager.addClient({ roomId, client });
+  private handleUserConnected(client: ActiveWebSocket, { userId }: InboundConnectedMessage) {
+    throw new Error("not implemented");
   }
 
-  private handleUserLeave(client: WebSocket, message: InboundLeaveMessage) {
-    const { userId, roomId } = client;
-    if (!roomId || !userId) return;
-    webSocketManager.removeClient({ roomId, userId });
+  private handleUserLeave(client: ActiveWebSocket, message: InboundLeaveMessage) {
+    throw new Error("not implemented");
   }
 
-  private handleReady(client: WebSocket, message: InboundReadyMessage) {
+  private handleReady(client: ActiveWebSocket, message: InboundReadyMessage) {
     // [TODO] save state to redis
     throw new Error("not implemented");
   }
 
-  private handleCancelReady(client: WebSocket, message: InboundCancelReadyMessage) {
+  private handleCancelReady(client: ActiveWebSocket, message: InboundCancelReadyMessage) {
     // [TODO] save state to redis
     throw new Error("not implemented");
   }
 
-  private handleMove(client: WebSocket, {
+  private handleMove(client: ActiveWebSocket, {
     playerIdx,
     position,
     blockInfo,
@@ -37,18 +46,18 @@ export class WebSocketMessageHandler {
     throw new Error("not implemented");
   }
 
-  private handleStart(client: WebSocket, message: InboundStartMessage) {
+  private handleStart(client: ActiveWebSocket, message: InboundStartMessage) {
     // [TODO] save state to redis/DB
     throw new Error("not implemented");
   }
 
-  private handleReport(client: WebSocket, message: InboundReportMessage) {
+  private handleReport(client: ActiveWebSocket, message: InboundReportMessage) {
     // [TODO] validate move here
     throw new Error("not implemented");
   }
 
   // [TODO] log the websocket messages here or upper scope
-  handleMessage(client: WebSocket, rawMessage: string) {
+  handleMessage(client: ActiveWebSocket, rawMessage: string) {
     const message = JSON.parse(rawMessage) as InboundWebSocketMessage;
     switch (message.type) {
       case 'START':
@@ -83,9 +92,9 @@ export class WebSocketMessageHandler {
 }
 
 export class WebSocketConnectionManager {
-  private clientPool: Map<string, WebSocket[]> = new Map();
+  private clientPool: Map<string, ActiveWebSocket[]> = new Map();
 
-  addClient({ roomId, client }: { roomId: string, client: WebSocket }) {
+  addClient({ roomId, client }: { roomId: string, client: ActiveWebSocket }) {
     const connections = this.clientPool.get(roomId);
     if (connections === undefined) {
       this.clientPool.set(roomId, [client]);
