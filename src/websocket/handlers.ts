@@ -126,7 +126,7 @@ export class WebSocketMessageBroker {
 
   // [CHECK] message's type
   publishMessage({ message, roomId }: { roomId: string, message: OutboundWebSocketMessage }) {
-    this.publisher.publish(roomId, JSON.stringify({ message, roomId }));
+    this.publisher.publish('message', JSON.stringify({ message, roomId }));
   }
 
   subscribeMessage() {
