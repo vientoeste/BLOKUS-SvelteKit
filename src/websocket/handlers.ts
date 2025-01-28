@@ -14,6 +14,8 @@ import type {
   ActiveWebSocket,
   WebSocketBrokerMessage,
   OutboundConnectedMessage,
+  OutboundLeaveMessage,
+  OutboundReadyMessage,
 } from "$types";
 
 interface MessageProcessResult {
@@ -46,9 +48,15 @@ export class WebSocketMessageHandler {
     };
   }
 
-  private handleReady(client: ActiveWebSocket, message: InboundReadyMessage): MessageProcessResult {
-    // [TODO] save state to redis
-    throw new Error("not implemented");
+  private handleReady(client: ActiveWebSocket): MessageProcessResult {
+    const readyMessage: OutboundReadyMessage = {
+      type: 'READY',
+      playerIdx: client.playerIdx,
+    };
+    return {
+      success: true,
+      payload: readyMessage,
+    };
   }
 
   private handleCancelReady(client: ActiveWebSocket, message: InboundCancelReadyMessage): MessageProcessResult {
@@ -87,7 +95,7 @@ export class WebSocketMessageHandler {
       case "LEAVE":
         return this.handleUserLeave(client);
       case "READY":
-        return this.handleReady(client, message);
+        return this.handleReady(client);
       case "CANCEL_READY":
         return this.handleCancelReady(client, message);
       case "MOVE":
