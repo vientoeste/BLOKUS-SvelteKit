@@ -1,18 +1,20 @@
 import type { RedisClientType } from "redis";
 import type {
-  InboundCancelReadyMessage,
   InboundConnectedMessage,
-  InboundLeaveMessage,
   InboundMoveMessage,
-  InboundReadyMessage,
   InboundReportMessage,
-  InboundStartMessage,
   InboundWebSocketMessage,
   OutboundBadReqMessage,
   OutboundErrorMessage,
   OutboundWebSocketMessage,
   ActiveWebSocket,
   WebSocketBrokerMessage,
+  OutboundConnectedMessage,
+  OutboundLeaveMessage,
+  OutboundReadyMessage,
+  OutboundCancelReadyMessage,
+  OutboundMoveMessage,
+  OutboundStartMessage,
 } from "$types";
 
 interface MessageProcessResult {
@@ -21,38 +23,137 @@ interface MessageProcessResult {
 }
 
 export class WebSocketMessageHandler {
-  private handleUserConnected(client: ActiveWebSocket, { userId, username }: InboundConnectedMessage): MessageProcessResult {
-    throw new Error("not implemented");
+  constructor(redis: RedisClientType) {
+    this.redis = redis;
   }
 
-  private handleUserLeave(client: ActiveWebSocket, message: InboundLeaveMessage): MessageProcessResult {
-    throw new Error("not implemented");
+  private redis: RedisClientType;
+
+  private handleUserConnected(client: ActiveWebSocket, { username }: InboundConnectedMessage): MessageProcessResult {
+    const connectedMessage: OutboundConnectedMessage = {
+      type: 'CONNECTED',
+      id: client.userId,
+      username,
+      playerIdx: client.playerIdx,
+    };
+    return {
+      success: true,
+      payload: connectedMessage,
+    };
   }
 
-  private handleReady(client: ActiveWebSocket, message: InboundReadyMessage): MessageProcessResult {
-    // [TODO] save state to redis
-    throw new Error("not implemented");
+  private handleUserLeave(client: ActiveWebSocket): MessageProcessResult {
+    const leaveMessage: OutboundLeaveMessage = {
+      type: 'LEAVE',
+      playerIdx: client.playerIdx,
+    };
+    return {
+      success: true,
+      payload: leaveMessage,
+    };
   }
 
-  private handleCancelReady(client: ActiveWebSocket, message: InboundCancelReadyMessage): MessageProcessResult {
-    // [TODO] save state to redis
-    throw new Error("not implemented");
+  private async handleReady(client: ActiveWebSocket): Promise<MessageProcessResult> {
+    const roomCache = await this.redis.hGetAll(`room:${client.roomId}`);
+    const player = client.playerIdx === 0 ? JSON.parse(roomCache.p0) :
+      client.playerIdx === 1 ? JSON.parse(roomCache.p1) :
+        client.playerIdx === 2 ? JSON.parse(roomCache.p2) : JSON.parse(roomCache.p3);
+    player.ready = 1;
+    await this.redis.hSet(`room:${client.roomId}`, `p${client.playerIdx}`, JSON.stringify(player));
+
+    const readyMessage: OutboundReadyMessage = {
+      type: 'READY',
+      playerIdx: client.playerIdx,
+    };
+    return {
+      success: true,
+      payload: readyMessage,
+    };
   }
 
-  private handleMove(client: ActiveWebSocket, {
-    playerIdx,
+  private async handleCancelReady(client: ActiveWebSocket): Promise<MessageProcessResult> {
+    const roomCache = await this.redis.hGetAll(`room:${client.roomId}`);
+    const player = client.playerIdx === 0 ? JSON.parse(roomCache.p0) :
+      client.playerIdx === 1 ? JSON.parse(roomCache.p1) :
+        client.playerIdx === 2 ? JSON.parse(roomCache.p2) : JSON.parse(roomCache.p3);
+    player.ready = 0;
+
+    const cancelReadyMessage: OutboundCancelReadyMessage = {
+      type: 'CANCEL_READY',
+      playerIdx: client.playerIdx,
+    };
+    return {
+      success: true,
+      payload: cancelReadyMessage,
+    };
+  }
+
+  private async handleMove(client: ActiveWebSocket, {
     position,
     blockInfo,
     turn,
-    type,
-  }: InboundMoveMessage): MessageProcessResult {
-    // [TODO] save move to DB
-    throw new Error("not implemented");
+  }: InboundMoveMessage): Promise<MessageProcessResult> {
+    // [TODO] checksum - lastMove
+    const currentTurn = await this.redis.hGet(`room:${client.roomId}`, 'turn');
+    if (turn - 1 !== parseInt(currentTurn as string)) {
+      return {
+        success: false,
+        payload: { type: 'BAD_REQ', message: 'wrong turn' },
+      };
+    }
+    const compressedMove = `${client.playerIdx}:${blockInfo.type}[${position[0]},${position[1]}]r${blockInfo.rotation}f${blockInfo.flip ? 0 : 1}`;
+    await this.redis.hSet(`room:${client.roomId}`, 'lastMove', compressedMove);
+    await this.redis.hSet(`room:${client.roomId}`, 'turn', turn);
+    // [TODO] write move to db
+
+    const moveMessage: OutboundMoveMessage = {
+      type: 'MOVE',
+      blockInfo,
+      playerIdx: client.playerIdx,
+      position,
+      turn,
+    };
+    return {
+      success: true,
+      payload: moveMessage,
+    };
   }
 
-  private handleStart(client: ActiveWebSocket, message: InboundStartMessage): MessageProcessResult {
-    // [TODO] save state to redis/DB
-    throw new Error("not implemented");
+  private async handleStart(client: ActiveWebSocket): Promise<MessageProcessResult> {
+    if (client.playerIdx !== 0) {
+      return {
+        success: false,
+        payload: { type: 'BAD_REQ', message: 'unauthorized' },
+      };
+    }
+
+    const roomCache = await this.redis.hGetAll(`room:${client.roomId}`);
+    const isStarted = '1' === roomCache.started;
+    if (isStarted) {
+      return {
+        success: false,
+        payload: { type: 'BAD_REQ', message: 'game already started' },
+      };
+    }
+    // [TODO] consider the case that number of user is lower than 4
+    const isReadied = JSON.parse(roomCache.p1).ready === 1
+      && JSON.parse(roomCache.p2).ready === 1
+      && JSON.parse(roomCache.p3).ready === 1;
+    if (!isReadied) {
+      return {
+        success: false,
+        payload: { type: 'BAD_REQ', message: 'not readied' },
+      };
+    }
+
+    await this.redis.hSet(`room:${client.roomId}`, 'started', '1');
+    const startMessage: OutboundStartMessage = {
+      type: 'START',
+    };
+    return {
+      success: true,
+      payload: startMessage,
+    };
   }
 
   private handleReport(client: ActiveWebSocket, message: InboundReportMessage): MessageProcessResult {
@@ -64,15 +165,15 @@ export class WebSocketMessageHandler {
   async processMessage(client: ActiveWebSocket, message: InboundWebSocketMessage): Promise<MessageProcessResult> {
     switch (message.type) {
       case 'START':
-        return this.handleStart(client, message);
+        return this.handleStart(client);
       case "CONNECTED":
         return this.handleUserConnected(client, message);
       case "LEAVE":
-        return this.handleUserLeave(client, message);
+        return this.handleUserLeave(client);
       case "READY":
-        return this.handleReady(client, message);
+        return this.handleReady(client);
       case "CANCEL_READY":
-        return this.handleCancelReady(client, message);
+        return this.handleCancelReady(client);
       case "MOVE":
         return this.handleMove(client, message);
       case "REPORT":
@@ -163,15 +264,18 @@ export class WebSocketConnectionOrchestrator {
     messageHandler: WebSocketMessageHandler,
     messageBroker: WebSocketMessageBroker,
     responseDispatcher: WebSocketResponseDispatcher,
+    connectionManager: WebSocketConnectionManager,
   ) {
     this.messageHandler = messageHandler;
     this.messageBroker = messageBroker;
     this.responseDispatcher = responseDispatcher;
+    this.connectionManager = connectionManager;
   }
 
   private messageHandler: WebSocketMessageHandler;
   private messageBroker: WebSocketMessageBroker;
   private responseDispatcher: WebSocketResponseDispatcher;
+  private connectionManager: WebSocketConnectionManager;
 
   async handleClientMessage(client: ActiveWebSocket, rawMessage: string) {
     try {
@@ -183,16 +287,18 @@ export class WebSocketConnectionOrchestrator {
       // const traceId = uuidv7();
       // [TODO] log
       const result = await this.messageHandler.processMessage(client, message);
-      if (result.success) {
-        this.messageBroker.publishMessage({ message: result.payload, roomId: client.roomId });
-        this.responseDispatcher.dispatch({ roomId: client.roomId, payload: result.payload });
-        return;
+      if (!result.success) {
+        const errorMessage: OutboundErrorMessage = {
+          type: 'ERROR',
+        }
+        client.send(JSON.stringify(errorMessage));
       }
-
-      const errorMessage: OutboundErrorMessage = {
-        type: 'ERROR',
+      if (result.payload.type === 'LEAVE') {
+        this.connectionManager.removeClient({ roomId: client.roomId, userId: client.userId });
       }
-      client.send(JSON.stringify(errorMessage));
+      this.messageBroker.publishMessage({ message: result.payload, roomId: client.roomId });
+      this.responseDispatcher.dispatch({ roomId: client.roomId, payload: result.payload });
+      return;
     } catch (e) {
       // [TODO] log
     }

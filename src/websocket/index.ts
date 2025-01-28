@@ -13,8 +13,8 @@ export let wss: WebSocketServer;
 export let webSocketMessageBroker: WebSocketMessageBroker;
 export let responseDispatcher: WebSocketResponseDispatcher;
 export let connectionOrchestrator: WebSocketConnectionOrchestrator;
+export let messageHandler: WebSocketMessageHandler;
 export const webSocketManager: WebSocketConnectionManager = new WebSocketConnectionManager();
-export const handler = new WebSocketMessageHandler();
 
 export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: RedisClientType) => {
   if (!wss) {
@@ -39,9 +39,10 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     });
   }
 
+  messageHandler = new WebSocketMessageHandler(redis);
   responseDispatcher = new WebSocketResponseDispatcher(webSocketManager);
   webSocketMessageBroker = new WebSocketMessageBroker(redis, responseDispatcher);
-  connectionOrchestrator = new WebSocketConnectionOrchestrator(handler, webSocketMessageBroker, responseDispatcher);
+  connectionOrchestrator = new WebSocketConnectionOrchestrator(messageHandler, webSocketMessageBroker, responseDispatcher, webSocketManager);
 
   wss.on('listening', () => {
     // since clients' messages should be handled at each process in multi-processing environment
@@ -97,6 +98,10 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
       } catch (e) {
         console.error(e);
       }
+    });
+
+    socket.on('close', () => {
+      webSocketManager.removeClient({ roomId: activeSocket.roomId, userId: activeSocket.userId });
     });
   });
 };
