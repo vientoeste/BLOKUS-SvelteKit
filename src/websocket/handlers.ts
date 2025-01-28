@@ -35,8 +35,15 @@ export class WebSocketMessageHandler {
     };
   }
 
-  private handleUserLeave(client: ActiveWebSocket, message: InboundLeaveMessage): MessageProcessResult {
-    throw new Error("not implemented");
+  private handleUserLeave(client: ActiveWebSocket): MessageProcessResult {
+    const leaveMessage: OutboundLeaveMessage = {
+      type: 'LEAVE',
+      playerIdx: client.playerIdx,
+    };
+    return {
+      success: true,
+      payload: leaveMessage,
+    };
   }
 
   private handleReady(client: ActiveWebSocket, message: InboundReadyMessage): MessageProcessResult {
@@ -78,7 +85,7 @@ export class WebSocketMessageHandler {
       case "CONNECTED":
         return this.handleUserConnected(client, message);
       case "LEAVE":
-        return this.handleUserLeave(client, message);
+        return this.handleUserLeave(client);
       case "READY":
         return this.handleReady(client, message);
       case "CANCEL_READY":
