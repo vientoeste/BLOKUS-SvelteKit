@@ -23,6 +23,12 @@ interface MessageProcessResult {
 }
 
 export class WebSocketMessageHandler {
+  constructor(redis: RedisClientType) {
+    this.redis = redis;
+  }
+
+  private redis: RedisClientType;
+
   private handleUserConnected(client: ActiveWebSocket, { username }: InboundConnectedMessage): MessageProcessResult {
     const connectedMessage: OutboundConnectedMessage = {
       type: 'CONNECTED',
