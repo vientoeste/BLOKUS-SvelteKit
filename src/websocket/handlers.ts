@@ -1,12 +1,8 @@
 import type { RedisClientType } from "redis";
 import type {
-  InboundCancelReadyMessage,
   InboundConnectedMessage,
-  InboundLeaveMessage,
   InboundMoveMessage,
-  InboundReadyMessage,
   InboundReportMessage,
-  InboundStartMessage,
   InboundWebSocketMessage,
   OutboundBadReqMessage,
   OutboundErrorMessage,
