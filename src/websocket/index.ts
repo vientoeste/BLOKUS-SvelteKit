@@ -2,7 +2,7 @@ import { WebSocketServer as WebSocketServer_, type RawData } from "ws";
 import { Server as HttpServer } from 'http';
 import { Server as HttpsServer } from 'https';
 import type { RedisClientType } from "redis";
-import type { WebSocket } from "$types";
+import type { PlayerIdx, WebSocket } from "$types";
 import { WebSocketConnectionManager, WebSocketMessageBroker, WebSocketMessageHandler, WebSocketResponseDispatcher } from "./handlers";
 
 interface WebSocketServer extends Omit<WebSocketServer_, 'clients'> {
@@ -59,8 +59,11 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     }
     socket.roomId = roomId;
 
-    const playerIdx = url.searchParams.get('idx');
-    if (!playerIdx) throw new Error('query string is missing')
+    const rawPlayerIdx = url.searchParams.get('idx');
+    if (!rawPlayerIdx) throw new Error('query string is missing');
+    const playerIdx = parseInt(rawPlayerIdx);
+    if (Number.isNaN(playerIdx) || playerIdx < 0 || playerIdx > 3) throw new Error('received inproper query string');
+    socket.playerIdx = playerIdx as PlayerIdx;
 
     socket.on('error', (e: Error) => {
       console.error(e);

@@ -106,4 +106,5 @@ export type WebSocketBrokerMessage = { payload: string, roomId: string };
 export interface WebSocket extends WebSocket_ {
   roomId?: string;
   userId?: string;
+  playerIdx?: PlayerIdx;
 }
