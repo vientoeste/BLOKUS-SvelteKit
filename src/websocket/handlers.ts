@@ -88,11 +88,24 @@ export class WebSocketMessageHandler {
     };
   }
 
-  private handleMove(client: ActiveWebSocket, {
+  private async handleMove(client: ActiveWebSocket, {
     position,
     blockInfo,
     turn,
-  }: InboundMoveMessage): MessageProcessResult {
+  }: InboundMoveMessage): Promise<MessageProcessResult> {
+    // [TODO] checksum - lastMove
+    const currentTurn = await this.redis.hGet(`room:${client.roomId}`, 'turn');
+    if (turn - 1 !== parseInt(currentTurn as string)) {
+      return {
+        success: false,
+        payload: { type: 'BAD_REQ', message: 'wrong turn' },
+      };
+    }
+    const compressedMove = `${client.playerIdx}:${blockInfo.type}[${position[0]},${position[1]}]r${blockInfo.rotation}f${blockInfo.flip ? 0 : 1}`;
+    await this.redis.hSet(`room:${client.roomId}`, 'lastMove', compressedMove);
+    await this.redis.hSet(`room:${client.roomId}`, 'turn', turn);
+    // [TODO] write move to db
+
     const moveMessage: OutboundMoveMessage = {
       type: 'MOVE',
       blockInfo,
