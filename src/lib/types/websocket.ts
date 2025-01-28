@@ -108,3 +108,13 @@ export interface WebSocket extends WebSocket_ {
   userId?: string;
   playerIdx?: PlayerIdx;
 }
+
+interface ConnectionInfo {
+  roomId: string;
+  userId: string;
+  playerIdx: PlayerIdx;
+}
+
+export type PendingWebSocket = WebSocket_ & Partial<ConnectionInfo>;
+
+export type ActiveWebSocket = WebSocket_ & ConnectionInfo;
