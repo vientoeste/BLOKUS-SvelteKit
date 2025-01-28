@@ -16,6 +16,7 @@ import type {
   OutboundConnectedMessage,
   OutboundLeaveMessage,
   OutboundReadyMessage,
+  OutboundCancelReadyMessage,
 } from "$types";
 
 interface MessageProcessResult {
@@ -59,9 +60,15 @@ export class WebSocketMessageHandler {
     };
   }
 
-  private handleCancelReady(client: ActiveWebSocket, message: InboundCancelReadyMessage): MessageProcessResult {
-    // [TODO] save state to redis
-    throw new Error("not implemented");
+  private handleCancelReady(client: ActiveWebSocket): MessageProcessResult {
+    const cancelReadyMessage: OutboundCancelReadyMessage = {
+      type: 'CANCEL_READY',
+      playerIdx: client.playerIdx,
+    };
+    return {
+      success: true,
+      payload: cancelReadyMessage,
+    };
   }
 
   private handleMove(client: ActiveWebSocket, {
@@ -97,7 +104,7 @@ export class WebSocketMessageHandler {
       case "READY":
         return this.handleReady(client);
       case "CANCEL_READY":
-        return this.handleCancelReady(client, message);
+        return this.handleCancelReady(client);
       case "MOVE":
         return this.handleMove(client, message);
       case "REPORT":
