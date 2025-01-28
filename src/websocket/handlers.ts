@@ -53,7 +53,14 @@ export class WebSocketMessageHandler {
     };
   }
 
-  private handleReady(client: ActiveWebSocket): MessageProcessResult {
+  private async handleReady(client: ActiveWebSocket): Promise<MessageProcessResult> {
+    const roomCache = await this.redis.hGetAll(`room:${client.roomId}`);
+    const player = client.playerIdx === 0 ? JSON.parse(roomCache.p0) :
+      client.playerIdx === 1 ? JSON.parse(roomCache.p1) :
+        client.playerIdx === 2 ? JSON.parse(roomCache.p2) : JSON.parse(roomCache.p3);
+    player.ready = 1;
+    await this.redis.hSet(`room:${client.roomId}`, `p${client.playerIdx}`, JSON.stringify(player));
+
     const readyMessage: OutboundReadyMessage = {
       type: 'READY',
       playerIdx: client.playerIdx,
@@ -64,7 +71,13 @@ export class WebSocketMessageHandler {
     };
   }
 
-  private handleCancelReady(client: ActiveWebSocket): MessageProcessResult {
+  private async handleCancelReady(client: ActiveWebSocket): Promise<MessageProcessResult> {
+    const roomCache = await this.redis.hGetAll(`room:${client.roomId}`);
+    const player = client.playerIdx === 0 ? JSON.parse(roomCache.p0) :
+      client.playerIdx === 1 ? JSON.parse(roomCache.p1) :
+        client.playerIdx === 2 ? JSON.parse(roomCache.p2) : JSON.parse(roomCache.p3);
+    player.ready = 0;
+
     const cancelReadyMessage: OutboundCancelReadyMessage = {
       type: 'CANCEL_READY',
       playerIdx: client.playerIdx,
