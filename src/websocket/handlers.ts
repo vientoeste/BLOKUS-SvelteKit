@@ -251,15 +251,18 @@ export class WebSocketConnectionOrchestrator {
     messageHandler: WebSocketMessageHandler,
     messageBroker: WebSocketMessageBroker,
     responseDispatcher: WebSocketResponseDispatcher,
+    connectionManager: WebSocketConnectionManager,
   ) {
     this.messageHandler = messageHandler;
     this.messageBroker = messageBroker;
     this.responseDispatcher = responseDispatcher;
+    this.connectionManager = connectionManager;
   }
 
   private messageHandler: WebSocketMessageHandler;
   private messageBroker: WebSocketMessageBroker;
   private responseDispatcher: WebSocketResponseDispatcher;
+  private connectionManager: WebSocketConnectionManager;
 
   async handleClientMessage(client: ActiveWebSocket, rawMessage: string) {
     try {

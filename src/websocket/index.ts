@@ -42,7 +42,7 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
   messageHandler = new WebSocketMessageHandler(redis);
   responseDispatcher = new WebSocketResponseDispatcher(webSocketManager);
   webSocketMessageBroker = new WebSocketMessageBroker(redis, responseDispatcher);
-  connectionOrchestrator = new WebSocketConnectionOrchestrator(messageHandler, webSocketMessageBroker, responseDispatcher);
+  connectionOrchestrator = new WebSocketConnectionOrchestrator(messageHandler, webSocketMessageBroker, responseDispatcher, webSocketManager);
 
   wss.on('listening', () => {
     // since clients' messages should be handled at each process in multi-processing environment
