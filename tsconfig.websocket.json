@@ -12,6 +12,7 @@
     "src/lib/!(types)**/*"
   ],
   "compilerOptions": {
+    "noEmit": false,
     "moduleResolution": "node",
     "outDir": "./dist"
   }
