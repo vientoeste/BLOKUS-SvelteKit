@@ -274,16 +274,18 @@ export class WebSocketConnectionOrchestrator {
       // const traceId = uuidv7();
       // [TODO] log
       const result = await this.messageHandler.processMessage(client, message);
-      if (result.success) {
-        this.messageBroker.publishMessage({ message: result.payload, roomId: client.roomId });
-        this.responseDispatcher.dispatch({ roomId: client.roomId, payload: result.payload });
-        return;
+      if (!result.success) {
+        const errorMessage: OutboundErrorMessage = {
+          type: 'ERROR',
+        }
+        client.send(JSON.stringify(errorMessage));
       }
-
-      const errorMessage: OutboundErrorMessage = {
-        type: 'ERROR',
+      if (result.payload.type === 'LEAVE') {
+        this.connectionManager.removeClient({ roomId: client.roomId, userId: client.userId });
       }
-      client.send(JSON.stringify(errorMessage));
+      this.messageBroker.publishMessage({ message: result.payload, roomId: client.roomId });
+      this.responseDispatcher.dispatch({ roomId: client.roomId, payload: result.payload });
+      return;
     } catch (e) {
       // [TODO] log
     }

@@ -99,5 +99,9 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
         console.error(e);
       }
     });
+
+    socket.on('close', () => {
+      webSocketManager.removeClient({ roomId: activeSocket.roomId, userId: activeSocket.userId });
+    });
   });
 };
