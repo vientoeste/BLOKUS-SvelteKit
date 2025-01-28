@@ -18,6 +18,7 @@ import type {
   OutboundReadyMessage,
   OutboundCancelReadyMessage,
   OutboundMoveMessage,
+  OutboundStartMessage,
 } from "$types";
 
 interface MessageProcessResult {
@@ -90,9 +91,20 @@ export class WebSocketMessageHandler {
     };
   }
 
-  private handleStart(client: ActiveWebSocket, message: InboundStartMessage): MessageProcessResult {
-    // [TODO] save state to redis/DB
-    throw new Error("not implemented");
+  private handleStart(client: ActiveWebSocket): MessageProcessResult {
+    if (client.playerIdx !== 0) {
+      return {
+        success: false,
+        payload: { type: 'BAD_REQ', message: 'unauthorized' },
+      };
+    }
+    const startMessage: OutboundStartMessage = {
+      type: 'START',
+    };
+    return {
+      success: true,
+      payload: startMessage,
+    };
   }
 
   private handleReport(client: ActiveWebSocket, message: InboundReportMessage): MessageProcessResult {
@@ -104,7 +116,7 @@ export class WebSocketMessageHandler {
   async processMessage(client: ActiveWebSocket, message: InboundWebSocketMessage): Promise<MessageProcessResult> {
     switch (message.type) {
       case 'START':
-        return this.handleStart(client, message);
+        return this.handleStart(client);
       case "CONNECTED":
         return this.handleUserConnected(client, message);
       case "LEAVE":
