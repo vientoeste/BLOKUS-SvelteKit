@@ -46,7 +46,7 @@ export class GameManager {
     this.messageDispatcher = messageDispatcher;
     this.messageReceiver = messageReceiver;
 
-    this.messageReceiver.onMessage(this.handleIncomingMessage);
+    this.messageReceiver.onMessage((m) => { this.handleIncomingMessage(m) });
   }
   private messageReceiver: WebSocketMessageReceiver;
   private messageDispatcher: WebSocketMessageDispatcher;
