@@ -1,8 +1,9 @@
-import { error, json } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { ApiResponse, SignInResponse } from '$types';
 import { signIn, signOut } from '$lib/auth';
 import { CustomError } from '$lib/error';
+import { handleApiError } from '$lib/utils';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
   try {
@@ -30,23 +31,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     };
     return json(response);
   } catch (e) {
-    if (e instanceof CustomError) {
-      const response: ApiResponse = {
-        type: 'failure',
-        status: e.status ?? 500,
-        error: { message: e.message },
-      };
-      return new Response(JSON.stringify(response), {
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-    console.error(e);
-    const response: ApiResponse = {
-      type: 'failure',
-      status: 500,
-      error: { message: 'internal server error' },
-    };
-    return json(response);
+    return handleApiError(e);
   }
 };
 
@@ -59,11 +44,6 @@ export const DELETE: RequestHandler = async ({ cookies }) => {
     signOut(sessionToken);
     return new Response(null, { status: 204 });
   } catch (e) {
-    if (e instanceof CustomError) {
-      console.error(e.message);
-      error(e.status ?? 500, e.message);
-    }
-    console.error(e);
-    error(500, 'internal error');
+    return handleApiError(e);
   }
 };

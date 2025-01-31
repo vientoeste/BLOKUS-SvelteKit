@@ -1,6 +1,7 @@
 import { validateSessionCookie } from "$lib/auth";
 import { addUserToRoomCache } from "$lib/database/room";
 import { CustomError } from "$lib/error";
+import { handleApiError } from "$lib/utils";
 import type { ApiResponse } from "$types";
 import { json, type RequestHandler } from "@sveltejs/kit";
 
@@ -22,19 +23,6 @@ export const POST: RequestHandler = async ({ cookies, params }) => {
     };
     return json(response);
   } catch (e) {
-    console.error(e);
-    if (e instanceof CustomError) {
-      const response: ApiResponse = {
-        type: 'failure',
-        status: e.status ?? 500,
-        error: { message: e.message },
-      };
-      return json(response);
-    }
-    return json({
-      type: 'failure',
-      status: 500,
-      error: { message: 'unknown error occured' },
-    });
+    return handleApiError(e);
   }
 };
