@@ -10,10 +10,6 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
     const { room_id: roomId } = params;
     const room = await getRoomById(roomId);
     const { p0, p1, p2, p3 } = room;
-    if (p1 !== undefined && p2 !== undefined && p3 !== undefined) {
-      throw new Error('room is full');
-    }
-
     const playerIdx = p0?.id === id ?
       0 : p1?.id === id ?
         1 : p2?.id === id ?
