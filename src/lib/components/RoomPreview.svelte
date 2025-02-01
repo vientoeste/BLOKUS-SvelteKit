@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import type { ApiResponse, RoomPreviewInf } from "$types";
-  import { parseJson } from "$lib/utils";
+  import { clearLocalStorageAuthStatus, parseJson } from "$lib/utils";
   import { modalStore } from "../../Store";
   import Alert from "./Alert.svelte";
   interface $$Props extends RoomPreviewInf {}
@@ -32,7 +32,10 @@
     if (typeof response === "string") {
       return;
     }
-    const { type } = response;
+    const { type, status } = response;
+    if (status === 401) {
+      clearLocalStorageAuthStatus(localStorage);
+    }
     if (type === "success") {
       goto(`rooms/${id}`);
     }

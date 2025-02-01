@@ -10,7 +10,7 @@
   } from "$types";
   import { onMount } from "svelte";
   import { modalStore } from "../../Store";
-  import { parseJson } from "$lib/utils";
+  import { clearLocalStorageAuthStatus, parseJson } from "$lib/utils";
   import { page } from "$app/stores";
 
   const storedRooms: RoomPreviewInf[] = [];
@@ -40,6 +40,7 @@
 
     const { status, type } = response;
     if (type === "failure") {
+      clearLocalStorageAuthStatus(localStorage);
       modalStore.open(Alert, {
         title: "failed to get rooms",
         message: response.error.message,

@@ -13,6 +13,15 @@ export const getUserInfoFromLocalStorage = (localStorage: Storage) => {
   return { id, userId, username };
 };
 
+export const clearLocalStorageAuthStatus = (localStorage: Storage) => {
+  localStorage.removeItem('id');
+  localStorage.removeItem('username');
+  const isSaved = Boolean(localStorage.getItem('save'));
+  if (!isSaved) {
+    localStorage.removeItem('userId');
+  }
+};
+
 export const isFormDataFieldsValid = (formData: FormData, allowed: string[]) => {
   const disallowed = [];
   for (const field of formData.keys()) {

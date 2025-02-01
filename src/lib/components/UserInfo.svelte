@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { clearLocalStorageAuthStatus } from "$lib/utils";
   import { modalStore, userStore } from "../../Store";
   import Alert from "./Alert.svelte";
 
@@ -27,11 +28,7 @@
       username: undefined,
     }));
 
-    localStorage.removeItem("id");
-    localStorage.removeItem("username");
-    if (!Boolean(localStorage.getItem("save"))) {
-      localStorage.removeItem("userId");
-    }
+    clearLocalStorageAuthStatus(localStorage);
   };
 </script>
 
