@@ -1,5 +1,5 @@
 import { CustomError } from "$lib/error";
-import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf, UserInfo, CreateRoomCacheDTO } from "$types";
+import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf, UserInfo, CreateRoomCacheDTO, RawParticipantInf } from "$types";
 import { parseJson } from "$lib/utils";
 import { handleMongoError, Rooms } from "./mongo";
 import { redis } from "./redis";
@@ -156,33 +156,36 @@ export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
   };
 };
 
-export const addUserToRoomCache = async ({ roomId, userInfo }: { userInfo: UserInfo, roomId: RoomId }) => {
+export const addUserToRoomCache = async ({ roomId, userInfo: { id, username } }: { userInfo: UserInfo, roomId: RoomId }) => {
   const room = await getRoomCache(roomId);
   const { p0, p1, p2, p3 } = room;
 
-  if (p0 && p0.id === userInfo.id) {
+  if (p0 && p0.id === id) {
     return 0;
   }
-  if (p1 && p1.id === userInfo.id) {
+  if (p1 && p1.id === id) {
     return 1;
   }
-  if (p2 && p2.id === userInfo.id) {
+  if (p2 && p2.id === id) {
     return 2;
   }
-  if (p3 && p3.id === userInfo.id) {
+  if (p3 && p3.id === id) {
     return 3;
   }
 
+  const participant: RawParticipantInf = {
+    id, username, ready: 0,
+  };
   if (p1 === undefined) {
-    await redis.hSet(`room:${roomId}`, 'p1', JSON.stringify(userInfo));
+    await redis.hSet(`room:${roomId}`, 'p1', JSON.stringify(participant));
     return 1;
   }
   if (p2 === undefined) {
-    await redis.hSet(`room:${roomId}`, 'p2', JSON.stringify(userInfo));
+    await redis.hSet(`room:${roomId}`, 'p2', JSON.stringify(participant));
     return 2;
   }
   if (p3 === undefined) {
-    await redis.hSet(`room:${roomId}`, 'p3', JSON.stringify(userInfo));
+    await redis.hSet(`room:${roomId}`, 'p3', JSON.stringify(participant));
     return 3;
   }
   throw new CustomError('room is full');

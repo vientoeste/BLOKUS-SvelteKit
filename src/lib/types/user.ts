@@ -31,3 +31,7 @@ export interface SignInDTO {
 export interface ParticipantInf extends Omit<UserInfo, 'userId'> {
   ready: boolean;
 }
+
+export interface RawParticipantInf extends Omit<ParticipantInf, 'ready'> {
+  ready: 0 | 1;
+}
