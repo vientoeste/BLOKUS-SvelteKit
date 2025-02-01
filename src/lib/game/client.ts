@@ -15,6 +15,7 @@ import type {
   InboundMoveMessage,
   OutboundErrorMessage,
   OutboundMediateMessage,
+  OutboundBadReqMessage,
 } from "$types";
 import { gameStore, modalStore } from "../../Store";
 import { createNewBoard, preset, putBlockOnBoard } from "./core";
@@ -77,6 +78,9 @@ export class GameManager {
       case "START":
         this.handleStartMessage();
         break;
+      case "BAD_REQ":
+        this.handleBadRequestException(message);
+        break;
       case "MEDIATE":
         break;
       case "ERROR":
@@ -118,6 +122,13 @@ export class GameManager {
 
   handleMediate(message: OutboundMediateMessage) {
     // 
+  }
+
+  handleBadRequestException({ message }: OutboundBadReqMessage) {
+    modalStore.open(Alert, {
+      title: 'error occured',
+      message,
+    });
   }
 
   initiateNextTurn(): Promise<void> | void {
