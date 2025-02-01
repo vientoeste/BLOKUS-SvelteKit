@@ -31,9 +31,8 @@ export interface OutboundCancelReadyMessage extends WebSocketMessageBase {
   playerIdx: PlayerIdx;
 }
 
-export interface OutboundMoveMessage extends WebSocketMessageBase, MoveDTO {
-  type: 'MOVE';
-}
+export type OutboundMoveMessage = WebSocketMessageBase & { type: 'MOVE' } & ((MoveDTO & { timeout: false })
+  | { timeout: true, playerIdx: PlayerIdx, turn: number });
 
 export interface OutboundMediateMessage extends WebSocketMessageBase {
   type: 'MEDIATE';
@@ -68,9 +67,8 @@ export interface InboundCancelReadyMessage extends WebSocketMessageBase {
   type: 'CANCEL_READY';
 }
 
-export interface InboundMoveMessage extends WebSocketMessageBase, MoveDTO {
-  type: 'MOVE';
-}
+export type InboundMoveMessage = WebSocketMessageBase & { type: 'MOVE' } & ((MoveDTO & { timeout: false })
+  | { timeout: true, turn: number });
 
 export interface InboundReportMessage extends WebSocketMessageBase {
   type: 'REPORT';

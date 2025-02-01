@@ -184,12 +184,13 @@ export class GameManager {
   private turnPromiseResolver: ((dto: MoveDTO) => void) | null = null;
   private turnPromiseRejecter: ((reason: string) => void) | null = null;
 
-  applyOpponentMove({
-    blockInfo,
-    playerIdx,
-    position,
-    turn,
-  }: MoveDTO) {
+  applyOpponentMove(message: OutboundMoveMessage) {
+    const { timeout } = message;
+    if (timeout) {
+      this.initiateNextTurn();
+      return;
+    }
+    const { blockInfo, playerIdx, position, turn } = message;
     const reason = putBlockOnBoard({
       board: this.board,
       blockInfo,
