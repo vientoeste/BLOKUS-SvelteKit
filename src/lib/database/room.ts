@@ -158,8 +158,11 @@ export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
 
 export const addUserToRoomCache = async ({ roomId, userInfo }: { userInfo: UserInfo, roomId: RoomId }) => {
   const room = await getRoomCache(roomId);
-  const { p1, p2, p3 } = room;
+  const { p0, p1, p2, p3 } = room;
 
+  if (p0 && p0.id === userInfo.id) {
+    return 0;
+  }
   if (p1 && p1.id === userInfo.id) {
     return 1;
   }
