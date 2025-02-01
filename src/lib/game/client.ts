@@ -40,7 +40,9 @@ export class GameManager {
     this.board = board;
     this.turn = turn ?? -1;
     this.playerIdx = playerIdx;
-    this.users.push(...users);
+    users.forEach((user, idx) => {
+      this.users[idx] = user;
+    });
     gameStore.subscribe((store) => {
       this.turn = store.turn;
     });
@@ -56,7 +58,7 @@ export class GameManager {
   private board: BoardMatrix;
   private turn: number;
 
-  private users: (ParticipantInf | undefined)[] = [undefined, undefined, undefined, undefined];
+  users: (ParticipantInf | undefined)[] = [undefined, undefined, undefined, undefined];
 
   handleIncomingMessage(message: OutboundWebSocketMessage) {
     switch (message.type) {
