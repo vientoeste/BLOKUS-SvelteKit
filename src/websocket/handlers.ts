@@ -15,6 +15,7 @@ import type {
   OutboundCancelReadyMessage,
   OutboundMoveMessage,
   OutboundStartMessage,
+  MoveDTO,
 } from "$types";
 
 interface MessageProcessResult {
@@ -88,11 +89,16 @@ export class WebSocketMessageHandler {
     };
   }
 
-  private async handleMove(client: ActiveWebSocket, {
-    position,
-    blockInfo,
-    turn,
-  }: InboundMoveMessage): Promise<MessageProcessResult> {
+  private async handleMove(client: ActiveWebSocket, message: InboundMoveMessage): Promise<MessageProcessResult> {
+    const { timeout } = message;
+    if (timeout) {
+      return {
+        success: false,
+        payload: {/* [TODO] fill here */ } as OutboundWebSocketMessage,
+      }
+    }
+
+    const { blockInfo, playerIdx, position, turn } = message as MoveDTO;
     // [TODO] checksum - lastMove
     const currentTurn = await this.redis.hGet(`room:${client.roomId}`, 'turn');
     if (turn - 1 !== parseInt(currentTurn as string)) {
@@ -108,6 +114,7 @@ export class WebSocketMessageHandler {
 
     const moveMessage: OutboundMoveMessage = {
       type: 'MOVE',
+      timeout: false,
       blockInfo,
       playerIdx: client.playerIdx,
       position,

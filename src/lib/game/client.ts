@@ -167,6 +167,7 @@ export class GameManager {
       if (timeoutRejecter) timeoutRejecter();
       const moveMessage: InboundMoveMessage = {
         type: 'MOVE',
+        timeout: false,
         blockInfo: move.blockInfo,
         playerIdx: this.playerIdx,
         position: move.position,
