@@ -145,36 +145,50 @@ export class GameManager {
   }
 
   async processMyTurn() {
-    // using duck typing, let runtime determine this type:
-    // in-browser - number
-    // nodejs - Timeout
-    let timeoutId: Parameters<typeof clearTimeout>[0];
-    let timeoutRejecter: (() => void) | undefined = undefined;
-    await Promise.race([
-      this.waitTurnResolution(),
-      new Promise<false>((res, rej) => {
-        timeoutRejecter = rej;
-        timeoutId = setTimeout(() => {
-          res(false);
-        }, 60000);
-      }),
-    ]).then((move: MoveDTO | false) => {
-      if (!move) {
-        // [TODO] dispatch turn-skip message
-        return;
-      }
-      clearTimeout(timeoutId);
-      if (timeoutRejecter) timeoutRejecter();
-      const moveMessage: InboundMoveMessage = {
-        type: 'MOVE',
-        timeout: false,
+    // 1. timeout starts
+    const timeoutId = setTimeout(() => {
+      // dispatch timeout-move message
+    }, 60000);
+    let isSubmitted = false;
+    // 2. wait
+    while (isSubmitted) {
+      // 3. resolve move
+      const move = await this.turnPromise;
+      if (!move) { continue; }
+      // 4. validation
+      const reason = putBlockOnBoard({
+        board: this.board,
         blockInfo: move.blockInfo,
         playerIdx: this.playerIdx,
         position: move.position,
-        turn: this.turn,
+        turn: move.turn,
+      });
+      if (reason) {
+        // 5-1. if invalid, alert & wait(go to 2)
+        modalStore.open(Alert, {
+          title: 'invalid move: please try again',
+          message: reason,
+        });
+        continue;
+      }
+      // 5. if valid, confirm
+      // [TODO] wait for confirm modal's confirm/cancel/reject
+      // 6. if confirmed, dispatch
+      const moveMessage: InboundMoveMessage = {
+        blockInfo: move.blockInfo,
+        playerIdx: this.playerIdx,
+        position: move.position,
+        timeout: false,
+        turn: move.turn,
+        type: 'MOVE',
       };
       this.messageDispatcher.dispatch(moveMessage);
-    });
+      isSubmitted = true;
+      clearTimeout(timeoutId);
+      break;
+      // 6-1. if rejected/closed, wait(go to 2)
+      // [TODO] add 'continue' if rejected/canceled
+    }
   }
 
   isMyTurn() {
