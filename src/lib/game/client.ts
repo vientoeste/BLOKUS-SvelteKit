@@ -172,22 +172,36 @@ export class GameManager {
         continue;
       }
       // 5. if valid, confirm
-      // [TODO] wait for confirm modal's confirm/cancel/reject
-      // 6. if confirmed, dispatch
-      const moveMessage: InboundMoveMessage = {
-        blockInfo: move.blockInfo,
-        playerIdx: this.playerIdx,
-        position: move.position,
-        timeout: false,
-        turn: move.turn,
-        type: 'MOVE',
-      };
-      this.messageDispatcher.dispatch(moveMessage);
-      isSubmitted = true;
-      clearTimeout(timeoutId);
-      break;
-      // 6-1. if rejected/closed, wait(go to 2)
-      // [TODO] add 'continue' if rejected/canceled
+      await new Promise<void>((res, rej) => {
+        modalStore.open(Confirm, {
+          title: 'confirm your move',
+          // [TODO] 
+          message: '',
+          confirmText: 'confirm',
+          cancelText: '',
+          onConfirm: () => {
+            // 6. if confirmed, dispatch
+            const moveMessage: InboundMoveMessage = {
+              type: 'MOVE',
+              blockInfo: move.blockInfo,
+              playerIdx: this.playerIdx,
+              position: move.position,
+              timeout: false,
+              turn: move.turn,
+            };
+            this.messageDispatcher.dispatch(moveMessage);
+            isSubmitted = true;
+            clearTimeout(timeoutId);
+          },
+          // 6-1. if rejected/closed,
+          // just resolve this promise to...
+          // - wait for the new one when canceled
+          // - escape this loop when confirmed
+          onCancel: () => {
+            res();
+          },
+        });
+      });
     }
   }
 
