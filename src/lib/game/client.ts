@@ -145,36 +145,77 @@ export class GameManager {
   }
 
   async processMyTurn() {
-    // using duck typing, let runtime determine this type:
-    // in-browser - number
-    // nodejs - Timeout
-    let timeoutId: Parameters<typeof clearTimeout>[0];
-    let timeoutRejecter: (() => void) | undefined = undefined;
-    await Promise.race([
-      this.waitTurnResolution(),
-      new Promise<false>((res, rej) => {
-        timeoutRejecter = rej;
-        timeoutId = setTimeout(() => {
-          res(false);
-        }, 60000);
-      }),
-    ]).then((move: MoveDTO | false) => {
-      if (!move) {
-        // [TODO] dispatch turn-skip message
-        return;
-      }
-      clearTimeout(timeoutId);
-      if (timeoutRejecter) timeoutRejecter();
-      const moveMessage: InboundMoveMessage = {
+    // 1. timeout starts
+    const timeoutId = setTimeout(() => {
+      modalStore.open(Alert, {
+        title: `time's up`,
+        message: '',
+      });
+      const timeoutMessage: InboundMoveMessage = {
         type: 'MOVE',
-        timeout: false,
+        timeout: true,
+        turn: this.turn,
+      };
+      this.messageDispatcher.dispatch(timeoutMessage);
+      this.turnPromiseRejecter?.('timeout');
+    }, 60000);
+    let isSubmitted = false;
+    // 2. wait
+    while (!isSubmitted) {
+      // 3. resolve move
+      const move = await this.waitMoveResolution().catch(() => null);
+      if (!move) {
+        // if the move is empty, maybe that means the turnPromise was rejected
+        break;
+      }
+      // 4. validation
+      const reason = putBlockOnBoard({
+        board: this.board,
         blockInfo: move.blockInfo,
         playerIdx: this.playerIdx,
         position: move.position,
-        turn: this.turn,
-      };
-      this.messageDispatcher.dispatch(moveMessage);
-    });
+        turn: move.turn,
+      });
+      if (reason) {
+        // 5-1. if invalid, alert & wait(go to 2)
+        modalStore.open(Alert, {
+          title: 'invalid move: please try again',
+          message: reason,
+        });
+        continue;
+      }
+      // 5. if valid, confirm
+      await new Promise<void>((res, rej) => {
+        modalStore.open(Confirm, {
+          title: 'confirm your move',
+          // [TODO] 
+          message: '',
+          confirmText: 'confirm',
+          cancelText: '',
+          onConfirm: () => {
+            // 6. if confirmed, dispatch
+            const moveMessage: InboundMoveMessage = {
+              type: 'MOVE',
+              blockInfo: move.blockInfo,
+              playerIdx: this.playerIdx,
+              position: move.position,
+              timeout: false,
+              turn: move.turn,
+            };
+            this.messageDispatcher.dispatch(moveMessage);
+            isSubmitted = true;
+            clearTimeout(timeoutId);
+          },
+          // 6-1. if rejected/closed,
+          // just resolve this promise to...
+          // - wait for the new one when canceled
+          // - escape this loop when confirmed
+          onCancel: () => {
+            res();
+          },
+        });
+      });
+    }
   }
 
   isMyTurn() {
@@ -238,36 +279,14 @@ export class GameManager {
     return;
   }
 
-  async waitTurnResolution(): Promise<MoveDTO> {
+  async waitMoveResolution(): Promise<MoveDTO> {
     this.turnPromise = new Promise<MoveDTO>((res, rej) => {
       this.turnPromiseResolver = res;
       this.turnPromiseRejecter = rej;
     });
     const move = await this.turnPromise;
-
     this.initializeTurnPromise();
-    if (!move) {
-      modalStore.open(Alert, {
-        title: 'invalid move',
-        content: 'please do your move again',
-      });
-      return this.waitTurnResolution();
-    }
-    const failedReason = putBlockOnBoard({
-      board: this.board,
-      blockInfo: move.blockInfo,
-      playerIdx: this.playerIdx,
-      position: move.position,
-      turn: this.turn,
-    });
-    if (!failedReason) {
-      return move;
-    }
-    modalStore.open(Alert, {
-      title: 'try other move',
-      message: failedReason,
-    });
-    return this.waitTurnResolution();
+    return move;
   }
 
   initiateGameStatus() {
