@@ -151,7 +151,7 @@ export class GameManager {
     }, 60000);
     let isSubmitted = false;
     // 2. wait
-    while (isSubmitted) {
+    while (!isSubmitted) {
       // 3. resolve move
       const move = await this.turnPromise;
       if (!move) { continue; }
