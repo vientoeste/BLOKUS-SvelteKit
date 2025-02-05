@@ -94,8 +94,13 @@ export class WebSocketMessageHandler {
     if (timeout) {
       return {
         success: false,
-        payload: {/* [TODO] fill here */ } as OutboundWebSocketMessage,
-      }
+        payload: {
+          type: 'MOVE',
+          timeout: true,
+          playerIdx: client.playerIdx,
+          turn: message.turn,
+        } as OutboundMoveMessage,
+      };
     }
 
     const { blockInfo, playerIdx, position, turn } = message as MoveDTO;
