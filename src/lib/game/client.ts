@@ -163,8 +163,11 @@ export class GameManager {
     // 2. wait
     while (!isSubmitted) {
       // 3. resolve move
-      const move = await this.turnPromise;
-      if (!move) { continue; }
+      const move = await this.waitMoveResolution().catch(() => null);
+      if (!move) {
+        // if the move is empty, maybe that means the turnPromise was rejected
+        break;
+      }
       // 4. validation
       const reason = putBlockOnBoard({
         board: this.board,
@@ -276,36 +279,14 @@ export class GameManager {
     return;
   }
 
-  async waitTurnResolution(): Promise<MoveDTO> {
+  async waitMoveResolution(): Promise<MoveDTO> {
     this.turnPromise = new Promise<MoveDTO>((res, rej) => {
       this.turnPromiseResolver = res;
       this.turnPromiseRejecter = rej;
     });
     const move = await this.turnPromise;
-
     this.initializeTurnPromise();
-    if (!move) {
-      modalStore.open(Alert, {
-        title: 'invalid move',
-        content: 'please do your move again',
-      });
-      return this.waitTurnResolution();
-    }
-    const failedReason = putBlockOnBoard({
-      board: this.board,
-      blockInfo: move.blockInfo,
-      playerIdx: this.playerIdx,
-      position: move.position,
-      turn: this.turn,
-    });
-    if (!failedReason) {
-      return move;
-    }
-    modalStore.open(Alert, {
-      title: 'try other move',
-      message: failedReason,
-    });
-    return this.waitTurnResolution();
+    return move;
   }
 
   initiateGameStatus() {
