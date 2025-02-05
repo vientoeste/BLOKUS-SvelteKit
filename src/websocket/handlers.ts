@@ -93,7 +93,7 @@ export class WebSocketMessageHandler {
     const { timeout } = message;
     if (timeout) {
       return {
-        success: false,
+        success: true,
         payload: {
           type: 'MOVE',
           timeout: true,
