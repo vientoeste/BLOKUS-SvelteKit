@@ -147,7 +147,17 @@ export class GameManager {
   async processMyTurn() {
     // 1. timeout starts
     const timeoutId = setTimeout(() => {
-      // dispatch timeout-move message
+      modalStore.open(Alert, {
+        title: `time's up`,
+        message: '',
+      });
+      const timeoutMessage: InboundMoveMessage = {
+        type: 'MOVE',
+        timeout: true,
+        turn: this.turn,
+      };
+      this.messageDispatcher.dispatch(timeoutMessage);
+      this.turnPromiseRejecter?.('timeout');
     }, 60000);
     let isSubmitted = false;
     // 2. wait
