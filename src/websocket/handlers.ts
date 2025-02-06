@@ -230,6 +230,7 @@ export class WebSocketMessageBroker {
   ) {
     this.publisher = redis;
     this.subscriber = redis.duplicate();
+    this.subscriber.connect();
     this.responseDispatcher = responseDispatcher;
   }
 
