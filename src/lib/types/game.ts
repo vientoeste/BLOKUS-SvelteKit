@@ -1,3 +1,5 @@
+import type { PlayerIdx } from "./room";
+
 export type BlockType = '50' | '51' | '52' | '53' | '54' | '55' | '56' | '57' | '58' | '59' | '5a' | '5b' | '40' | '41' | '42' | '43' | '44' | '30' | '31' | '20' | '10';
 
 /**
@@ -8,7 +10,7 @@ export type BlockType = '50' | '51' | '52' | '53' | '54' | '55' | '56' | '57' | 
  */
 export type Block = {
   type: BlockType;
-  rotation: 0 | 1 | 2 | 3;
+  rotation: Rotation;
   flip: boolean;
 }
 
@@ -20,7 +22,7 @@ export interface PlaceBlockDTO {
   block: BlockMatrix;
   position: number[];
   board: BoardMatrix;
-  playerIdx: 0 | 1 | 2 | 3;
+  playerIdx: PlayerIdx;
   turn: number;
 }
 
@@ -30,10 +32,12 @@ export interface SubmitMoveDTO {
 }
 
 export type MoveDTO = SubmitMoveDTO & {
-  playerIdx: 0 | 1 | 2 | 3;
+  playerIdx: PlayerIdx;
   turn: number;
 }
 
 export type PutBlockDTO = MoveDTO & {
   board: BoardMatrix;
 }
+
+export type Rotation = 0 | 1 | 2 | 3;

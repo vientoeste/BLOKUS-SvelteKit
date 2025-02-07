@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { BoardMatrix, SubmitMoveDTO } from "$types";
+  import type { BoardMatrix, PlayerIdx, Rotation, SubmitMoveDTO } from "$types";
   import Board from "$lib/components/Board.svelte";
   import { gameStore, modalStore } from "../../../Store";
   import Alert from "$lib/components/Alert.svelte";
@@ -40,7 +40,7 @@
       });
       goto("/rooms");
     }
-    $gameStore.playerIdx = room.playerIdx as 0 | 1 | 2 | 3;
+    $gameStore.playerIdx = room.playerIdx as PlayerIdx;
 
     // [TODO] consider reconnect
     const url = new URL(window.location.href);
@@ -71,7 +71,7 @@
       blockInfo: {
         type,
         flip,
-        rotation: (rotation % 4) as 0 | 1 | 2 | 3,
+        rotation: (rotation % 4) as Rotation,
       },
       position,
     });

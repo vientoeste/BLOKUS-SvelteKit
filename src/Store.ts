@@ -1,5 +1,5 @@
 import { preset } from '$lib/game/core';
-import type { BlockMatrix, BlockType, UserInfo } from '$types';
+import type { BlockMatrix, BlockType, PlayerIdx, Rotation, UserInfo } from '$types';
 import type { Undefinedable } from '$lib/utils';
 import { writable } from 'svelte/store';
 
@@ -55,7 +55,7 @@ export const modalStore = createModalStore();
 export const gameStore = writable<{
   turn: number,
   unusedBlocks: Map<BlockType, BlockMatrix>,
-  playerIdx: 0 | 1 | 2 | 3,
+  playerIdx: PlayerIdx,
   players: { id: string, userId: string, username: string }[],
   isStarted: boolean,
 }>({
@@ -71,4 +71,4 @@ export const gameStore = writable<{
  */
 export const dragPositionOffsetStore = writable<[number, number]>([0, 0]);
 
-export const moveStore = writable<({ type: BlockType, rotation: 0 | 1 | 2 | 3, flip: boolean }) | null>(null);
+export const moveStore = writable<({ type: BlockType, rotation: Rotation, flip: boolean }) | null>(null);

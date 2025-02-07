@@ -16,6 +16,7 @@ import type {
   OutboundErrorMessage,
   OutboundMediateMessage,
   OutboundBadReqMessage,
+  PlayerIdx,
 } from "$types";
 import { gameStore, modalStore } from "../../Store";
 import { createNewBoard, preset, putBlockOnBoard } from "./core";
@@ -30,7 +31,7 @@ export class GameManager {
   constructor({
     board, playerIdx, turn, users, messageDispatcher, messageReceiver,
   }: {
-    board: BoardMatrix, playerIdx: 0 | 1 | 2 | 3, turn?: number,
+    board: BoardMatrix, playerIdx: PlayerIdx, turn?: number,
     users: (ParticipantInf | undefined)[],
     messageDispatcher: WebSocketMessageDispatcher,
     messageReceiver: WebSocketMessageReceiver
@@ -52,7 +53,7 @@ export class GameManager {
   private messageReceiver: WebSocketMessageReceiver;
   private messageDispatcher: WebSocketMessageDispatcher;
 
-  private playerIdx: 0 | 1 | 2 | 3;
+  private playerIdx: PlayerIdx;
   private board: BoardMatrix;
   private turn: number;
 

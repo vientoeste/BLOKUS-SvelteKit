@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { BlockType } from "$types";
+  import type { BlockType, Rotation } from "$types";
   import { dragPositionOffsetStore, moveStore } from "../../Store";
   import Block from "./Block.svelte";
 
@@ -27,7 +27,7 @@
     moveStore.set({
       type,
       flip: state?.flip ?? false,
-      rotation: (state?.rotation ?? 0) as 0 | 1 | 2 | 3,
+      rotation: (state?.rotation ?? 0) as Rotation,
     });
 
     event.dataTransfer.effectAllowed = "move";
