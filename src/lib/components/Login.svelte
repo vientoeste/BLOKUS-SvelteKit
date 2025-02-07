@@ -1,6 +1,11 @@
 <script lang="ts">
   import type { ApiResponse, SignInResponse } from "$types";
-  import { parseJson, validatePassword, validateUserId } from "$lib/utils";
+  import {
+    clearLocalStorageAuthStatus,
+    parseJson,
+    validatePassword,
+    validateUserId,
+  } from "$lib/utils";
   import { writable } from "svelte/store";
   import { modalStore, userStore } from "../../Store";
   import Alert from "./Alert.svelte";
@@ -101,6 +106,9 @@
       return;
     }
 
+    if (status === 401) {
+      clearLocalStorageAuthStatus(localStorage);
+    }
     const { error } = response;
     modalStore.open(Alert, {
       title: "sign in failed",
