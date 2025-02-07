@@ -26,8 +26,6 @@ import type {
 import Alert from "$lib/components/Alert.svelte";
 import Confirm from "$lib/components/Confirm.svelte";
 
-// [TODO] room state?
-// [TODO] message validations
 export class GameManager {
   constructor({
     board, playerIdx, turn, users, messageDispatcher, messageReceiver,

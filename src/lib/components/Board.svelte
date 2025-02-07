@@ -91,7 +91,6 @@
       if (type === undefined || rotation === undefined || flip === undefined) {
         throw new Error("missing blockInfo");
       }
-      // [TODO] determine-modal
       relayMove({
         position,
         blockInfo: { type, rotation, flip },

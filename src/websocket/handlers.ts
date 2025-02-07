@@ -174,7 +174,6 @@ export class WebSocketMessageHandler {
     throw new Error("not implemented");
   }
 
-  // [TODO] log the websocket messages here or upper scope
   async processMessage(client: ActiveWebSocket, message: InboundWebSocketMessage): Promise<MessageProcessResult> {
     switch (message.type) {
       case 'START':
