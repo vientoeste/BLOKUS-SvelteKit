@@ -13,7 +13,6 @@ interface ModalState {
   isOpen: boolean;
   component: any | null;
   props?: Record<string, any>;
-  events?: Record<string, () => void>
 }
 
 const createModalStore = () => {
@@ -21,24 +20,22 @@ const createModalStore = () => {
     isOpen: false,
     component: null,
     props: {},
-    events: {},
   });
 
+  // [TODO] execute all functions of props
   return {
     subscribe,
-    open: (component: any, props?: Record<string, any>, events?: { onclose?: () => void }) => {
+    open: (component: any, props?: Record<string, any>) => {
+      props?.onOpen?.();
       set({
         isOpen: true,
         component,
         props,
-        events,
       });
     },
     close: () => {
       update(state => {
-        if (state.events?.onClose) {
-          state.events.onClose();
-        }
+        state.props?.onClose?.();
         return {
           isOpen: false,
           component: null,
