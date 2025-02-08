@@ -276,18 +276,15 @@ export class WebSocketConnectionOrchestrator {
   constructor(
     messageHandler: WebSocketMessageHandler,
     messageBroker: WebSocketMessageBroker,
-    responseDispatcher: WebSocketResponseDispatcher,
     connectionManager: WebSocketConnectionManager,
   ) {
     this.messageHandler = messageHandler;
     this.messageBroker = messageBroker;
-    this.responseDispatcher = responseDispatcher;
     this.connectionManager = connectionManager;
   }
 
   private messageHandler: WebSocketMessageHandler;
   private messageBroker: WebSocketMessageBroker;
-  private responseDispatcher: WebSocketResponseDispatcher;
   private connectionManager: WebSocketConnectionManager;
 
   async handleClientMessage(client: ActiveWebSocket, rawMessage: string) {
@@ -310,7 +307,6 @@ export class WebSocketConnectionOrchestrator {
         this.connectionManager.removeClient({ roomId: client.roomId, userId: client.userId });
       }
       this.messageBroker.publishMessage({ message: result.payload, roomId: client.roomId });
-      this.responseDispatcher.dispatch({ roomId: client.roomId, payload: result.payload });
       return;
     } catch (e) {
       // [TODO] log
