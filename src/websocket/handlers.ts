@@ -302,6 +302,7 @@ export class WebSocketConnectionOrchestrator {
           type: 'ERROR',
         }
         client.send(JSON.stringify(errorMessage));
+        return;
       }
       if (result.payload.type === 'LEAVE') {
         this.connectionManager.removeClient({ roomId: client.roomId, userId: client.userId });
