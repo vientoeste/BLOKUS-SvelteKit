@@ -1,4 +1,4 @@
-import type { Block, BlockMatrix, BlockType, BoardMatrix, PlaceBlockDTO, PutBlockDTO } from "../types";
+import type { Block, BlockMatrix, BlockType, BoardMatrix, PlaceBlockDTO, PutBlockDTO, SubmitMoveDTO } from "../types";
 
 export const preset: Record<BlockType, BlockMatrix> = {
   '50': [[true, true, true, true, true]],
