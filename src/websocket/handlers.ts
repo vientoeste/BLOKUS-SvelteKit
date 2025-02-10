@@ -238,6 +238,7 @@ export class WebSocketMessageBroker {
     responseDispatcher: WebSocketResponseDispatcher,
   ) {
     this.publisher = redis;
+    if (!this.publisher.isReady) this.publisher.connect();
     this.subscriber = redis.duplicate();
     this.subscriber.connect();
     this.responseDispatcher = responseDispatcher;
