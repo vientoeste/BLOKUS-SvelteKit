@@ -31,6 +31,16 @@ export class WebSocketMessageHandler {
   private redis: RedisClientType;
 
   private handleUserConnected(client: ActiveWebSocket, { username }: InboundConnectedMessage): MessageProcessResult {
+    if (!username) {
+      const message: OutboundBadReqMessage = {
+        type: 'BAD_REQ',
+        message: 'username is missing',
+      };
+      return {
+        success: false,
+        payload: message,
+      };
+    }
     const connectedMessage: OutboundConnectedMessage = {
       type: 'CONNECTED',
       id: client.userId,
@@ -298,10 +308,7 @@ export class WebSocketConnectionOrchestrator {
       // [TODO] log
       const result = await this.messageHandler.processMessage(client, message);
       if (!result.success) {
-        const errorMessage: OutboundErrorMessage = {
-          type: 'ERROR',
-        }
-        client.send(JSON.stringify(errorMessage));
+        client.send(JSON.stringify(result.payload));
         return;
       }
       if (result.payload.type === 'LEAVE') {
