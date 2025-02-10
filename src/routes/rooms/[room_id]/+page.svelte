@@ -6,7 +6,7 @@
   import Alert from "$lib/components/Alert.svelte";
   import type { PageData } from "./$types";
   import { goto } from "$app/navigation";
-  import { GameManager } from "$lib/game/client";
+  import { GameManager } from "$lib/game/client.svelte";
   import Controller from "$lib/components/Controller.svelte";
   import {
     WebSocketMessageDispatcher,
