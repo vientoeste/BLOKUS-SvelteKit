@@ -57,7 +57,7 @@ export class GameManager {
   private board: BoardMatrix;
   private turn: number;
 
-  users: (ParticipantInf | undefined)[] = [undefined, undefined, undefined, undefined];
+  users: (ParticipantInf | undefined)[] = $state([undefined, undefined, undefined, undefined]);
 
   handleIncomingMessage(message: OutboundWebSocketMessage) {
     switch (message.type) {
