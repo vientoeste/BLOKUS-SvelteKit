@@ -4,7 +4,8 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
-		"prebuild": "tsc --project tsconfig.websocket.json",
+		"legacy": "tsc --project tsconfig.websocket.json",
+		"prebuild": "vite build --config vite.websocket.config.ts",
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
