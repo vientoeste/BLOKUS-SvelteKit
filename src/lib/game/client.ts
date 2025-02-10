@@ -139,7 +139,7 @@ export class GameManager {
     }));
     this.turn += 1;
     if (this.isMyTurn()) {
-      return this.processMyTurn();
+      this.processMyTurn();
     }
   }
 
