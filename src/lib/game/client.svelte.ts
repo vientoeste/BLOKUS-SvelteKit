@@ -137,7 +137,6 @@ export class GameManager {
       ...rest,
       turn: turn + 1,
     }));
-    this.turn += 1;
     if (this.isMyTurn()) {
       this.processMyTurn();
     }
@@ -297,14 +296,13 @@ export class GameManager {
   }
 
   initiateGameStatus() {
-    this.turn = 0;
     this.board = createNewBoard();
     gameStore.update((gameInfo) => ({
       ...gameInfo,
-      turn: 0,
       isStarted: true,
       unusedBlocks: new Map(Object.entries(preset) as [BlockType, BlockMatrix][]),
     }));
+    this.initiateNextTurn();
   }
 
   handleStartMessage() {
