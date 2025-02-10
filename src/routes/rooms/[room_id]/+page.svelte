@@ -76,7 +76,7 @@
       position,
     });
   }}
-  {board}
+  board={gameManager?.board}
 />
 
 <Controller startGame={() => gameManager?.startGame()}></Controller>
