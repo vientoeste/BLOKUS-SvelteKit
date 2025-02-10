@@ -302,7 +302,7 @@ export class WebSocketConnectionOrchestrator {
     try {
       const message = JSON.parse(rawMessage) as InboundWebSocketMessage;
       if (typeof message === 'string') {
-        client.send(JSON.stringify({ type: 'BAD_REQ' } as OutboundBadReqMessage));
+        client.send(JSON.stringify({ type: 'BAD_REQ', message: 'unknown message type' } as OutboundBadReqMessage));
         return;
       }
       // const traceId = uuidv7();
