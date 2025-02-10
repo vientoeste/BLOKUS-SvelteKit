@@ -26,7 +26,12 @@
   bind:this={dialog}
   onclose={() => (showModal = false)}
   onclick={(e) => {
-    if (e.target === dialog) dialog.close();
+    if (e.target === dialog) closeModal();
+  }}
+  onkeydown={(e) => {
+    if (e.key === "Escape") {
+      closeModal();
+    }
   }}
 >
   <!-- svelte-ignore svelte_component_deprecated -->
