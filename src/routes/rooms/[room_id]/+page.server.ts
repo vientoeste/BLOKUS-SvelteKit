@@ -1,7 +1,6 @@
 import { getRoomById } from "$lib/room";
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { redis } from "$lib/database/redis";
 import { validateSessionCookie } from "$lib/auth";
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
@@ -18,12 +17,6 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
     if (playerIdx === -1) {
       throw new Error('not allowed to join the room');
     }
-    redis.publish('message', JSON.stringify({
-      id,
-      userId,
-      username,
-      playerIdx,
-    }));
     return {
       ...room, playerIdx,
     };
