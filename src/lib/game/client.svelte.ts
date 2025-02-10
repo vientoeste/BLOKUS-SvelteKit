@@ -19,7 +19,7 @@ import type {
   PlayerIdx,
 } from "$types";
 import { gameStore, modalStore } from "../../Store";
-import { createNewBoard, preset, putBlockOnBoard } from "./core";
+import { createNewBoard, preset, putBlockOnBoard, rollbackMove } from "./core";
 import type {
   WebSocketMessageDispatcher,
   WebSocketMessageReceiver,
@@ -204,12 +204,20 @@ export class GameManager {
             this.messageDispatcher.dispatch(moveMessage);
             isSubmitted = true;
             clearTimeout(timeoutId);
+            res();
           },
           // 6-1. if rejected/closed,
           // just resolve this promise to...
           // - wait for the new one when canceled
           // - escape this loop when confirmed
-          onCancel: () => {
+          onClose: () => {
+            // if user confirmed his/her move, this promise is already resolved
+            // so handle 'reject' here(rollback)
+            rollbackMove({
+              board: this.board,
+              blockInfo: move.blockInfo,
+              position: move.position,
+            });
             res();
           },
         });
