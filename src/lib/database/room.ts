@@ -148,7 +148,7 @@ export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
     name,
     turn: parseInt(turn),
     lastMove: lastMove,
-    started: Boolean(started),
+    started: started !== '0',
     p0: p0_,
     p1: p1_,
     p2: p2_,
