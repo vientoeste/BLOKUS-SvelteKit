@@ -275,6 +275,17 @@ export const placeBlock = ({ block, position, board, playerIdx }: PlaceBlockDTO)
   });
 };
 
+export const rollbackMove = ({ board, blockInfo, position: [row, col] }: SubmitMoveDTO & { board: BoardMatrix }) => {
+  const block = getBlockMatrix(blockInfo);
+  block.forEach((blockLine, rowIdx) => {
+    blockLine.forEach((blockCell, colIdx) => {
+      if (blockCell) {
+        board[row + rowIdx][col + colIdx] = false;
+      }
+    })
+  })
+};
+
 export const putBlockOnBoard = ({ board, blockInfo, position, playerIdx, turn }: PutBlockDTO) => {
   const block = getBlockMatrix(blockInfo);
 
