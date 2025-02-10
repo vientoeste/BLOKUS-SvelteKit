@@ -304,14 +304,12 @@ export class GameManager {
   }
 
   async startGame() {
-    if (this.playerIdx === 0) {
-      this.initiateGameStatus();
-      const startMessage: OutboundStartMessage = {
-        type: 'START',
-      };
-      this.messageDispatcher.dispatch(startMessage);
-
-      this.processMyTurn();
+    if (this.playerIdx !== 0) {
+      return;
     }
+    const startMessage: OutboundStartMessage = {
+      type: 'START',
+    };
+    this.messageDispatcher.dispatch(startMessage);
   }
 }
