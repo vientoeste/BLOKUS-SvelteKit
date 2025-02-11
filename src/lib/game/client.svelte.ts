@@ -56,7 +56,7 @@ export class GameManager {
   private messageDispatcher: WebSocketMessageDispatcher;
 
   private playerIdx: PlayerIdx;
-  private board: BoardMatrix;
+  board: BoardMatrix = $state([]);
   private turn: number;
 
   users: (ParticipantInf | undefined)[] = $state([undefined, undefined, undefined, undefined]);
