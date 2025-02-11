@@ -241,7 +241,11 @@ export class GameManager {
   }
 
   isMyTurn() {
-    return this.turn % 4 === this.playerIdx;
+    return isRightTurn({
+      turn: this.turn,
+      activePlayerCount: this.users.length,
+      playerIdx: this.playerIdx,
+    });
   }
 
   private turnPromise: Promise<MoveDTO> | null = null;
