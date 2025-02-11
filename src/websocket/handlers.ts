@@ -17,7 +17,7 @@ import type {
   OutboundStartMessage,
   MoveDTO,
 } from "$types";
-import { parseJson } from "$lib/utils";
+import { extractPlayerCountFromCache, isRightTurn, parseJson } from "$lib/utils";
 import { getRoomCache } from "$lib/database/room";
 
 interface MessageProcessResult {
@@ -105,7 +105,25 @@ export class WebSocketMessageHandler {
   }
 
   private async handleMove(client: ActiveWebSocket, message: InboundMoveMessage): Promise<MessageProcessResult> {
-    const { timeout } = message;
+    const { timeout, turn } = message;
+    const roomCache = await getRoomCache(client.roomId);
+    if (!isRightTurn({
+      turn,
+      activePlayerCount: extractPlayerCountFromCache(roomCache),
+      playerIdx: client.playerIdx,
+    }) || turn !== roomCache.turn) {
+      const badReqMessage: OutboundBadReqMessage = {
+        type: 'BAD_REQ',
+        message: 'wrong turn',
+      };
+      return {
+        success: true,
+        payload: badReqMessage,
+      };
+    }
+    await this.redis.hSet(`room:${client.roomId}`, 'turn', turn + 1);
+
+    // [TODO] write move to db
     if (timeout) {
       return {
         success: true,
@@ -117,21 +135,10 @@ export class WebSocketMessageHandler {
         } as OutboundMoveMessage,
       };
     }
-
-    const { blockInfo, playerIdx, position, turn } = message as MoveDTO;
-    // [TODO] checksum - lastMove
-    const currentTurn = await this.redis.hGet(`room:${client.roomId}`, 'turn');
-    if (turn !== parseInt(currentTurn as string)) {
-      return {
-        success: false,
-        payload: { type: 'BAD_REQ', message: 'wrong turn' },
-      };
-    }
+    const { blockInfo, position } = message as MoveDTO;
     const compressedMove = `${client.playerIdx}:${blockInfo.type}[${position[0]},${position[1]}]r${blockInfo.rotation}f${blockInfo.flip ? 0 : 1}`;
     await this.redis.hSet(`room:${client.roomId}`, 'lastMove', compressedMove);
-    await this.redis.hSet(`room:${client.roomId}`, 'turn', turn + 1);
-    // [TODO] write move to db
-
+    // [TODO] checksum - lastMove
     const moveMessage: OutboundMoveMessage = {
       type: 'MOVE',
       timeout: false,
