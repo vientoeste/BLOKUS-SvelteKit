@@ -17,6 +17,8 @@ import type {
   OutboundStartMessage,
   MoveDTO,
 } from "$types";
+import { parseJson } from "$lib/utils";
+import { getRoomCache } from "$lib/database/room";
 
 interface MessageProcessResult {
   success: boolean;
@@ -65,12 +67,13 @@ export class WebSocketMessageHandler {
   }
 
   private async handleReady(client: ActiveWebSocket): Promise<MessageProcessResult> {
-    const roomCache = await this.redis.hGetAll(`room:${client.roomId}`);
-    const player = client.playerIdx === 0 ? JSON.parse(roomCache.p0) :
-      client.playerIdx === 1 ? JSON.parse(roomCache.p1) :
-        client.playerIdx === 2 ? JSON.parse(roomCache.p2) : JSON.parse(roomCache.p3);
-    player.ready = 1;
-    await this.redis.hSet(`room:${client.roomId}`, `p${client.playerIdx}`, JSON.stringify(player));
+    const roomCache = await getRoomCache(client.roomId);
+    const player = client.playerIdx === 0 ? (roomCache.p0) :
+      client.playerIdx === 1 ? (roomCache.p1) :
+        client.playerIdx === 2 ? (roomCache.p2) : (roomCache.p3);
+    await this.redis.hSet(`room:${client.roomId}`, `p${client.playerIdx}`, JSON.stringify({
+      ...player, ready: 1,
+    }));
 
     const readyMessage: OutboundReadyMessage = {
       type: 'READY',
@@ -83,12 +86,13 @@ export class WebSocketMessageHandler {
   }
 
   private async handleCancelReady(client: ActiveWebSocket): Promise<MessageProcessResult> {
-    const roomCache = await this.redis.hGetAll(`room:${client.roomId}`);
-    const player = client.playerIdx === 0 ? JSON.parse(roomCache.p0) :
-      client.playerIdx === 1 ? JSON.parse(roomCache.p1) :
-        client.playerIdx === 2 ? JSON.parse(roomCache.p2) : JSON.parse(roomCache.p3);
-    player.ready = 0;
-    await this.redis.hSet(`room:${client.roomId}`, `p${client.playerIdx}`, JSON.stringify(player));
+    const roomCache = await getRoomCache(client.roomId);
+    const player = client.playerIdx === 0 ? roomCache.p0 :
+      client.playerIdx === 1 ? roomCache.p1 :
+        client.playerIdx === 2 ? roomCache.p2 : roomCache.p3;
+    await this.redis.hSet(`room:${client.roomId}`, `p${client.playerIdx}`, JSON.stringify({
+      ...player, ready: 0,
+    }));
 
     const cancelReadyMessage: OutboundCancelReadyMessage = {
       type: 'CANCEL_READY',
@@ -150,18 +154,18 @@ export class WebSocketMessageHandler {
       };
     }
 
-    const roomCache = await this.redis.hGetAll(`room:${client.roomId}`);
-    const isStarted = '1' === roomCache.started;
-    if (isStarted) {
+    const roomCache = await getRoomCache(client.roomId);
+    if (roomCache.started) {
       return {
         success: false,
         payload: { type: 'BAD_REQ', message: 'game already started' },
       };
     }
     // [TODO] consider the case that number of user is lower than 4
-    const isReadied = JSON.parse(roomCache.p1).ready === 1
-      && JSON.parse(roomCache.p2).ready === 1
-      && JSON.parse(roomCache.p3).ready === 1;
+    const isReadied = roomCache.p0.ready
+      && (roomCache.p1 === undefined || roomCache.p1?.ready)
+      && (roomCache.p2 === undefined || roomCache.p2?.ready)
+      && (roomCache.p3 === undefined || roomCache.p3?.ready);
     if (!isReadied) {
       return {
         success: false,
@@ -254,8 +258,10 @@ export class WebSocketMessageBroker {
   }
 
   subscribeMessage() {
-    this.subscriber.subscribe('message', (message) => {
-      const { roomId, payload } = JSON.parse(message) as WebSocketBrokerMessage;
+    this.subscriber.subscribe('message', (rawMessage) => {
+      const message = parseJson<WebSocketBrokerMessage>(rawMessage);
+      if (typeof message === 'string') return;
+      const { roomId, payload } = message;
       this.responseDispatcher.dispatch({ roomId, payload });
     });
   }
@@ -300,7 +306,7 @@ export class WebSocketConnectionOrchestrator {
 
   async handleClientMessage(client: ActiveWebSocket, rawMessage: string) {
     try {
-      const message = JSON.parse(rawMessage) as InboundWebSocketMessage;
+      const message = parseJson<InboundWebSocketMessage>(rawMessage);
       if (typeof message === 'string') {
         client.send(JSON.stringify({ type: 'BAD_REQ', message: 'unknown message type' } as OutboundBadReqMessage));
         return;
