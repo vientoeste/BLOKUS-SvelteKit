@@ -12,6 +12,7 @@
     WebSocketMessageDispatcher,
     WebSocketMessageReceiver,
   } from "$lib/websocket/client";
+  import Players from "$lib/components/Players.svelte";
 
   const { data: room }: { data: PageData } = $props();
 
@@ -62,6 +63,15 @@
   });
 </script>
 
+<Players
+  players={gameManager?.users ?? []}
+  ready={() => {
+    gameManager?.ready();
+  }}
+  unready={() => {
+    gameManager?.unready();
+  }}
+></Players>
 <Board
   relayMove={({
     position,
