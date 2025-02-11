@@ -17,6 +17,8 @@ import type {
   OutboundMediateMessage,
   OutboundBadReqMessage,
   PlayerIdx,
+  InboundReadyMessage,
+  InboundCancelReadyMessage,
 } from "$types";
 import { gameStore, modalStore } from "../../Store";
 import { createNewBoard, preset, putBlockOnBoard, rollbackMove } from "./core";
@@ -108,6 +110,20 @@ export class GameManager {
   removeUser(message: OutboundLeaveMessage) {
     const { playerIdx } = message;
     this.users[playerIdx] = undefined;
+  }
+
+  ready() {
+    const readyMessage: InboundReadyMessage = {
+      type: 'READY',
+    };
+    this.messageDispatcher.dispatch(readyMessage);
+  }
+
+  unready() {
+    const unreadyMessage: InboundCancelReadyMessage = {
+      type: 'CANCEL_READY',
+    };
+    this.messageDispatcher.dispatch(unreadyMessage);
   }
 
   updateReadyState(message: OutboundReadyMessage | OutboundCancelReadyMessage) {
