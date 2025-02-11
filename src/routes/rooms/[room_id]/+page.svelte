@@ -1,18 +1,18 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { BoardMatrix, PlayerIdx, Rotation, SubmitMoveDTO } from "$types";
-  import Board from "$lib/components/Board.svelte";
-  import { gameStore, modalStore } from "../../../Store";
-  import Alert from "$lib/components/Alert.svelte";
-  import type { PageData } from "./$types";
   import { goto } from "$app/navigation";
-  import { GameManager } from "$lib/game/client.svelte";
+  import Alert from "$lib/components/Alert.svelte";
+  import Board from "$lib/components/Board.svelte";
   import Controller from "$lib/components/Controller.svelte";
+  import Players from "$lib/components/Players.svelte";
+  import { GameManager } from "$lib/game/client.svelte";
   import {
     WebSocketMessageDispatcher,
     WebSocketMessageReceiver,
   } from "$lib/websocket/client";
-  import Players from "$lib/components/Players.svelte";
+  import { gameStore, modalStore } from "../../../Store";
+  import type { BoardMatrix, PlayerIdx, Rotation, SubmitMoveDTO } from "$types";
+  import type { PageData } from "./$types";
 
   const { data: room }: { data: PageData } = $props();
 
