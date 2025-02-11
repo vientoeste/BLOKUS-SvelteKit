@@ -189,3 +189,11 @@ export const handleApiError = (e: unknown): Response => {
 
   return json(response, { status: response.status });
 };
+
+export const extractPlayerCountFromCache = (roomCache: RoomCacheInf) => 1 + (+(roomCache.p1 !== undefined)) + (+(roomCache.p2 !== undefined)) + (+(roomCache.p3 !== undefined));
+
+export const isRightTurn = ({ turn, playerIdx, activePlayerCount }: { turn: number, playerIdx: PlayerIdx, activePlayerCount: number }) => ({
+  2: turn % 2 === playerIdx,
+  3: turn % 4 === 3 ? (turn % 12) === (playerIdx * 4 + 3) : turn % 4 === playerIdx,
+  4: turn % 4 === playerIdx,
+}[activePlayerCount]);
