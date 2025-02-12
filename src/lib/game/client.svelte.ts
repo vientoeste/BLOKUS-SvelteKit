@@ -28,6 +28,7 @@ import type {
 } from "$lib/websocket/client";
 import Alert from "$lib/components/Alert.svelte";
 import Confirm from "$lib/components/Confirm.svelte";
+import { isRightTurn } from "$lib/utils";
 
 export class GameManager {
   constructor({
