@@ -22,6 +22,7 @@ import { getRoomCache } from "$lib/database/room";
 
 interface MessageProcessResult {
   success: boolean;
+  shouldBroadcast: boolean;
   payload: OutboundWebSocketMessage;
 }
 
@@ -39,7 +40,8 @@ export class WebSocketMessageHandler {
         message: 'username is missing',
       };
       return {
-        success: false,
+        success: true,
+        shouldBroadcast: false,
         payload: message,
       };
     }
@@ -51,6 +53,7 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
+      shouldBroadcast: true,
       payload: connectedMessage,
     };
   }
@@ -62,6 +65,7 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
+      shouldBroadcast: true,
       payload: leaveMessage,
     };
   }
@@ -81,6 +85,7 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
+      shouldBroadcast: true,
       payload: readyMessage,
     };
   }
@@ -100,6 +105,7 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
+      shouldBroadcast: true,
       payload: cancelReadyMessage,
     };
   }
@@ -118,6 +124,7 @@ export class WebSocketMessageHandler {
       };
       return {
         success: true,
+        shouldBroadcast: false,
         payload: badReqMessage,
       };
     }
@@ -127,6 +134,7 @@ export class WebSocketMessageHandler {
     if (timeout) {
       return {
         success: true,
+        shouldBroadcast: true,
         payload: {
           type: 'MOVE',
           timeout: true,
@@ -149,6 +157,7 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
+      shouldBroadcast: true,
       payload: moveMessage,
     };
   }
@@ -156,7 +165,8 @@ export class WebSocketMessageHandler {
   private async handleStart(client: ActiveWebSocket): Promise<MessageProcessResult> {
     if (client.playerIdx !== 0) {
       return {
-        success: false,
+        success: true,
+        shouldBroadcast: false,
         payload: { type: 'BAD_REQ', message: 'unauthorized' },
       };
     }
@@ -164,7 +174,8 @@ export class WebSocketMessageHandler {
     const roomCache = await getRoomCache(client.roomId);
     if (roomCache.started) {
       return {
-        success: false,
+        success: true,
+        shouldBroadcast: false,
         payload: { type: 'BAD_REQ', message: 'game already started' },
       };
     }
@@ -175,7 +186,8 @@ export class WebSocketMessageHandler {
       && (roomCache.p3 === undefined || roomCache.p3?.ready);
     if (!isReadied) {
       return {
-        success: false,
+        success: true,
+        shouldBroadcast: false,
         payload: { type: 'BAD_REQ', message: 'not readied' },
       };
     }
@@ -186,6 +198,7 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
+      shouldBroadcast: true,
       payload: startMessage,
     };
   }
@@ -214,7 +227,8 @@ export class WebSocketMessageHandler {
       default:
         return {
           success: false,
-          payload: { type: 'ERROR', }
+          shouldBroadcast: false,
+          payload: { type: 'BAD_REQ', message: 'not supported message type' },
         };
     }
   }
@@ -321,7 +335,7 @@ export class WebSocketConnectionOrchestrator {
       // const traceId = uuidv7();
       // [TODO] log
       const result = await this.messageHandler.processMessage(client, message);
-      if (!result.success) {
+      if (!result.shouldBroadcast) {
         client.send(JSON.stringify(result.payload));
         return;
       }
