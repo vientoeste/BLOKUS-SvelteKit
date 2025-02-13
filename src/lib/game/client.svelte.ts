@@ -244,7 +244,7 @@ export class GameManager {
   isMyTurn() {
     return isRightTurn({
       turn: this.turn,
-      activePlayerCount: this.users.length,
+      activePlayerCount: this.users.filter(e => e !== undefined).length,
       playerIdx: this.playerIdx,
     });
   }
