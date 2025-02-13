@@ -11,7 +11,13 @@
     WebSocketMessageReceiver,
   } from "$lib/websocket/client";
   import { gameStore, modalStore } from "../../../Store";
-  import type { BoardMatrix, PlayerIdx, Rotation, SubmitMoveDTO } from "$types";
+  import type {
+    BoardMatrix,
+    ParticipantInf,
+    PlayerIdx,
+    Rotation,
+    SubmitMoveDTO,
+  } from "$types";
   import type { PageData } from "./$types";
 
   const { data: room }: { data: PageData } = $props();
@@ -27,6 +33,8 @@
   let gameManager: GameManager | null = $state(null);
   let messageReceiver: WebSocketMessageReceiver;
   let messageDispatcher: WebSocketMessageDispatcher;
+
+  let players: (ParticipantInf | undefined)[] = $state([]);
 
   onDestroy(() => {
     socket?.close();
@@ -64,11 +72,13 @@
       messageReceiver,
       messageDispatcher,
     });
+
+    players = gameManager.users;
   });
 </script>
 
 <Players
-  players={gameManager?.users ?? []}
+  {players}
   ready={() => {
     gameManager?.ready();
   }}
