@@ -16,6 +16,7 @@ import type {
   OutboundMoveMessage,
   OutboundStartMessage,
   MoveDTO,
+  PlayerId,
 } from "$types";
 import { extractPlayerCountFromCache, isRightTurn, parseJson } from "$lib/utils";
 import { getRoomCache } from "$lib/database/room";
@@ -325,6 +326,27 @@ export class WebSocketConnectionOrchestrator {
   private messageBroker: WebSocketMessageBroker;
   private connectionManager: WebSocketConnectionManager;
 
+  async handleClientConnect(client: ActiveWebSocket, { id, username }: { id: PlayerId, username: string }) {
+    // [TODO] update parameter type
+    this.connectionManager.addClient({ client, roomId: client.roomId });
+    const connectedMessage: OutboundConnectedMessage = {
+      type: 'CONNECTED',
+      id,
+      playerIdx: client.playerIdx,
+      username,
+    };
+    this.messageBroker.publishMessage({ roomId: client.roomId, message: connectedMessage });
+  }
+
+  async handleClientLeave(client: ActiveWebSocket) {
+    this.connectionManager.removeClient({ roomId: client.roomId, userId: client.userId });
+    const leaveMessage: OutboundLeaveMessage = {
+      type: 'LEAVE',
+      playerIdx: client.playerIdx,
+    };
+    this.messageBroker.publishMessage({ roomId: client.roomId, message: leaveMessage });
+  }
+
   async handleClientMessage(client: ActiveWebSocket, rawMessage: string) {
     try {
       const message = parseJson<InboundWebSocketMessage>(rawMessage);
@@ -338,9 +360,6 @@ export class WebSocketConnectionOrchestrator {
       if (!result.shouldBroadcast) {
         client.send(JSON.stringify(result.payload));
         return;
-      }
-      if (result.payload.type === 'LEAVE') {
-        this.connectionManager.removeClient({ roomId: client.roomId, userId: client.userId });
       }
       this.messageBroker.publishMessage({ message: result.payload, roomId: client.roomId });
       return;

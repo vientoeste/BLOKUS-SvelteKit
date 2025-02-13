@@ -70,15 +70,11 @@ export const createSession = async ({ token, id, userId, username }: { token: st
 
 /**
  * @example
- * const { id, userId, username } = await validateSessionToken(cookies);
- * @param cookies cookies of request
+ * const { id, userId, username } = await validateSessionToken(token);
+ * @param token session token
  * @returns {UserInfo}
  */
-export const validateSessionCookie = async (cookies: Cookies): Promise<UserInfo> => {
-  const token = cookies.get('token');
-  if (!token) {
-    throw new CustomError('sign in first', 401);
-  }
+export const validateSessionToken = async (token: string) => {
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
   const item = await redis.hGetAll(`session:${sessionId}`);
   if (Object.keys(item).length === 0 || !item.uid || !item.uname || !item.id) {
@@ -88,6 +84,20 @@ export const validateSessionCookie = async (cookies: Cookies): Promise<UserInfo>
 
   await redis.expire(`session:${sessionId}`, 2592000);
   return { id, userId: uid, username: uname };
+};
+
+/**
+ * @example
+ * const { id, userId, username } = await validateSessionCookie(cookies);
+ * @param cookies cookies of request
+ * @returns {UserInfo}
+ */
+export const validateSessionCookie = async (cookies: Cookies): Promise<UserInfo> => {
+  const token = cookies.get('token');
+  if (!token) {
+    throw new CustomError('sign in first', 401);
+  }
+  return validateSessionToken(token);
 }
 
 export const invalidateSession = async (sessionId: string): Promise<boolean> => {
