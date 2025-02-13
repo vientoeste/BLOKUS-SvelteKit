@@ -4,6 +4,9 @@ import { Server as HttpsServer } from 'https';
 import type { RedisClientType } from "redis";
 import type { ActiveWebSocket, PendingWebSocket, PlayerIdx } from "$types";
 import { WebSocketConnectionManager, WebSocketConnectionOrchestrator, WebSocketMessageBroker, WebSocketMessageHandler, WebSocketResponseDispatcher } from "./handlers.js";
+import { validateSessionToken } from "$lib/auth.js";
+import { CustomError } from "$lib/error.js";
+import { getRoomCache } from "$lib/database/room.js";
 
 interface WebSocketServer extends Omit<WebSocketServer_, 'clients'> {
   clients: Set<PendingWebSocket>;
@@ -62,33 +65,32 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     }
     socket.roomId = roomId;
 
-    // [TODO] sequence totally went wrong. Extract user id from cookies first, and then get playerIdx from redis
-    const rawPlayerIdx = url.searchParams.get('idx');
-    if (!rawPlayerIdx) throw new Error('query string is missing');
-    const playerIdx = parseInt(rawPlayerIdx);
-    if (Number.isNaN(playerIdx) || playerIdx < 0 || playerIdx > 3) throw new Error('received inproper query string');
+    const sessionToken = request.headers.cookie
+      ?.split(';')
+      .find(c => c.trim().startsWith('token='))
+      ?.split('=')[1];
+    if (!sessionToken) throw new CustomError('token not found: please try again', 401);
+
+    const user = await validateSessionToken(sessionToken);
+    socket.userId = user.userId;
+
+    const roomCache = await getRoomCache(roomId);
+    const playerIdx = roomCache.p0.id === user.id ? 0 :
+      roomCache.p1?.id === user.id ? 1 :
+        roomCache.p2?.id === user.id ? 2 :
+          roomCache.p3?.id === user.id ? 3 : -1;
+    if (playerIdx === -1) throw new CustomError('not allowed', 403);
     socket.playerIdx = playerIdx as PlayerIdx;
 
-    // [TODO] $lib/database couldn't be resolved at websocket's transpiling time
-    const rawRoomCache = await redis.hGetAll(`room:${roomId}`);
-    if (!rawRoomCache || Object.keys(rawRoomCache).length === 0) {
-      socket.send(JSON.stringify({ type: 'ERROR', message: 'room doesn\'t exist' }));
-      socket.close();
-      return;
-    }
-    const { p0, p1, p2, p3 } = rawRoomCache;
-    const userId = playerIdx === 0 ? JSON.parse(p0).id :
-      playerIdx === 1 ? JSON.parse(p1).id :
-        playerIdx === 2 ? JSON.parse(p2).id : JSON.parse(p3).id;
-    if (!userId) throw new Error('user not found');
-    socket.userId = userId;
-
     const activeSocket = socket as ActiveWebSocket;
-
-    webSocketManager.addClient({ roomId, client: activeSocket });
+    connectionOrchestrator.handleClientConnect(activeSocket, { id: user.id, username: user.username });
 
     socket.on('error', (e: Error) => {
       console.error(e);
+    });
+
+    socket.on('close', () => {
+      connectionOrchestrator.handleClientLeave(activeSocket);
     });
 
     socket.on('message', (rawMessage: RawData) => {
