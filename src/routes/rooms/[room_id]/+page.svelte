@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { goto } from "$app/navigation";
   import Alert from "$lib/components/Alert.svelte";
   import Board from "$lib/components/Board.svelte";
@@ -27,6 +27,10 @@
   let gameManager: GameManager | null = $state(null);
   let messageReceiver: WebSocketMessageReceiver;
   let messageDispatcher: WebSocketMessageDispatcher;
+
+  onDestroy(() => {
+    socket?.close();
+  });
 
   onMount(() => {
     // if goto called at the outside of onMount, it would be considered as server-side
