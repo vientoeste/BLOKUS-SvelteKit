@@ -77,7 +77,7 @@ export class GameManager {
         this.updateReadyState(message);
         break;
       case "MOVE":
-        this.applyOpponentMove(message);
+        this.applyMove(message);
         break;
       case "START":
         this.handleStartMessage();
@@ -253,7 +253,7 @@ export class GameManager {
   private turnPromiseResolver: ((dto: MoveDTO) => void) | null = null;
   private turnPromiseRejecter: ((reason: string) => void) | null = null;
 
-  applyOpponentMove(message: OutboundMoveMessage) {
+  applyMove(message: OutboundMoveMessage) {
     const { timeout } = message;
     if (timeout) {
       this.initiateNextTurn();
