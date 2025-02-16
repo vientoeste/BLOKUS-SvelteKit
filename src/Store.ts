@@ -51,13 +51,13 @@ export const modalStore = createModalStore();
 
 export const gameStore = writable<{
   turn: number,
-  unusedBlocks: Map<BlockType, BlockMatrix>,
+  availableBlocksBySlots: Map<BlockType, BlockMatrix>[],
   playerIdx: PlayerIdx,
   players: { id: string, userId: string, username: string }[],
   isStarted: boolean,
 }>({
   turn: -1,
-  unusedBlocks: new Map(Object.entries(preset) as [BlockType, BlockMatrix][]),
+  availableBlocksBySlots: [],
   playerIdx: 0,
   players: [],
   isStarted: false,

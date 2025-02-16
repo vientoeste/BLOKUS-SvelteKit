@@ -204,8 +204,10 @@
 </script>
 
 <div id="blocks-container">
-  {#each $gameStore.unusedBlocks as block}
-    <DraggableBlock block={preset[block[0]]} type={block[0]} {blockState} />
+  {#each $gameStore.availableBlocksBySlots as slotBlocks}
+    {#each slotBlocks as block}
+      <DraggableBlock block={preset[block[0]]} type={block[0]} {blockState} />
+    {/each}
   {/each}
 </div>
 

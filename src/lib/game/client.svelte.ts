@@ -321,7 +321,7 @@ export class GameManager {
     gameStore.update((gameInfo) => ({
       ...gameInfo,
       isStarted: true,
-      unusedBlocks: new Map(Object.entries(preset) as [BlockType, BlockMatrix][]),
+      availableBlocksBySlots: Array(4).fill(null).map(() => new Map(Object.entries(preset) as [BlockType, BlockMatrix][])),
     }));
     this.initiateNextTurn();
   }
