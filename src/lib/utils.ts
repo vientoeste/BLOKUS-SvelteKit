@@ -1,4 +1,4 @@
-import type { ApiResponse, PlayerIdx } from "$types";
+import type { ApiResponse, PlayerIdx, RoomCacheInf } from "$types";
 import { json } from "@sveltejs/kit";
 import { CustomError } from "./error";
 

@@ -53,7 +53,7 @@ export const gameStore = writable<{
   turn: number,
   availableBlocksBySlots: Map<BlockType, BlockMatrix>[],
   playerIdx: PlayerIdx,
-  players: ({ id: string, userId: string, username: string } | undefined)[],
+  players: ({ id: string, username: string, ready: boolean } | undefined)[],
   isStarted: boolean,
   mySlots: number[],
 }>({
