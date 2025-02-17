@@ -90,6 +90,7 @@
   relayMove={({
     position,
     blockInfo: { type, rotation, flip },
+    slotIdx,
   }: SubmitMoveDTO) => {
     gameManager?.submitMove({
       blockInfo: {
@@ -97,6 +98,7 @@
         flip,
         rotation: (rotation % 4) as Rotation,
       },
+      slotIdx,
       position,
     });
   }}

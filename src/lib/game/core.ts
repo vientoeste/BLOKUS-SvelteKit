@@ -141,7 +141,7 @@ export const isWithinBoardBounds = ({ block, position }: PlaceBlockDTO) => {
   );
 };
 
-export const isFirstMoveValid = ({ block, playerIdx, turn, position }: PlaceBlockDTO) => {
+export const isFirstMoveValid = ({ block, slotIdx, turn, position }: PlaceBlockDTO) => {
   if (turn > 3) {
     return true;
   }
@@ -156,7 +156,7 @@ export const isFirstMoveValid = ({ block, playerIdx, turn, position }: PlaceBloc
     3: { board: [19, 0], block: [blockHeight - 1, 0] },
   };
 
-  const { board: boardPosition, block: blockPosition } = cornerPositionsPreset[playerIdx];
+  const { board: boardPosition, block: blockPosition } = cornerPositionsPreset[slotIdx];
 
   if (!block[blockPosition[0]][blockPosition[1]]) {
     return false;
@@ -186,7 +186,7 @@ export const getDiagonalCellsToCheck = ({ block, row, col }: { block: BlockMatri
   return diagonalCells;
 };
 
-export const hasDiagonalConnection = ({ block, position, board, playerIdx }: PlaceBlockDTO) => {
+export const hasDiagonalConnection = ({ block, position, board, slotIdx }: PlaceBlockDTO) => {
   const [row, col] = position;
   return block.some((blockLine, rowIdx) =>
     blockLine.some((blockCell, colIdx) => {
@@ -202,7 +202,7 @@ export const hasDiagonalConnection = ({ block, position, board, playerIdx }: Pla
             if (rowOnBoard < 0 || colOnBoard < 0 || rowOnBoard > 19 || colOnBoard > 19) {
               return false;
             }
-            return board[rowOnBoard][colOnBoard] === playerIdx;
+            return board[rowOnBoard][colOnBoard] === slotIdx;
           })
         );
       }
@@ -210,7 +210,7 @@ export const hasDiagonalConnection = ({ block, position, board, playerIdx }: Pla
   );
 };
 
-export const hasEdgeConnection = ({ block, board, playerIdx, position }: PlaceBlockDTO) => {
+export const hasEdgeConnection = ({ block, board, slotIdx, position }: PlaceBlockDTO) => {
   const [row, col] = position;
   const boardSize = 20;
   return block.some((blockLine, blockRow) =>
@@ -219,10 +219,10 @@ export const hasEdgeConnection = ({ block, board, playerIdx, position }: PlaceBl
       const boardRow = blockRow + row;
       const boardCol = blockCol + col;
       return (
-        (boardRow > 0 && board[boardRow - 1][boardCol] === playerIdx)
-        || (boardRow < boardSize - 1 && board[boardRow + 1][boardCol] === playerIdx)
-        || (boardCol > 0 && board[boardRow][boardCol - 1] === playerIdx)
-        || (boardCol < boardSize - 1 && board[boardRow][boardCol + 1] === playerIdx)
+        (boardRow > 0 && board[boardRow - 1][boardCol] === slotIdx)
+        || (boardRow < boardSize - 1 && board[boardRow + 1][boardCol] === slotIdx)
+        || (boardCol > 0 && board[boardRow][boardCol - 1] === slotIdx)
+        || (boardCol < boardSize - 1 && board[boardRow][boardCol + 1] === slotIdx)
       );
     })
   );
@@ -240,36 +240,36 @@ export const hasOverlap = ({ block, board, position }: PlaceBlockDTO) => {
   );
 };
 
-export const isBlockPlaceable = ({ block, position, board, playerIdx, turn }: PlaceBlockDTO): { result: boolean, reason?: string } => {
-  if (!isWithinBoardBounds({ block, position, board, playerIdx, turn })) {
+export const isBlockPlaceable = ({ block, position, board, slotIdx, turn }: PlaceBlockDTO): { result: boolean, reason?: string } => {
+  if (!isWithinBoardBounds({ block, position, board, slotIdx, turn })) {
     return { result: false, reason: 'bound' };
   }
 
-  if (!isFirstMoveValid({ block, position, board, playerIdx, turn })) {
+  if (!isFirstMoveValid({ block, position, board, slotIdx, turn })) {
     return { result: false, reason: 'invalid first move' };
   }
 
-  if (turn > 3 && !hasDiagonalConnection({ block, position, board, playerIdx, turn })) {
+  if (turn > 3 && !hasDiagonalConnection({ block, position, board, slotIdx, turn })) {
     return { result: false, reason: 'no connection' };
   }
 
-  if (hasEdgeConnection({ block, position, board, playerIdx, turn })) {
+  if (hasEdgeConnection({ block, position, board, slotIdx, turn })) {
     return { result: false, reason: 'connected with other block' };
   }
 
-  if (hasOverlap({ block, position, board, playerIdx, turn })) {
+  if (hasOverlap({ block, position, board, slotIdx, turn })) {
     return { result: false, reason: 'overlapped' };
   }
 
   return { result: true };
 };
 
-export const placeBlock = ({ block, position, board, playerIdx }: PlaceBlockDTO) => {
+export const placeBlock = ({ block, position, board, slotIdx }: PlaceBlockDTO) => {
   const [row, col] = position;
   block.forEach((blockLine, rowIdx) => {
     blockLine.forEach((blockCell, colIdx) => {
       if (blockCell) {
-        board[row + rowIdx][col + colIdx] = playerIdx;
+        board[row + rowIdx][col + colIdx] = slotIdx;
       }
     });
   });
@@ -286,13 +286,13 @@ export const rollbackMove = ({ board, blockInfo, position: [row, col] }: SubmitM
   })
 };
 
-export const putBlockOnBoard = ({ board, blockInfo, position, playerIdx, turn }: PutBlockDTO) => {
+export const putBlockOnBoard = ({ board, blockInfo, position, slotIdx, turn }: PutBlockDTO) => {
   const block = getBlockMatrix(blockInfo);
 
-  const { result, reason } = isBlockPlaceable({ block, position, board, playerIdx, turn })
+  const { result, reason } = isBlockPlaceable({ block, position, board, slotIdx, turn })
   if (!result) {
     return reason;
   }
 
-  placeBlock({ block, position, board, playerIdx, turn });
+  placeBlock({ block, position, board, slotIdx, turn });
 };

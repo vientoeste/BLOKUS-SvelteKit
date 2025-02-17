@@ -22,13 +22,14 @@ export interface PlaceBlockDTO {
   block: BlockMatrix;
   position: number[];
   board: BoardMatrix;
-  playerIdx: PlayerIdx;
+  slotIdx: PlayerIdx;
   turn: number;
 }
 
 export interface SubmitMoveDTO {
   blockInfo: Block;
   position: [number, number];
+  slotIdx: PlayerIdx;
 }
 
 export type MoveDTO = SubmitMoveDTO & {

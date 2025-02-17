@@ -1,7 +1,7 @@
 <script lang="ts">
   import { gameStore } from "../../Store";
 
-  const { block } = $props();
+  const { block, slotIdx } = $props();
 </script>
 
 <div class="block-container">
@@ -19,7 +19,7 @@
         >
           <div
             class="cell
-            cell-{cell === null ? 'blank' : $gameStore.playerIdx}
+            cell-{cell === null ? 'blank' : slotIdx}
             "
           ></div>
         </div>

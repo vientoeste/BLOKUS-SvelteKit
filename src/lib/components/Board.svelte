@@ -87,13 +87,14 @@
 
     try {
       if ($moveStore === null) throw new Error("move store is empty");
-      const { type, rotation, flip } = $moveStore;
+      const { type, rotation, flip, slotIdx } = $moveStore;
       if (type === undefined || rotation === undefined || flip === undefined) {
         throw new Error("missing blockInfo");
       }
       relayMove({
         position,
         blockInfo: { type, rotation, flip },
+        slotIdx,
       });
       unhighlightCells();
     } catch (error) {

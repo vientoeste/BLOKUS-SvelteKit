@@ -1,4 +1,4 @@
-import type { ApiResponse } from "$types";
+import type { ApiResponse, PlayerIdx } from "$types";
 import { json } from "@sveltejs/kit";
 import { CustomError } from "./error";
 
@@ -197,3 +197,14 @@ export const isRightTurn = ({ turn, playerIdx, activePlayerCount }: { turn: numb
   3: turn % 4 === 3 ? (turn % 12) === (playerIdx * 4 + 3) : turn % 4 === playerIdx,
   4: turn % 4 === playerIdx,
 }[activePlayerCount]);
+
+// [TODO] in 2p game, fix playerIdx to 0/1
+export const getPlayersSlot = ({
+  players, playerIdx
+}: {
+  players: ({ id: string; username: string; } | undefined)[], playerIdx: PlayerIdx
+}) => (({
+  2: playerIdx === 0 ? [0, 2] : [1, 3],
+  3: [playerIdx, players.findIndex(e => e === undefined)],
+  4: [playerIdx]
+}[players.filter(e => e !== undefined).length]) as number[]);
