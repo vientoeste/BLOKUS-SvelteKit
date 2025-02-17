@@ -51,16 +51,18 @@ export const modalStore = createModalStore();
 
 export const gameStore = writable<{
   turn: number,
-  unusedBlocks: Map<BlockType, BlockMatrix>,
+  availableBlocksBySlots: Map<BlockType, BlockMatrix>[],
   playerIdx: PlayerIdx,
-  players: { id: string, userId: string, username: string }[],
+  players: ({ id: string, userId: string, username: string } | undefined)[],
   isStarted: boolean,
+  mySlots: number[],
 }>({
   turn: -1,
-  unusedBlocks: new Map(Object.entries(preset) as [BlockType, BlockMatrix][]),
+  availableBlocksBySlots: [],
   playerIdx: 0,
   players: [],
   isStarted: false,
+  mySlots: [],
 });
 
 /**
@@ -68,4 +70,4 @@ export const gameStore = writable<{
  */
 export const dragPositionOffsetStore = writable<[number, number]>([0, 0]);
 
-export const moveStore = writable<({ type: BlockType, rotation: Rotation, flip: boolean }) | null>(null);
+export const moveStore = writable<({ type: BlockType, rotation: Rotation, flip: boolean, slotIdx: number }) | null>(null);

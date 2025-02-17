@@ -144,7 +144,7 @@ export class WebSocketMessageHandler {
         } as OutboundMoveMessage,
       };
     }
-    const { blockInfo, position } = message as MoveDTO;
+    const { blockInfo, position, slotIdx } = message as MoveDTO;
     const compressedMove = `${client.playerIdx}:${blockInfo.type}[${position[0]},${position[1]}]r${blockInfo.rotation}f${blockInfo.flip ? 0 : 1}`;
     await this.redis.hSet(`room:${client.roomId}`, 'lastMove', compressedMove);
     // [TODO] checksum - lastMove
@@ -153,6 +153,7 @@ export class WebSocketMessageHandler {
       timeout: false,
       blockInfo,
       playerIdx: client.playerIdx,
+      slotIdx,
       position,
       turn,
     };

@@ -7,10 +7,12 @@
     type,
     block,
     blockState,
+    slotIdx,
   }: {
     type: BlockType;
     block: ({ u: boolean; r: boolean; b: boolean; l: boolean } | null)[][];
     blockState: Map<BlockType, { rotation: number; flip: boolean }>;
+    slotIdx: number;
   } = $props();
 
   let blockMatrix: ({
@@ -28,6 +30,7 @@
       type,
       flip: state?.flip ?? false,
       rotation: (state?.rotation ?? 0) as Rotation,
+      slotIdx,
     });
 
     event.dataTransfer.effectAllowed = "move";
@@ -138,7 +141,7 @@
   ondragend={handleDragEnd}
   aria-label="draggable"
 >
-  <Block block={blockMatrix}></Block>
+  <Block block={blockMatrix} {slotIdx}></Block>
 
   {#if controllerVisibillity}
     <div class="block-control-panel">

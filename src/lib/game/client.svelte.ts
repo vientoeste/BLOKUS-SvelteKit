@@ -28,7 +28,7 @@ import type {
 } from "$lib/websocket/client";
 import Alert from "$lib/components/Alert.svelte";
 import Confirm from "$lib/components/Confirm.svelte";
-import { isRightTurn } from "$lib/utils";
+import { getPlayersSlot, isRightTurn } from "$lib/utils";
 
 export class GameManager {
   constructor({
@@ -77,7 +77,7 @@ export class GameManager {
         this.updateReadyState(message);
         break;
       case "MOVE":
-        this.applyOpponentMove(message);
+        this.applyMove(message);
         break;
       case "START":
         this.handleStartMessage();
@@ -188,6 +188,7 @@ export class GameManager {
         board: this.board,
         blockInfo: move.blockInfo,
         playerIdx: this.playerIdx,
+        slotIdx: move.slotIdx,
         position: move.position,
         turn: move.turn,
       });
@@ -213,6 +214,7 @@ export class GameManager {
               type: 'MOVE',
               blockInfo: move.blockInfo,
               playerIdx: this.playerIdx,
+              slotIdx: move.slotIdx,
               position: move.position,
               timeout: false,
               turn: move.turn,
@@ -232,6 +234,7 @@ export class GameManager {
             rollbackMove({
               board: this.board,
               blockInfo: move.blockInfo,
+              slotIdx: move.slotIdx,
               position: move.position,
             });
             res();
@@ -253,21 +256,30 @@ export class GameManager {
   private turnPromiseResolver: ((dto: MoveDTO) => void) | null = null;
   private turnPromiseRejecter: ((reason: string) => void) | null = null;
 
-  applyOpponentMove(message: OutboundMoveMessage) {
+  applyMove(message: OutboundMoveMessage) {
     const { timeout } = message;
     if (timeout) {
       this.initiateNextTurn();
       return;
     }
-    const { blockInfo, playerIdx, position, turn } = message;
+    const { blockInfo, playerIdx, position, turn, slotIdx } = message;
     const reason = putBlockOnBoard({
       board: this.board,
       blockInfo,
       playerIdx,
       position,
       turn,
+      slotIdx,
     });
     if (!reason) {
+      gameStore.update((store) => {
+        const slots = [...store.availableBlocksBySlots];
+        slots[slotIdx].delete(blockInfo.type);
+        return {
+          ...store,
+          availableBlocksBySlots: slots,
+        };
+      });
       this.initiateNextTurn();
       return;
     }
@@ -289,6 +301,7 @@ export class GameManager {
   submitMove({
     blockInfo,
     position,
+    slotIdx,
   }: SubmitMoveDTO) {
     if (
       !this.isMyTurn()
@@ -301,7 +314,7 @@ export class GameManager {
     }
 
     this.turnPromiseResolver({
-      blockInfo, playerIdx: this.playerIdx, position, turn: this.turn,
+      blockInfo, playerIdx: this.playerIdx, slotIdx, position, turn: this.turn,
     });
     return;
   }
@@ -321,7 +334,8 @@ export class GameManager {
     gameStore.update((gameInfo) => ({
       ...gameInfo,
       isStarted: true,
-      unusedBlocks: new Map(Object.entries(preset) as [BlockType, BlockMatrix][]),
+      mySlots: getPlayersSlot({ players: gameInfo.players, playerIdx: gameInfo.playerIdx }),
+      availableBlocksBySlots: Array(4).fill(null).map(() => new Map(Object.entries(preset) as [BlockType, BlockMatrix][])),
     }));
     this.initiateNextTurn();
   }
