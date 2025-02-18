@@ -1,5 +1,5 @@
 import { getBlockMatrix, hasDiagonalConnection, hasEdgeConnection, hasOverlap, isFirstMoveValid, isWithinBoardBounds, placeBlock } from '$lib/game/core';
-import type { BlockMatrix, BoardMatrix, PlaceBlockDTO, PlayerIdx } from '$types';
+import type { BlockMatrix, BoardMatrix, PlaceBlockDTO, SlotIdx } from '$types';
 
 describe('isBlockPlaceable 내부 로직 검사', () => {
   const createEmptyBoard = (): BoardMatrix =>
@@ -16,7 +16,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
 
     describe('블록이 보드 경계를 넘지 않는 경우', () => {
       test('작은 기역자 블록을 중앙에 배치하면 보드 내부에 완전히 들어가 true를 반환', () => {
-        const dto: PlaceBlockDTO = { block, position: [9, 9], board, playerIdx: 0, turn: 0 };
+        const dto: PlaceBlockDTO = { block, position: [9, 9], board, slotIdx: 0, turn: 0 };
 
         const result = isWithinBoardBounds(dto);
 
@@ -25,7 +25,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
 
       test('작은 기역자 블록을 보드 경계에 배치하면 보드 내부에 완전히 들어가 true를 반환', () => {
         [[0, 0], [0, 18], [18, 18], [18, 0]].forEach((position) => {
-          const dto: PlaceBlockDTO = { block, position, board, playerIdx: 0, turn: 0 };
+          const dto: PlaceBlockDTO = { block, position, board, slotIdx: 0, turn: 0 };
 
           const result = isWithinBoardBounds(dto);
 
@@ -36,8 +36,8 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
 
     describe('블록이 보드 경계를 넘어가는 경우', () => {
       test('블록이 보드 상하 경계를 넘으면 false를 반환', () => {
-        const upwardTestDTO: PlaceBlockDTO = { block, position: [-1, 0], board, playerIdx: 0, turn: 0 }
-        const downwardTestDTO: PlaceBlockDTO = { block, position: [19, 0], board, playerIdx: 0, turn: 0 }
+        const upwardTestDTO: PlaceBlockDTO = { block, position: [-1, 0], board, slotIdx: 0, turn: 0 }
+        const downwardTestDTO: PlaceBlockDTO = { block, position: [19, 0], board, slotIdx: 0, turn: 0 }
 
         const upwardResult = isWithinBoardBounds(upwardTestDTO);
         const downwardResult = isWithinBoardBounds(downwardTestDTO);
@@ -47,8 +47,8 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
       });
 
       test('블록이 보드 좌우 경계를 넘으면 false를 반환', () => {
-        const leftwardTestDTO: PlaceBlockDTO = { block, position: [0, -1], board, playerIdx: 0, turn: 0 }
-        const rightwardTestDTO: PlaceBlockDTO = { block, position: [0, 19], board, playerIdx: 0, turn: 0 }
+        const leftwardTestDTO: PlaceBlockDTO = { block, position: [0, -1], board, slotIdx: 0, turn: 0 }
+        const rightwardTestDTO: PlaceBlockDTO = { block, position: [0, 19], board, slotIdx: 0, turn: 0 }
 
         const leftwardResult = isWithinBoardBounds(leftwardTestDTO);
         const rightwardResult = isWithinBoardBounds(rightwardTestDTO);
@@ -68,7 +68,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
             block: singleCellBlock,
             board,
             position,
-            playerIdx: idx as PlayerIdx,
+            slotIdx: idx as SlotIdx,
             turn: idx,
           };
 
@@ -83,7 +83,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
           block: singleCellBlock,
           position: [1, 1],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 0,
         };
 
@@ -98,7 +98,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         block: singleCellBlock,
         position: [1, 1],
         board,
-        playerIdx: 0,
+        slotIdx: 0,
         turn: 4,
       };
 
@@ -115,7 +115,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
           block: complexBlock,
           position: [5, 5],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 4,
         };
 
@@ -125,12 +125,12 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
       });
 
       test('다른 플레이어의 블록과 대각선으로 연결된 경우 false를 반환', () => {
-        placeBlock({ board, block: singleCellBlock, playerIdx: 1, position: [0, 0], turn: 0 })
+        placeBlock({ board, block: singleCellBlock, slotIdx: 1, position: [0, 0], turn: 0 })
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           position: [1, 1],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 1,
         };
 
@@ -140,13 +140,13 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
       });
 
       test('대각선이 아닌 방향으로만 블록이 있는 경우 false를 반환', () => {
-        placeBlock({ block: singleCellBlock, position: [0, 1], board, playerIdx: 0, turn: 0 })
-        placeBlock({ block: singleCellBlock, position: [1, 0], board, playerIdx: 0, turn: 0 })
+        placeBlock({ block: singleCellBlock, position: [0, 1], board, slotIdx: 0, turn: 0 })
+        placeBlock({ block: singleCellBlock, position: [1, 0], board, slotIdx: 0, turn: 0 })
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           position: [0, 0],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 0,
         };
 
@@ -161,14 +161,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 0],
           turn: 0
         });
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 1],
           turn: 1,
         };
@@ -181,14 +181,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 19],
           turn: 0
         });
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 18],
           turn: 1,
         };
@@ -202,14 +202,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [19, 19],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [18, 18],
           turn: 1,
         };
@@ -223,14 +223,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [19, 0],
           turn: 0
         });
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [18, 1],
           turn: 1,
         };
@@ -246,7 +246,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 0],
           turn: 0,
         });
@@ -254,7 +254,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
           block: complexBlock,
           position: [1, 1],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 0,
         };
 
@@ -267,7 +267,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 1],
           turn: 0,
         });
@@ -275,7 +275,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
           block: complexBlock,
           position: [1, 0],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 0,
         };
 
@@ -288,7 +288,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [2, 0],
           turn: 0,
         });
@@ -296,7 +296,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
           block: complexBlock,
           position: [0, 1],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 0,
         };
 
@@ -309,7 +309,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [3, 0],
           turn: 0,
         });
@@ -317,7 +317,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
           block: complexBlock,
           position: [0, 0],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 0,
         };
 
@@ -331,7 +331,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [3, 2],
           turn: 0,
         });
@@ -339,7 +339,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
           block: complexBlock,
           position: [0, 0],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 0,
         };
 
@@ -352,7 +352,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [2, 3],
           turn: 0,
         });
@@ -360,7 +360,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
           block: complexBlock,
           position: [0, 0],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 0,
         };
 
@@ -373,7 +373,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 3],
           turn: 0,
         });
@@ -381,7 +381,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
           block: complexBlock,
           position: [0, 0],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 0,
         };
 
@@ -394,7 +394,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 1],
           turn: 0,
         });
@@ -402,7 +402,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
           block: complexBlock,
           position: [1, 0],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 0,
         };
 
@@ -419,7 +419,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 1],
           turn: 0,
         };
@@ -434,34 +434,34 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
           block: singleCellBlock,
           position: [1, 0],
           board,
-          playerIdx: 1,
+          slotIdx: 1,
           turn: 0,
         });
         placeBlock({
           block: singleCellBlock,
           position: [0, 1],
           board,
-          playerIdx: 1,
+          slotIdx: 1,
           turn: 0,
         });
         placeBlock({
           block: singleCellBlock,
           position: [1, 2],
           board,
-          playerIdx: 1,
+          slotIdx: 1,
           turn: 0,
         });
         placeBlock({
           block: singleCellBlock,
           position: [2, 1],
           board,
-          playerIdx: 1,
+          slotIdx: 1,
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 1],
           turn: 0,
         };
@@ -476,34 +476,34 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
           block: singleCellBlock,
           position: [0, 0],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 0,
         });
         placeBlock({
           block: singleCellBlock,
           position: [0, 2],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 0,
         });
         placeBlock({
           block: singleCellBlock,
           position: [2, 0],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 0,
         });
         placeBlock({
           block: singleCellBlock,
           position: [2, 2],
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 1],
           turn: 0,
         };
@@ -519,14 +519,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 0],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 0],
           turn: 0,
         };
@@ -540,14 +540,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 1],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 0],
           turn: 0,
         };
@@ -561,14 +561,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 0],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 0],
           turn: 0,
         };
@@ -582,14 +582,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 0],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 1],
           turn: 0,
         };
@@ -605,14 +605,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 0],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 0],
           turn: 0,
         };
@@ -626,14 +626,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 1],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 0],
           turn: 0,
         };
@@ -647,14 +647,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 2],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 0],
           turn: 0,
         };
@@ -668,14 +668,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 3],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 0],
           turn: 0,
         };
@@ -689,14 +689,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [2, 2],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 0],
           turn: 0,
         };
@@ -710,14 +710,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [3, 1],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 0],
           turn: 0,
         };
@@ -731,14 +731,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [2, 0],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 0],
           turn: 0,
         };
@@ -752,14 +752,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 0],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 1],
           turn: 0,
         };
@@ -773,14 +773,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 0],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [0, 1],
           turn: 0,
         };
@@ -798,14 +798,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 1],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 1],
           turn: 1,
         };
@@ -819,7 +819,7 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 1],
           turn: 1,
         };
@@ -835,35 +835,35 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 2],
           turn: 0,
         });
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 3],
           turn: 0,
         });
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [3, 1],
           turn: 0,
         });
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [3, 3],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 1],
           turn: 0,
         };
@@ -877,42 +877,42 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 1],
           turn: 0,
         });
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [2, 1],
           turn: 0,
         });
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [2, 2],
           turn: 0,
         });
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [2, 3],
           turn: 0,
         });
         placeBlock({
           block: singleCellBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [3, 2],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 1],
           turn: 0,
         };
@@ -931,14 +931,14 @@ describe('isBlockPlaceable 내부 로직 검사', () => {
         placeBlock({
           block: randomBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 1],
           turn: 0,
         });
         const dto: PlaceBlockDTO = {
           block: complexBlock,
           board,
-          playerIdx: 0,
+          slotIdx: 0,
           position: [1, 1],
           turn: 0,
         };
