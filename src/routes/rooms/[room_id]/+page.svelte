@@ -19,6 +19,7 @@
     SubmitMoveDTO,
   } from "$types";
   import type { PageData } from "./$types";
+  import { getPlayersSlot } from "$lib/utils";
 
   const { data: room }: { data: PageData } = $props();
 
@@ -37,6 +38,14 @@
   let players: (ParticipantInf | undefined)[] = $state([]);
 
   onDestroy(() => {
+    gameStore.set({
+      availableBlocksBySlots: [],
+      isStarted: false,
+      mySlots: [],
+      playerIdx: 0,
+      players: [],
+      turn: -1,
+    });
     socket?.close();
   });
 
@@ -54,6 +63,15 @@
       goto("/rooms");
     }
     $gameStore.playerIdx = room.playerIdx as PlayerIdx;
+    $gameStore.players = [room.p0, room.p1, room.p2, room.p3];
+    $gameStore.isStarted = room.isStarted;
+    $gameStore.turn = room.turn;
+    if (room.isStarted) {
+      $gameStore.mySlots = getPlayersSlot({
+        playerIdx: $gameStore.playerIdx,
+        players: $gameStore.players,
+      });
+    }
 
     // [TODO] consider reconnect
     const url = new URL(window.location.href);
