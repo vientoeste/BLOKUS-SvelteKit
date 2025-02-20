@@ -210,6 +210,7 @@ export class WebSocketMessageHandler {
     const gameId = uuidv7();
     await this.redis.hSet(`room:${client.roomId}`, 'gameId', gameId);
     await this.redis.hSet(`room:${client.roomId}`, 'started', '1');
+    await this.redis.hSet(`room:${client.roomId}`, 'turn', 0);
     const startMessage: OutboundStartMessage = {
       type: 'START',
     };
