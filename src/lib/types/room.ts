@@ -14,6 +14,7 @@ export interface RoomPrimitiveInf {
     playerIdx: number;
   }[];
   boardId?: string;
+  gameId?: string;
 }
 
 export interface RoomDocumentInf extends Omit<RoomPrimitiveInf, 'id'> {
@@ -41,6 +42,7 @@ export type UpdateRoomDTO = Partial<RoomPrimitiveInf>;
 export interface RoomCacheInf {
   id: RoomId;
   name: string;
+  gameId?: string;
   turn: number;
   lastMove: string;
   started: boolean;

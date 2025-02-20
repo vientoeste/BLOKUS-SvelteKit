@@ -129,6 +129,18 @@ export class WebSocketMessageHandler {
         payload: badReqMessage,
       };
     }
+    const { gameId } = roomCache;
+    if (!gameId) {
+      const errMessage: OutboundErrorMessage = {
+        type: 'ERROR',
+      }
+      return {
+        success: false,
+        shouldBroadcast: false,
+        payload: errMessage,
+      }
+    }
+
     await this.redis.hSet(`room:${client.roomId}`, 'turn', turn + 1);
 
     // [TODO] write move to db
@@ -194,6 +206,9 @@ export class WebSocketMessageHandler {
       };
     }
 
+    // [TODO] should reflect to DB too
+    const gameId = uuidv7();
+    await this.redis.hSet(`room:${client.roomId}`, 'gameId', gameId);
     await this.redis.hSet(`room:${client.roomId}`, 'started', '1');
     const startMessage: OutboundStartMessage = {
       type: 'START',

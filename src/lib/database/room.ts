@@ -128,7 +128,7 @@ export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
   if (!room || Object.keys(room).length === 0) {
     throw new CustomError('room cache not found', 404);
   }
-  const { id, name, turn, lastMove, started } = room;
+  const { id, name, turn, lastMove, started, gameId } = room;
   const { p0, p1, p2, p3 } = room;
   const p0_ = parseJson<{ id: string, username: string, ready: boolean }>(p0);
   const p1_ = p1 ? parseJson<{ id: string, username: string, ready: boolean }>(p1) : undefined;
@@ -146,6 +146,7 @@ export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
   return {
     id,
     name,
+    gameId: gameId ?? undefined,
     turn: parseInt(turn),
     lastMove: lastMove,
     started: started !== '0',
