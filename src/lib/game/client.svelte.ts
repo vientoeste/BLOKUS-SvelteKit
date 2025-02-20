@@ -19,6 +19,7 @@ import type {
   PlayerIdx,
   InboundReadyMessage,
   InboundCancelReadyMessage,
+  SlotIdx,
 } from "$types";
 import { gameStore, modalStore } from "../../Store";
 import { createNewBoard, preset, putBlockOnBoard, rollbackMove } from "./core";
@@ -169,6 +170,7 @@ export class GameManager {
       const timeoutMessage: InboundMoveMessage = {
         type: 'MOVE',
         timeout: true,
+        slotIdx: this.turn % 4 as SlotIdx,
         turn: this.turn,
       };
       this.messageDispatcher.dispatch(timeoutMessage);

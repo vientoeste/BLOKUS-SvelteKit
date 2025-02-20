@@ -1,5 +1,5 @@
 import type { WebSocket as WebSocket_ } from 'ws';
-import type { MoveDTO, PlayerId, PlayerIdx, UserInfo } from '.';
+import type { MoveDTO, PlayerId, PlayerIdx, SlotIdx, UserInfo } from '.';
 
 interface WebSocketMessageBase {
   type: string;
@@ -68,7 +68,7 @@ export interface InboundCancelReadyMessage extends WebSocketMessageBase {
 }
 
 export type InboundMoveMessage = WebSocketMessageBase & { type: 'MOVE' } & ((MoveDTO & { timeout: false })
-  | { timeout: true, turn: number });
+  | { timeout: true, turn: number, slotIdx: SlotIdx });
 
 export interface InboundReportMessage extends WebSocketMessageBase {
   type: 'REPORT';

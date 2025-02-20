@@ -153,6 +153,7 @@ export class WebSocketMessageHandler {
           timeout: true,
           playerIdx: client.playerIdx,
           turn: message.turn,
+          slotIdx: message.slotIdx
         } as OutboundMoveMessage,
       };
     }
