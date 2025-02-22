@@ -20,6 +20,8 @@ import type {
 } from "$types";
 import { extractPlayerCountFromCache, isRightTurn, parseJson } from "$lib/utils";
 import { getRoomCache } from "$lib/database/room";
+import { insertNonTimeoutMove, insertTimeoutMove } from "$lib/database/move";
+import { uuidv7 } from "uuidv7";
 
 interface MessageProcessResult {
   success: boolean;
@@ -112,7 +114,7 @@ export class WebSocketMessageHandler {
   }
 
   private async handleMove(client: ActiveWebSocket, message: InboundMoveMessage): Promise<MessageProcessResult> {
-    const { timeout, turn } = message;
+    const { timeout, turn, slotIdx } = message;
     const roomCache = await getRoomCache(client.roomId);
     if (!isRightTurn({
       turn,
@@ -142,9 +144,16 @@ export class WebSocketMessageHandler {
     }
 
     await this.redis.hSet(`room:${client.roomId}`, 'turn', turn + 1);
+    const moveId = uuidv7();
 
-    // [TODO] write move to db
     if (timeout) {
+      await insertTimeoutMove(moveId, {
+        timeout: true,
+        turn,
+        playerIdx: client.playerIdx,
+        gameId,
+        slotIdx,
+      });
       return {
         success: true,
         shouldBroadcast: true,
@@ -157,7 +166,16 @@ export class WebSocketMessageHandler {
         } as OutboundMoveMessage,
       };
     }
-    const { blockInfo, position, slotIdx } = message as MoveDTO;
+    const { blockInfo, position } = message as MoveDTO;
+    await insertNonTimeoutMove(moveId, {
+      blockInfo,
+      gameId,
+      playerIdx: client.playerIdx,
+      position,
+      slotIdx,
+      timeout,
+      turn,
+    });
     const compressedMove = `${client.playerIdx}:${blockInfo.type}[${position[0]},${position[1]}]r${blockInfo.rotation}f${blockInfo.flip ? 0 : 1}`;
     await this.redis.hSet(`room:${client.roomId}`, 'lastMove', compressedMove);
     // [TODO] checksum - lastMove
