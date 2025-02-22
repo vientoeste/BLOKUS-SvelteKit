@@ -44,3 +44,34 @@ export type PutBlockDTO = MoveDTO & {
 export type Rotation = PlayerIdx;
 
 export type SlotIdx = PlayerIdx;
+
+export type MoveBase = {
+  gameId: string;
+  playerIdx: PlayerIdx;
+  slotIdx: SlotIdx;
+  turn: number;
+}
+
+export type InsertTimeoutMoveDto = MoveBase & {
+  timeout: true;
+}
+
+export type InsertNonTimeoutMoveDto = MoveBase & {
+  blockInfo: Block;
+  position: [number, number];
+  timeout: false;
+}
+
+export type MoveDocumentInf = MoveBase & {
+  _id: string;
+} & ({
+  timeout: true;
+} | {
+  blockInfo: string;
+  position: [number, number];
+  timeout: false;
+});
+
+export type Move = Omit<MoveDocumentInf, '_id'> & {
+  id: string;
+}

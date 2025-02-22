@@ -1,4 +1,4 @@
-import type { ApiResponse, PlayerIdx, RoomCacheInf } from "$types";
+import type { ApiResponse, Block, BlockType, PlayerIdx, RoomCacheInf, Rotation } from "$types";
 import { json } from "@sveltejs/kit";
 import { CustomError } from "./error";
 
@@ -208,3 +208,12 @@ export const getPlayersSlot = ({
   3: [playerIdx, players.findIndex(e => e === undefined)],
   4: [playerIdx]
 }[players.filter(e => e !== undefined).length]) as number[]);
+
+export const convertBlockToStr = ({ flip, rotation, type }: Block): string => `t${type}r${rotation}${flip ? 'f' : ''}`;
+
+export const convertBlockToObj = (blockInfo: string): Block => {
+  const type = blockInfo.split('r')[0].replace('t', '') as BlockType;
+  const rotation = parseInt(blockInfo[blockInfo.indexOf('r') + 1]) as Rotation;
+  const flip = blockInfo.indexOf('f') !== -1;
+  return { flip, rotation, type };
+};

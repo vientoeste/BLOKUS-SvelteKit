@@ -1,5 +1,5 @@
 import { CustomError } from "$lib/error";
-import type { BoardDocumentInf, RoomDocumentInf, UserDocumentInf } from "$types";
+import type { BoardDocumentInf, MoveDocumentInf, RoomDocumentInf, UserDocumentInf } from "$types";
 import { MongoClient, MongoError } from "mongodb";
 
 export const client = await new MongoClient(import.meta.env.VITE_MONGO_URL).connect();
@@ -37,3 +37,4 @@ export const handleMongoError = (error: MongoError) => {
 export const Users = db.collection<UserDocumentInf>('users');
 export const Rooms = db.collection<RoomDocumentInf>('rooms');
 export const Boards = db.collection<BoardDocumentInf>('boards');
+export const Moves = db.collection<MoveDocumentInf>('moves');
