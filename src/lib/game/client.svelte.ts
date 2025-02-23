@@ -20,8 +20,9 @@ import type {
   InboundReadyMessage,
   InboundCancelReadyMessage,
   SlotIdx,
+  Move,
 } from "$types";
-import { gameStore, modalStore } from "../../Store";
+import { gameStore, modalStore, movePreviewStore } from "../../Store";
 import { createNewBoard, preset, putBlockOnBoard, rollbackMove } from "./core";
 import type {
   WebSocketMessageDispatcher,
@@ -30,6 +31,7 @@ import type {
 import Alert from "$lib/components/Alert.svelte";
 import Confirm from "$lib/components/Confirm.svelte";
 import { getPlayersSlot, isRightTurn } from "$lib/utils";
+import { get } from "svelte/store";
 
 export class GameManager {
   constructor({
@@ -202,14 +204,14 @@ export class GameManager {
         });
         continue;
       }
+      const movePreview = get(movePreviewStore);
       // 5. if valid, confirm
       await new Promise<void>((res, rej) => {
         modalStore.open(Confirm, {
           title: 'confirm your move',
-          // [TODO] 
-          message: '',
+          message: `<img src="${movePreview}" alt="board preview" style="max-width: 100%;" />`,
           confirmText: 'confirm',
-          cancelText: '',
+          cancelText: 'cancel',
           onConfirm: () => {
             // 6. if confirmed, dispatch
             const moveMessage: InboundMoveMessage = {

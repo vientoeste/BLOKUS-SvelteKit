@@ -1,8 +1,13 @@
 <script lang="ts">
   import { getBlockMatrix } from "$lib/game/core";
-  import type { BlockMatrix, BlockType } from "$types";
+  import type { BlockMatrix, BlockType, SlotIdx } from "$types";
   import { parseJson } from "$lib/utils";
-  import { dragPositionOffsetStore, moveStore } from "../../Store";
+  import {
+    dragPositionOffsetStore,
+    movePreviewStore,
+    moveStore,
+  } from "../../Store";
+  import html2canvas from "html2canvas";
 
   const { board, relayMove } = $props();
 
@@ -74,7 +79,7 @@
     });
   }
 
-  function handleDrop(e: DragEvent, rowIdx: number, colIdx: number) {
+  async function handleDrop(e: DragEvent, rowIdx: number, colIdx: number) {
     e.preventDefault();
 
     const position = getPosition({ x: e.clientX, y: e.clientY });
@@ -91,6 +96,13 @@
       if (type === undefined || rotation === undefined || flip === undefined) {
         throw new Error("missing blockInfo");
       }
+
+      const capturedImage = await capturePartialBoard(
+        getBlockMatrix({ type, rotation, flip }),
+        position as [number, number],
+        slotIdx as SlotIdx,
+      );
+      $movePreviewStore = capturedImage;
       relayMove({
         position,
         blockInfo: { type, rotation, flip },
@@ -100,6 +112,59 @@
     } catch (error) {
       console.error("DnD(drop):", error);
     }
+  }
+
+  async function capturePartialBoard(
+    block: BlockMatrix,
+    position: [number, number],
+    slotIdx: SlotIdx,
+  ): Promise<string> {
+    const blockHeight = block.length;
+    const blockWidth = block[0].length;
+
+    const startRow = Math.max(0, position[0] - 2);
+    const startCol = Math.max(0, position[1] - 2);
+    const endRow = Math.min(19, position[0] + blockHeight + 1);
+    const endCol = Math.min(19, position[1] + blockWidth + 1);
+
+    const tempDiv = document.createElement("div");
+    tempDiv.style.position = "absolute";
+    tempDiv.style.left = "-9999px";
+
+    const partialBoard = document.createElement("div");
+    partialBoard.style.display = "flex";
+    partialBoard.style.flexDirection = "column";
+
+    for (let i = startRow; i <= endRow; i++) {
+      const row = document.createElement("div");
+      row.style.display = "flex";
+
+      for (let j = startCol; j <= endCol; j++) {
+        const originalCell = boardElement.children[i].children[j].cloneNode(
+          true,
+        ) as HTMLElement;
+        if (
+          i >= position[0] &&
+          i < position[0] + blockHeight &&
+          j >= position[1] &&
+          j < position[1] + blockWidth &&
+          block[i - position[0]][j - position[1]]
+        ) {
+          originalCell.children[0].classList.add(`cell-${slotIdx}`);
+        }
+        row.appendChild(originalCell);
+      }
+
+      partialBoard.appendChild(row);
+    }
+
+    tempDiv.appendChild(partialBoard);
+    document.body.appendChild(tempDiv);
+
+    const canvas = await html2canvas(partialBoard);
+    const image = canvas.toDataURL();
+    document.body.removeChild(tempDiv);
+    return image;
   }
 </script>
 

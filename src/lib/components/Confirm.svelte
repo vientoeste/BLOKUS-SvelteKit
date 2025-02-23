@@ -34,7 +34,7 @@
   </div>
 
   <div class="confirm-content">
-    <p>{message}</p>
+    {@html message}
   </div>
 
   <div class="confirm-actions">
