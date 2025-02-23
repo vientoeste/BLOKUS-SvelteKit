@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+
   let {
     title = $bindable(),
     message = $bindable(),
@@ -26,6 +28,14 @@
     onCancel?.();
     onClose?.();
   }
+
+  onMount(() => {
+    setTimeout(() => {
+      confirmButton?.focus();
+    }, 1);
+  });
+
+  let confirmButton: HTMLButtonElement;
 </script>
 
 <div class="confirm-dialog">
@@ -41,7 +51,11 @@
     <button class="cancel-button" onclick={handleCancel}>
       {cancelText}
     </button>
-    <button class="confirm-button" onclick={handleConfirm}>
+    <button
+      class="confirm-button"
+      onclick={handleConfirm}
+      bind:this={confirmButton}
+    >
       {confirmText}
     </button>
   </div>
