@@ -62,7 +62,7 @@
   }
 
   .modal-content {
-    padding: 1em;
+    padding: 5px;
     overflow: hidden;
   }
 
