@@ -49,7 +49,7 @@
     socket?.close();
   });
 
-  onMount(() => {
+  onMount(async () => {
     // if goto called at the outside of onMount, it would be considered as server-side
     // so 'throw redirect' at client side is unnecessary, just call goto after mounted
     if (
@@ -79,6 +79,11 @@
     socket = new WebSocket(
       `${url.protocol === "http:" ? "ws" : "wss"}://${url.host}${url.pathname}?idx=${room.playerIdx}`,
     );
+    await new Promise<void>((resolve) => {
+      socket.addEventListener("open", () => {
+        resolve();
+      });
+    });
 
     messageReceiver = new WebSocketMessageReceiver(socket);
     messageDispatcher = new WebSocketMessageDispatcher(socket);
