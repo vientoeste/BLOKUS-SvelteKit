@@ -21,7 +21,8 @@
   import type { PageData } from "./$types";
   import { getPlayersSlot } from "$lib/utils";
 
-  const { data: room }: { data: PageData } = $props();
+  const { data }: { data: PageData } = $props();
+  const { room, playerIdx, roomCache, moves } = data;
 
   let socket: WebSocket;
   // [TODO] get board from server if started(that means, logics for reconnected is needed)
@@ -53,8 +54,8 @@
     // if goto called at the outside of onMount, it would be considered as server-side
     // so 'throw redirect' at client side is unnecessary, just call goto after mounted
     if (
-      room.playerIdx === undefined ||
-      [0, 1, 2, 3].findIndex((e) => e === room.playerIdx) === -1
+      playerIdx === undefined ||
+      [0, 1, 2, 3].findIndex((e) => e === playerIdx) === -1
     ) {
       modalStore.open(Alert, {
         title: "invalid approach",
@@ -62,10 +63,15 @@
       });
       goto("/rooms");
     }
-    $gameStore.playerIdx = room.playerIdx as PlayerIdx;
-    $gameStore.players = [room.p0, room.p1, room.p2, room.p3];
+    $gameStore.playerIdx = playerIdx as PlayerIdx;
+    $gameStore.players = [
+      roomCache.p0,
+      roomCache.p1,
+      roomCache.p2,
+      roomCache.p3,
+    ];
     $gameStore.isStarted = room.isStarted;
-    $gameStore.turn = room.turn;
+    $gameStore.turn = roomCache.turn;
 
     // [TODO] consider reconnect
     const url = new URL(window.location.href);
@@ -83,15 +89,15 @@
     messageDispatcher = new WebSocketMessageDispatcher(socket);
     gameManager = new GameManager({
       board,
-      turn: room.turn ?? -1,
+      turn: roomCache.turn ?? -1,
       playerIdx: $gameStore.playerIdx,
-      users: [room.p0, room.p1, room.p2, room.p3],
+      users: [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3],
       messageReceiver,
       messageDispatcher,
     });
 
     players = gameManager.users;
-    if (room.started) {
+    if (roomCache.started) {
       $gameStore.mySlots = getPlayersSlot({
         playerIdx: $gameStore.playerIdx,
         players: $gameStore.players,

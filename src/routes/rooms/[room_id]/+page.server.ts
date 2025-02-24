@@ -2,13 +2,14 @@ import { getRoomById } from "$lib/room";
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { validateSessionCookie } from "$lib/auth";
+import { getMovesByGameId } from "$lib/database/move";
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
   try {
     const { id, userId, username } = await validateSessionCookie(cookies);
     const { room_id: roomId } = params;
-    const room = await getRoomById(roomId);
-    const { p0, p1, p2, p3 } = room;
+    const { room, roomCache } = await getRoomById(roomId);
+    const { p0, p1, p2, p3 } = roomCache;
     const playerIdx = p0?.id === id ?
       0 : p1?.id === id ?
         1 : p2?.id === id ?
@@ -18,7 +19,10 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
       throw new Error('not allowed to join the room');
     }
     return {
-      ...room, playerIdx,
+      playerIdx,
+      room,
+      roomCache,
+      moves: roomCache.gameId ? await getMovesByGameId(roomCache.gameId) : [],
     };
   } catch (e) {
     // [TODO] handle error

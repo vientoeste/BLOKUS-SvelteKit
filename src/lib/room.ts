@@ -1,6 +1,6 @@
 import { getRoomCache, getRoomInfo, getRooms, insertRoom, insertRoomCache } from "./database/room";
 import { CustomError } from "./error";
-import type { CreateRoomDTO, RoomCacheInf, RoomId, RoomInf } from "./types";
+import type { CreateRoomDTO, RoomCacheInf, RoomDocumentInf, RoomId, RoomInf } from "./types";
 
 export const createRoom = async (roomId: RoomId, createRoomDTO: CreateRoomDTO): Promise<RoomId> => {
   const id = await insertRoom(roomId, createRoomDTO);
@@ -16,10 +16,10 @@ export const getRoomsFromLastObj = async (lastDocId: string | null) => {
   return rooms;
 };
 
-export const getRoomById = async (roomId: RoomId): Promise<RoomInf & RoomCacheInf> => {
+export const getRoomById = async (roomId: RoomId): Promise<{ room: RoomDocumentInf, roomCache: RoomCacheInf }> => {
   const room = await getRoomInfo(roomId);
   const roomCache = await getRoomCache(roomId);
   return {
-    ...room, ...roomCache,
+    room, roomCache,
   };
 };
