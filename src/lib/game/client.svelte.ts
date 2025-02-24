@@ -162,7 +162,11 @@ export class GameManager {
     }
   }
 
-  async processMyTurn() {
+  async processMyTurn(leftTime?: number) {
+    modalStore.open(Alert, {
+      title: 'your turn',
+      message: 'please make your move',
+    });
     // 1. timeout starts
     const timeoutId = setTimeout(() => {
       modalStore.open(Alert, {
@@ -177,7 +181,7 @@ export class GameManager {
       };
       this.messageDispatcher.dispatch(timeoutMessage);
       this.turnPromiseRejecter?.('timeout');
-    }, 60000);
+    }, leftTime ?? 60000);
     let isSubmitted = false;
     // 2. wait
     while (!isSubmitted) {
