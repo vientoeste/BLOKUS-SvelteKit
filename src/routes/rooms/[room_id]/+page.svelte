@@ -66,12 +66,6 @@
     $gameStore.players = [room.p0, room.p1, room.p2, room.p3];
     $gameStore.isStarted = room.isStarted;
     $gameStore.turn = room.turn;
-    if (room.isStarted) {
-      $gameStore.mySlots = getPlayersSlot({
-        playerIdx: $gameStore.playerIdx,
-        players: $gameStore.players,
-      });
-    }
 
     // [TODO] consider reconnect
     const url = new URL(window.location.href);
@@ -97,6 +91,12 @@
     });
 
     players = gameManager.users;
+    if (room.started) {
+      $gameStore.mySlots = getPlayersSlot({
+        playerIdx: $gameStore.playerIdx,
+        players: $gameStore.players,
+      });
+    }
   });
 </script>
 
