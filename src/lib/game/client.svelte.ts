@@ -21,6 +21,7 @@ import type {
   SlotIdx,
   Move,
   InboundStartMessage,
+  OutboundStartMessage,
 } from "$types";
 import { gameStore, modalStore, movePreviewStore } from "../../Store";
 import { createNewBoard, preset, putBlockOnBoard, rollbackMove } from "./core";
