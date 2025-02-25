@@ -89,7 +89,7 @@ export class GameManager {
         this.applyMove(message);
         break;
       case "START":
-        this.handleStartMessage();
+        this.handleStartMessage(message);
         break;
       case "BAD_REQ":
         this.handleBadRequestException(message);
@@ -364,7 +364,8 @@ export class GameManager {
     return move;
   }
 
-  initiateGameStatus() {
+  initiateGameStatus(gameId: string) {
+    this.gameId = gameId;
     this.board = createNewBoard();
     gameStore.update((gameInfo) => ({
       ...gameInfo,
@@ -378,8 +379,8 @@ export class GameManager {
     this.initiateNextTurn();
   }
 
-  handleStartMessage() {
-    this.initiateGameStatus();
+  handleStartMessage(message: OutboundStartMessage) {
+    this.initiateGameStatus(message.gameId);
   }
 
   async startGame() {
