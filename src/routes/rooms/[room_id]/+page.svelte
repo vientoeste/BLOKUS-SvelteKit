@@ -103,6 +103,7 @@
         playerIdx: $gameStore.playerIdx,
         players: $gameStore.players,
       });
+      gameManager?.restoreGameState(moves);
     }
   });
 </script>

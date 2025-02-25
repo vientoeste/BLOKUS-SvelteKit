@@ -388,4 +388,43 @@ export class GameManager {
     };
     this.messageDispatcher.dispatch(startMessage);
   }
+
+  restoreGameState(moves: Move[]) {
+    gameStore.update((store) => {
+      this.moves = moves.sort((a, b) => a.turn - b.turn);
+      const availableBlocks = Array(4).fill(null).map(() => new Map(Object.entries(preset) as [BlockType, BlockMatrix][]));
+      moves.forEach((move) => {
+        if (!move.timeout) {
+          availableBlocks[move.slotIdx].delete(move.blockInfo.type);
+          putBlockOnBoard({
+            board: this.board,
+            blockInfo: move.blockInfo,
+            playerIdx: move.playerIdx,
+            position: move.position,
+            slotIdx: move.slotIdx,
+            turn: move.turn,
+          });
+        }
+      });
+      return {
+        ...store, availableBlocksBySlots: availableBlocks,
+      };
+    });
+
+    const leftTime = moves[moves.length - 1].createdAt.valueOf() - Date.now();
+    if (!this.isMyTurn()) {
+      return;
+    }
+    if (this.isMyTurn() && leftTime < 0) {
+      const timeoutMessage: InboundMoveMessage = {
+        type: 'MOVE',
+        slotIdx: this.turn % 4 as SlotIdx,
+        turn: this.turn,
+        timeout: true,
+      };
+      this.messageDispatcher.dispatch(timeoutMessage);
+      return;
+    }
+    this.processMyTurn(leftTime);
+  }
 }
