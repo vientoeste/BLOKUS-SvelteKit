@@ -16,6 +16,7 @@ export const getMovesByGameId = async (gameId: string): Promise<Move[]> => {
     slotIdx: move.slotIdx,
     turn: move.turn,
     timeout: true,
+    createdAt: new Date(move.createdAt),
   }) : ({
     id: move._id,
     gameId,
@@ -25,6 +26,7 @@ export const getMovesByGameId = async (gameId: string): Promise<Move[]> => {
     position: move.position,
     turn: move.turn,
     timeout: false,
+    createdAt: new Date(move.createdAt),
   }));
 };
 

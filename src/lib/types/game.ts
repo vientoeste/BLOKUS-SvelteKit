@@ -50,6 +50,7 @@ export type MoveBase = {
   playerIdx: PlayerIdx;
   slotIdx: SlotIdx;
   turn: number;
+  createdAt: Date;
 }
 
 export type InsertTimeoutMoveDto = MoveBase & {
@@ -72,6 +73,14 @@ export type MoveDocumentInf = MoveBase & {
   timeout: false;
 });
 
-export type Move = Omit<MoveDocumentInf, '_id'> & {
-  id: string;
+export type Move = TimeoutMove | NonTimeoutMove;
+
+export type TimeoutMove = MoveBase & {
+  timeout: true;
+}
+
+export type NonTimeoutMove = MoveBase & {
+  blockInfo: Block;
+  position: [number, number];
+  timeout: false;
 }
