@@ -89,6 +89,7 @@
     messageDispatcher = new WebSocketMessageDispatcher(socket);
     gameManager = new GameManager({
       board,
+      gameId: roomCache.gameId,
       turn: roomCache.turn ?? -1,
       playerIdx: $gameStore.playerIdx,
       users: [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3],

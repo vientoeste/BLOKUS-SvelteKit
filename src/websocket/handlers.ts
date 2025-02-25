@@ -232,6 +232,7 @@ export class WebSocketMessageHandler {
     await this.redis.hSet(`room:${client.roomId}`, 'turn', 0);
     const startMessage: OutboundStartMessage = {
       type: 'START',
+      gameId,
     };
     return {
       success: true,

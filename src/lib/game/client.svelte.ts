@@ -11,7 +11,6 @@ import type {
   OutboundReadyMessage,
   OutboundCancelReadyMessage,
   OutboundMoveMessage,
-  OutboundStartMessage,
   InboundMoveMessage,
   OutboundErrorMessage,
   OutboundMediateMessage,
@@ -21,6 +20,7 @@ import type {
   InboundCancelReadyMessage,
   SlotIdx,
   Move,
+  InboundStartMessage,
 } from "$types";
 import { gameStore, modalStore, movePreviewStore } from "../../Store";
 import { createNewBoard, preset, putBlockOnBoard, rollbackMove } from "./core";
@@ -35,16 +35,18 @@ import { get } from "svelte/store";
 
 export class GameManager {
   constructor({
-    board, playerIdx, turn, users, messageDispatcher, messageReceiver,
+    board, playerIdx, turn, users, gameId, messageDispatcher, messageReceiver,
   }: {
     board: BoardMatrix, playerIdx: PlayerIdx, turn?: number,
     users: (ParticipantInf | undefined)[],
+    gameId?: string,
     messageDispatcher: WebSocketMessageDispatcher,
     messageReceiver: WebSocketMessageReceiver
   }) {
     this.board = board;
     this.turn = turn ?? -1;
     this.playerIdx = playerIdx;
+    this.gameId = gameId;
     users.forEach((user, idx) => {
       this.users[idx] = user;
     });
@@ -58,6 +60,8 @@ export class GameManager {
   }
   private messageReceiver: WebSocketMessageReceiver;
   private messageDispatcher: WebSocketMessageDispatcher;
+
+  gameId: string | undefined;
 
   private playerIdx: PlayerIdx;
   board: BoardMatrix = $state([]);
@@ -265,6 +269,9 @@ export class GameManager {
   private turnPromiseRejecter: ((reason: string) => void) | null = null;
 
   applyMove(message: OutboundMoveMessage) {
+    if (!this.gameId) {
+      throw new Error('gameId is not set');
+    }
     const { timeout } = message;
     if (timeout) {
       this.initiateNextTurn();
@@ -356,7 +363,7 @@ export class GameManager {
     if (this.playerIdx !== 0) {
       return;
     }
-    const startMessage: OutboundStartMessage = {
+    const startMessage: InboundStartMessage = {
       type: 'START',
     };
     this.messageDispatcher.dispatch(startMessage);

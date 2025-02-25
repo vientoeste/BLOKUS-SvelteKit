@@ -7,6 +7,7 @@ interface WebSocketMessageBase {
 
 export interface OutboundStartMessage extends WebSocketMessageBase {
   type: 'START';
+  gameId: string;
 }
 
 export interface OutboundConnectedMessage extends WebSocketMessageBase {
