@@ -369,7 +369,10 @@ export class GameManager {
     gameStore.update((gameInfo) => ({
       ...gameInfo,
       isStarted: true,
-      mySlots: getPlayersSlot({ players: gameInfo.players, playerIdx: gameInfo.playerIdx }),
+      mySlots: getPlayersSlot({
+        players: this.users,
+        playerIdx: this.playerIdx,
+      }),
       availableBlocksBySlots: Array(4).fill(null).map(() => new Map(Object.entries(preset) as [BlockType, BlockMatrix][])),
     }));
     this.initiateNextTurn();
