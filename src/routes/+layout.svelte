@@ -12,6 +12,12 @@
   import "../app.css";
   import BlocksContainer from "$lib/components/BlocksContainer.svelte";
 
+  let rerenderer = $state(0);
+  gameStore.subscribe((store) => {
+    if (store.mySlots.length !== 0) {
+      rerenderer += 1;
+    }
+  });
   onMount(() => {
     if (
       $userStore.id !== undefined &&
@@ -38,9 +44,11 @@
   <aside>
     <!-- [TODO] need to replace this component: dynamically render the components when sub-pages want to -->
     {#if $gameStore.turn > -1}
-      {#each $gameStore.mySlots as slot}
-        <BlocksContainer slotIdx={slot} />
-      {/each}
+      {#key rerenderer}
+        {#each $gameStore.mySlots as slot}
+          <BlocksContainer slotIdx={slot} />
+        {/each}
+      {/key}
     {/if}
     {#if $userStore.id === undefined}
       <section id="login"><Login /></section>
