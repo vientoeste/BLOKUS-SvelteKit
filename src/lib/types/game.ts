@@ -1,3 +1,4 @@
+import type { MoveDTO } from "./move";
 import type { PlayerIdx } from "./room";
 
 export type BlockType = '50' | '51' | '52' | '53' | '54' | '55' | '56' | '57' | '58' | '59' | '5a' | '5b' | '40' | '41' | '42' | '43' | '44' | '30' | '31' | '20' | '10';
@@ -26,17 +27,6 @@ export interface PlaceBlockDTO {
   turn: number;
 }
 
-export interface SubmitMoveDTO {
-  blockInfo: Block;
-  position: [number, number];
-  slotIdx: SlotIdx;
-}
-
-export type MoveDTO = SubmitMoveDTO & {
-  playerIdx: PlayerIdx;
-  turn: number;
-}
-
 export type PutBlockDTO = MoveDTO & {
   board: BoardMatrix;
 }
@@ -44,43 +34,3 @@ export type PutBlockDTO = MoveDTO & {
 export type Rotation = PlayerIdx;
 
 export type SlotIdx = PlayerIdx;
-
-export type MoveBase = {
-  gameId: string;
-  playerIdx: PlayerIdx;
-  slotIdx: SlotIdx;
-  turn: number;
-  createdAt: Date;
-}
-
-export type InsertTimeoutMoveDto = MoveBase & {
-  timeout: true;
-}
-
-export type InsertNonTimeoutMoveDto = MoveBase & {
-  blockInfo: Block;
-  position: [number, number];
-  timeout: false;
-}
-
-export type MoveDocumentInf = MoveBase & {
-  _id: string;
-} & ({
-  timeout: true;
-} | {
-  blockInfo: string;
-  position: [number, number];
-  timeout: false;
-});
-
-export type Move = TimeoutMove | NonTimeoutMove;
-
-export type TimeoutMove = MoveBase & {
-  timeout: true;
-}
-
-export type NonTimeoutMove = MoveBase & {
-  blockInfo: Block;
-  position: [number, number];
-  timeout: false;
-}
