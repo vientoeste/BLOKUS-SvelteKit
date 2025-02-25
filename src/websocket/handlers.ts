@@ -153,6 +153,7 @@ export class WebSocketMessageHandler {
         playerIdx: client.playerIdx,
         gameId,
         slotIdx,
+        createdAt: new Date(),
       });
       return {
         success: true,
@@ -175,6 +176,7 @@ export class WebSocketMessageHandler {
       slotIdx,
       timeout,
       turn,
+      createdAt: new Date(),
     });
     const compressedMove = `${client.playerIdx}:${blockInfo.type}[${position[0]},${position[1]}]r${blockInfo.rotation}f${blockInfo.flip ? 0 : 1}`;
     await this.redis.hSet(`room:${client.roomId}`, 'lastMove', compressedMove);
