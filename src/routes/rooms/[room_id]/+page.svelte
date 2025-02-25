@@ -77,7 +77,7 @@
     const url = new URL(window.location.href);
 
     socket = new WebSocket(
-      `${url.protocol === "http:" ? "ws" : "wss"}://${url.host}${url.pathname}?idx=${room.playerIdx}`,
+      `${url.protocol === "http:" ? "ws" : "wss"}://${url.host}${url.pathname}`,
     );
     await new Promise<void>((resolve) => {
       socket.addEventListener("open", () => {
