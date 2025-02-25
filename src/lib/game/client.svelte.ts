@@ -69,6 +69,8 @@ export class GameManager {
 
   users: (ParticipantInf | undefined)[] = $state([undefined, undefined, undefined, undefined]);
 
+  moves: Move[] = [];
+
   handleIncomingMessage(message: OutboundWebSocketMessage) {
     switch (message.type) {
       case "LEAVE":
@@ -274,6 +276,14 @@ export class GameManager {
     }
     const { timeout } = message;
     if (timeout) {
+      this.moves.push({
+        gameId: this.gameId,
+        playerIdx: message.playerIdx,
+        slotIdx: message.slotIdx,
+        turn: message.turn,
+        createdAt: new Date(),
+        timeout: true,
+      })
       this.initiateNextTurn();
       return;
     }
@@ -295,6 +305,16 @@ export class GameManager {
           availableBlocksBySlots: slots,
         };
       });
+      this.moves.push({
+        gameId: this.gameId,
+        blockInfo,
+        playerIdx,
+        position,
+        slotIdx,
+        turn,
+        createdAt: new Date(),
+        timeout: false,
+      })
       this.initiateNextTurn();
       return;
     }

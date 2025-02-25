@@ -33,7 +33,7 @@ export interface OutboundCancelReadyMessage extends WebSocketMessageBase {
 }
 
 export type OutboundMoveMessage = WebSocketMessageBase & { type: 'MOVE' } & ((MoveDTO & { timeout: false })
-  | { timeout: true, playerIdx: PlayerIdx, turn: number });
+  | { timeout: true, playerIdx: PlayerIdx, turn: number, slotIdx: SlotIdx });
 
 export interface OutboundMediateMessage extends WebSocketMessageBase {
   type: 'MEDIATE';
