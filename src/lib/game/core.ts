@@ -240,7 +240,7 @@ export const hasOverlap = ({ block, board, position }: PlaceBlockDTO) => {
   );
 };
 
-export const isBlockPlaceable = ({ block, position, board, slotIdx, turn }: PlaceBlockDTO): { result: boolean, reason?: string } => {
+export const isBlockPlaceableAt = ({ block, position, board, slotIdx, turn }: PlaceBlockDTO): { result: boolean, reason?: string } => {
   if (!isWithinBoardBounds({ block, position, board, slotIdx, turn })) {
     return { result: false, reason: 'bound' };
   }
@@ -289,7 +289,7 @@ export const rollbackMove = ({ board, blockInfo, position: [row, col] }: SubmitM
 export const putBlockOnBoard = ({ board, blockInfo, position, slotIdx, turn }: PutBlockDTO) => {
   const block = getBlockMatrix(blockInfo);
 
-  const { result, reason } = isBlockPlaceable({ block, position, board, slotIdx, turn })
+  const { result, reason } = isBlockPlaceableAt({ block, position, board, slotIdx, turn })
   if (!result) {
     return reason;
   }

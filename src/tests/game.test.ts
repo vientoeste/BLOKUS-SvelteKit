@@ -1,7 +1,7 @@
 import { getBlockMatrix, hasDiagonalConnection, hasEdgeConnection, hasOverlap, isFirstMoveValid, isWithinBoardBounds, placeBlock } from '$lib/game/core';
 import type { BlockMatrix, BoardMatrix, PlaceBlockDTO, SlotIdx } from '$types';
 
-describe('isBlockPlaceable 내부 로직 검사', () => {
+describe('isBlockPlaceableAt 내부 로직 검사', () => {
   const createEmptyBoard = (): BoardMatrix =>
     Array(20).fill(undefined).map(() => Array(20).fill(false));
   let board = createEmptyBoard();
