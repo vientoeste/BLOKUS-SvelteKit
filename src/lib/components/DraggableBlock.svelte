@@ -60,8 +60,63 @@
 
   let controllerVisibillity = $state(false);
 
+  function rotateBlockToClockwise() {
+    const state = blockState.get(type);
+    if (state === undefined) {
+      rotateBlockMatrixToClockwise();
+      blockState.set(type, {
+        rotation: 1,
+        flip: false,
+      });
+      return;
+    }
+    if (!state.flip) {
+      rotateBlockMatrixToClockwise();
+      blockState.set(type, {
+        rotation: (state.rotation + 1) % 4,
+        flip: state.flip,
+      });
+      return;
+    }
+    flipBlockMatrix();
+    rotateBlockMatrixToCounterClockwise();
+    flipBlockMatrix();
+    blockState.set(type, {
+      rotation: (state.rotation + 3) % 4,
+      flip: state.flip,
+    });
+  }
+
   // [TODO] please refactor this stinky things
-  function rotateBlock() {
+  function rotateBlockMatrixToCounterClockwise() {
+    const rotated = Array.from(Array(blockMatrix[0].length), () => {
+      const newArr: ({
+        u: boolean;
+        r: boolean;
+        b: boolean;
+        l: boolean;
+      } | null)[] = [];
+      newArr.length = blockMatrix.length;
+      return newArr.fill(null);
+    });
+
+    blockMatrix.forEach((blockLine, rowIdx) => {
+      blockLine.forEach((cell, colIdx) => {
+        rotated[blockMatrix[0].length - colIdx - 1][rowIdx] =
+          cell === null
+            ? null
+            : {
+                u: cell?.r,
+                r: cell?.b,
+                b: cell?.l,
+                l: cell?.u,
+              };
+      });
+    });
+    blockMatrix = rotated;
+  }
+
+  function rotateBlockMatrixToClockwise() {
     const rotated = Array.from(Array(blockMatrix[0].length), () => {
       const newArr: ({
         u: boolean;
@@ -87,22 +142,9 @@
       });
     });
     blockMatrix = rotated;
-
-    const state = blockState.get(type);
-    if (state === undefined) {
-      blockState.set(type, {
-        rotation: 1,
-        flip: false,
-      });
-      return;
-    }
-    blockState.set(type, {
-      rotation: (state.rotation + 1) % 4,
-      flip: state.flip,
-    });
   }
 
-  function flipBlock() {
+  function flipBlockMatrix() {
     blockMatrix = blockMatrix.reverse().map((blockLine) =>
       blockLine.map((cell) =>
         cell === null
@@ -114,6 +156,10 @@
             },
       ),
     );
+  }
+
+  function flipBlock() {
+    flipBlockMatrix();
 
     const state = blockState.get(type);
     if (state === undefined) {
@@ -145,7 +191,7 @@
 
   {#if controllerVisibillity}
     <div class="block-control-panel">
-      <button onclick={rotateBlock}>rotate</button>
+      <button onclick={rotateBlockToClockwise}>rotate</button>
       <button onclick={flipBlock}>flip</button>
     </div>
   {/if}
