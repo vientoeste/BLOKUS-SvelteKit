@@ -1,4 +1,4 @@
-import type { Block, BlockMatrix, BlockType, BoardMatrix, PlaceBlockDTO, PutBlockDTO, SubmitMoveDTO } from "../types";
+import type { Block, BlockMatrix, BlockType, BoardMatrix, PlaceBlockDTO, PutBlockDTO, Rotation, SlotIdx, SubmitMoveDTO } from "../types";
 
 export const preset: Record<BlockType, BlockMatrix> = {
   '50': [[true, true, true, true, true]],
@@ -295,4 +295,24 @@ export const putBlockOnBoard = ({ board, blockInfo, position, slotIdx, turn }: P
   }
 
   placeBlock({ block, position, board, slotIdx, turn });
+};
+
+export const hasValidPlacement = ({ board, slotIdx, blockType }: {
+  board: BoardMatrix,
+  slotIdx: SlotIdx,
+  blockType: BlockType,
+}) => {
+  for (let rotation = 0; rotation < 4; rotation += 1) {
+    for (let flip = 0; flip <= 1; flip += 1) {
+      const rotatedBlock = getBlockMatrix({ type: blockType, rotation: rotation as Rotation, flip: flip === 1 });
+      for (let row = 0; row < 20; row += 1) {
+        for (let col = 0; col < 20; col += 1) {
+          const result = isBlockPlaceableAt({ block: rotatedBlock, position: [row, col], board, slotIdx, turn: 0 });
+          if (result.result) {
+            return true;
+          }
+        }
+      }
+    }
+  }
 };
