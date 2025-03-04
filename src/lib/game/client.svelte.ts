@@ -433,3 +433,43 @@ export class GameManager {
     this.processMyTurn(leftTime);
   }
 }
+
+export class BlockPlacementValidator {
+  constructor(worker: Worker) {
+    this.worker = worker;
+  }
+
+  private worker: Worker;
+
+  async searchPlaceableBlocks({ board, slotIdx, unusedBlocks }: {
+    board: BoardMatrix,
+    slotIdx: SlotIdx,
+    unusedBlocks: BlockType[],
+  }, options: {
+    earlyReturn?: boolean,
+  }) {
+    const availableBlocks: BlockType[] = [];
+    try {
+      for (const blockType of unusedBlocks.reverse()) {
+        const result = await new Promise<boolean>((res, rej) => {
+          this.worker.onmessage = (e: MessageEvent<{ result: boolean }>) => {
+            res(e.data.result);
+          };
+          setTimeout(() => {
+            rej('timeout');
+          }, 3000);
+          this.worker.postMessage({ board, slotIdx, blockType });
+        });
+        if (result && options.earlyReturn) {
+          return true;
+        }
+        if (result) {
+          availableBlocks.push(blockType);
+        }
+      }
+      return availableBlocks;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+}
