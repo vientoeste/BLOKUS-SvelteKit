@@ -5,7 +5,7 @@
   import Board from "$lib/components/Board.svelte";
   import Controller from "$lib/components/Controller.svelte";
   import Players from "$lib/components/Players.svelte";
-  import { GameManager } from "$lib/game/client.svelte";
+  import { GameManager_Legacy } from "$lib/game/client.svelte";
   import {
     WebSocketMessageDispatcher,
     WebSocketMessageReceiver,
@@ -32,7 +32,7 @@
     return newArr.fill(false);
   });
 
-  let gameManager: GameManager | null = $state(null);
+  let gameManager: GameManager_Legacy | null = $state(null);
   let messageReceiver: WebSocketMessageReceiver;
   let messageDispatcher: WebSocketMessageDispatcher;
 
@@ -87,7 +87,7 @@
 
     messageReceiver = new WebSocketMessageReceiver(socket);
     messageDispatcher = new WebSocketMessageDispatcher(socket);
-    gameManager = new GameManager({
+    gameManager = new GameManager_Legacy({
       board,
       gameId: roomCache.gameId,
       turn: roomCache.turn ?? -1,

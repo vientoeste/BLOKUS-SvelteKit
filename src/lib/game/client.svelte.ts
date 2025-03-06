@@ -34,7 +34,7 @@ import Confirm from "$lib/components/Confirm.svelte";
 import { getPlayersSlot, isRightTurn } from "$lib/utils";
 import { get } from "svelte/store";
 
-export class GameManager {
+export class GameManager_Legacy {
   constructor({
     board, playerIdx, turn, users, gameId, messageDispatcher, messageReceiver,
   }: {
