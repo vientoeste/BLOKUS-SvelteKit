@@ -1,8 +1,68 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */
 import type { WebSocket as WebSocket_ } from 'ws';
-import type { MoveDTO, PlayerId, PlayerIdx, SlotIdx, UserInfo } from '.';
+import type { MoveDTO, PlayerId, PlayerIdx, SlotIdx } from '.';
 
 interface WebSocketMessageBase {
   type: string;
+}
+
+export type DispatchConnectedMessageDto = {
+  username: string;
+};
+
+export interface DispatchLeaveMessageDto { }
+
+export interface DispatchReadyMessageDto { }
+
+export interface DispatchCancelReadyMessageDto { }
+
+export type DispatchNonTimeoutMoveMessageDto = MoveDTO;
+
+export type DispatchTimeoutMoveMessageDto = {
+  turn: number;
+  slotIdx: SlotIdx;
+}
+
+export type DispatchMediateMessageDto = {
+  board?: string;
+  currentTurn?: number;
+}
+
+export interface DispatchReportMessageDto {
+  board: string;
+  currentTurn: number;
+  missingMoves: number[];
+}
+
+export interface DispatchStartMessageDto { }
+
+export interface InboundConnectedMessage extends WebSocketMessageBase, DispatchConnectedMessageDto {
+  type: 'CONNECTED';
+}
+
+export interface InboundLeaveMessage extends WebSocketMessageBase, DispatchLeaveMessageDto {
+  type: 'LEAVE';
+}
+
+export interface InboundReadyMessage extends WebSocketMessageBase, DispatchReadyMessageDto {
+  type: 'READY';
+}
+
+export interface InboundCancelReadyMessage extends WebSocketMessageBase, DispatchCancelReadyMessageDto {
+  type: 'CANCEL_READY';
+}
+
+export type InboundMoveMessage = WebSocketMessageBase & { type: 'MOVE' } & (
+  (DispatchNonTimeoutMoveMessageDto & { timeout: false })
+  | (DispatchTimeoutMoveMessageDto & { timeout: true })
+);
+
+export interface InboundReportMessage extends WebSocketMessageBase, DispatchReportMessageDto {
+  type: 'REPORT';
+}
+
+export interface InboundStartMessage extends WebSocketMessageBase, DispatchStartMessageDto {
+  type: 'START';
 }
 
 export interface OutboundStartMessage extends WebSocketMessageBase {
@@ -51,39 +111,9 @@ export interface OutboundBadReqMessage extends WebSocketMessageBase {
   message: string;
 }
 
-export interface InboundConnectedMessage extends WebSocketMessageBase, UserInfo {
-  type: 'CONNECTED';
-  playerIdx: PlayerIdx;
-}
-
-export interface InboundLeaveMessage extends WebSocketMessageBase {
-  type: 'LEAVE';
-}
-
-export interface InboundReadyMessage extends WebSocketMessageBase {
-  type: 'READY';
-}
-
-export interface InboundCancelReadyMessage extends WebSocketMessageBase {
-  type: 'CANCEL_READY';
-}
-
-export type InboundMoveMessage = WebSocketMessageBase & { type: 'MOVE' } & ((MoveDTO & { timeout: false })
-  | { timeout: true, turn: number, slotIdx: SlotIdx });
-
-export interface InboundReportMessage extends WebSocketMessageBase {
-  type: 'REPORT';
-  board: string;
-  currentTurn: number;
-}
-
-export interface InboundStartMessage extends WebSocketMessageBase {
-  type: 'START';
-}
-
 /**
  * client -> server
- */
+*/
 export type InboundWebSocketMessage =
   InboundCancelReadyMessage | InboundConnectedMessage |
   InboundLeaveMessage | InboundMoveMessage |
@@ -92,7 +122,7 @@ export type InboundWebSocketMessage =
 
 /**
  * server -> clients
- */
+*/
 export type OutboundWebSocketMessage =
   OutboundCancelReadyMessage | OutboundConnectedMessage |
   OutboundLeaveMessage | OutboundMoveMessage |
