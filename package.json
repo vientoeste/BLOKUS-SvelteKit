@@ -41,6 +41,7 @@
 		"@sveltejs/vite-plugin-svelte": "^5.0.3",
 		"@vientoeste/uuid-validate": "^1.0.1",
 		"bcrypt": "^5.1.0",
+		"events": "^3.3.0",
 		"express": "^4.21.2",
 		"html2canvas": "^1.4.1",
 		"jest": "^30.0.0-alpha.3",
