@@ -20,6 +20,8 @@
   } from "$types";
   import type { PageData } from "./$types";
   import { getPlayersSlot } from "$lib/utils";
+  import { PlayerStateManager } from "$lib/client/game/state/player";
+  import { EventBus } from "$lib/client/game/event";
 
   const { data }: { data: PageData } = $props();
   const { room, playerIdx, roomCache, moves } = data;
@@ -35,6 +37,8 @@
   let gameManager: GameManager_Legacy | null = $state(null);
   let messageReceiver: WebSocketMessageReceiver;
   let messageDispatcher: WebSocketMessageDispatcher;
+  let playerStateManager: PlayerStateManager;
+  let eventBus = new EventBus();
 
   let players: (ParticipantInf | undefined)[] = $state([]);
 
@@ -87,17 +91,21 @@
 
     messageReceiver = new WebSocketMessageReceiver(socket);
     messageDispatcher = new WebSocketMessageDispatcher(socket);
+    players = [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3];
+    playerStateManager = new PlayerStateManager({
+      players,
+      eventBus,
+    });
     gameManager = new GameManager_Legacy({
       board,
       gameId: roomCache.gameId,
       turn: roomCache.turn ?? -1,
       playerIdx: $gameStore.playerIdx,
-      users: [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3],
       messageReceiver,
       messageDispatcher,
+      playerStateManager,
     });
 
-    players = gameManager.users;
     if (roomCache.started) {
       $gameStore.mySlots = getPlayersSlot({
         playerIdx: $gameStore.playerIdx,

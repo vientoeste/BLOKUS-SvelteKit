@@ -33,34 +33,34 @@ import Alert from "$lib/components/Alert.svelte";
 import Confirm from "$lib/components/Confirm.svelte";
 import { getPlayersSlot, isRightTurn } from "$lib/utils";
 import { get } from "svelte/store";
+import type { PlayerStateManager } from "$lib/client/game/state/player";
 
 export class GameManager_Legacy {
   constructor({
-    board, playerIdx, turn, users, gameId, messageDispatcher, messageReceiver,
+    board, playerIdx, turn, gameId, messageDispatcher, messageReceiver, playerStateManager,
   }: {
     board: BoardMatrix, playerIdx: PlayerIdx, turn?: number,
-    users: (ParticipantInf | undefined)[],
     gameId?: string,
     messageDispatcher: WebSocketMessageDispatcher,
-    messageReceiver: WebSocketMessageReceiver
+    messageReceiver: WebSocketMessageReceiver,
+    playerStateManager: PlayerStateManager,
   }) {
     this.board = board;
     this.turn = turn ?? -1;
     this.playerIdx = playerIdx;
     this.gameId = gameId;
-    users.forEach((user, idx) => {
-      this.users[idx] = user;
-    });
     gameStore.subscribe((store) => {
       this.turn = store.turn;
     });
     this.messageDispatcher = messageDispatcher;
     this.messageReceiver = messageReceiver;
+    this.playerStateManager = playerStateManager;
 
     this.messageReceiver.onMessage((m) => { this.handleIncomingMessage(m) });
   }
   private messageReceiver: WebSocketMessageReceiver;
   private messageDispatcher: WebSocketMessageDispatcher;
+  private playerStateManager: PlayerStateManager;
 
   gameId: string | undefined;
 
@@ -110,17 +110,17 @@ export class GameManager_Legacy {
 
   addUser(message: OutboundConnectedMessage) {
     const { id, playerIdx, username } = message;
-    // [TODO] integrate field username-name
-    this.users[playerIdx] = {
+    this.playerStateManager.addPlayer({
       id,
+      playerIdx,
       username,
       ready: false,
-    };
+    });
   }
 
   removeUser(message: OutboundLeaveMessage) {
     const { playerIdx } = message;
-    this.users[playerIdx] = undefined;
+    this.playerStateManager.removePlayer(playerIdx);
   }
 
   ready() {
@@ -139,9 +139,7 @@ export class GameManager_Legacy {
 
   updateReadyState(message: OutboundReadyMessage | OutboundCancelReadyMessage) {
     const { type, playerIdx } = message;
-    if (this.users[playerIdx]) {
-      this.users[playerIdx].ready = type === 'READY';
-    }
+    this.playerStateManager.updateReadyState({ playerIdx, ready: type === 'READY' });
   }
 
   handleError(message: OutboundErrorMessage) {
@@ -262,7 +260,7 @@ export class GameManager_Legacy {
   isMyTurn() {
     return isRightTurn({
       turn: this.turn,
-      activePlayerCount: this.users.filter(e => e !== undefined).length,
+      activePlayerCount: this.playerStateManager.getPlayers().filter(e => e !== undefined).length,
       playerIdx: this.playerIdx,
     });
   }
@@ -372,7 +370,7 @@ export class GameManager_Legacy {
       ...gameInfo,
       isStarted: true,
       mySlots: getPlayersSlot({
-        players: this.users,
+        players: this.playerStateManager.getPlayers(),
         playerIdx: this.playerIdx,
       }),
       availableBlocksBySlots: Array(4).fill(null).map(() => new Map(Object.entries(preset) as [BlockType, BlockMatrix][])),
