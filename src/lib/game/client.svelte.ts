@@ -460,6 +460,7 @@ export class BlockPlacementValidator {
           }, 3000);
           this.worker.postMessage({ board, slotIdx, blockType });
         });
+        this.worker.onmessage = null;
         if (result && options.earlyReturn) {
           return true;
         }
