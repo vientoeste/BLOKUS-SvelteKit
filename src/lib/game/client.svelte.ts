@@ -445,7 +445,7 @@ export class BlockPlacementValidator {
     board: BoardMatrix,
     slotIdx: SlotIdx,
     unusedBlocks: BlockType[],
-  }, options: {
+  }, options?: {
     earlyReturn?: boolean,
   }) {
     const availableBlocks: BlockType[] = [];
@@ -461,7 +461,7 @@ export class BlockPlacementValidator {
           this.worker.postMessage({ board, slotIdx, blockType });
         });
         this.worker.onmessage = null;
-        if (result && options.earlyReturn) {
+        if (result && options?.earlyReturn) {
           return true;
         }
         if (result) {
