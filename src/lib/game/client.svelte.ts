@@ -36,13 +36,14 @@ import { get } from "svelte/store";
 
 export class GameManager_Legacy {
   constructor({
-    board, playerIdx, turn, users, gameId, messageDispatcher, messageReceiver,
+    board, playerIdx, turn, users, gameId, messageDispatcher, messageReceiver, blockPlacementValidator,
   }: {
     board: BoardMatrix, playerIdx: PlayerIdx, turn?: number,
     users: (ParticipantInf | undefined)[],
     gameId?: string,
     messageDispatcher: WebSocketMessageDispatcher,
-    messageReceiver: WebSocketMessageReceiver
+    messageReceiver: WebSocketMessageReceiver,
+    blockPlacementValidator: BlockPlacementValidator,
   }) {
     this.board = board;
     this.turn = turn ?? -1;
@@ -56,11 +57,13 @@ export class GameManager_Legacy {
     });
     this.messageDispatcher = messageDispatcher;
     this.messageReceiver = messageReceiver;
+    this.blockPlacementValidator = blockPlacementValidator;
 
     this.messageReceiver.onMessage((m) => { this.handleIncomingMessage(m) });
   }
   private messageReceiver: WebSocketMessageReceiver;
   private messageDispatcher: WebSocketMessageDispatcher;
+  private blockPlacementValidator: BlockPlacementValidator;
 
   gameId: string | undefined;
 
@@ -271,7 +274,7 @@ export class GameManager_Legacy {
   private turnPromiseResolver: ((dto: MoveDTO) => void) | null = null;
   private turnPromiseRejecter: ((reason: string) => void) | null = null;
 
-  applyMove(message: OutboundMoveMessage) {
+  async applyMove(message: OutboundMoveMessage) {
     if (!this.gameId) {
       throw new Error('gameId is not set');
     }
@@ -317,6 +320,29 @@ export class GameManager_Legacy {
         timeout: false,
       })
       this.initiateNextTurn();
+      /**
+       * @description Creates a deep copy of the board to prevent "DOMException: Proxy object could not be cloned"
+       * errors when sending to worker. This error occurs because:
+       * 1. Web Workers use structured clone algorithm for message passing
+       * 2. Our original board is a Proxy object (from state management)
+       * 3. Proxy objects cannot be cloned by the structured clone algorithm
+       */
+      const copiedProxyBoard = this.board.map(e => [...e]);
+      const blocksBySlots = get(gameStore).availableBlocksBySlots
+      for (const unusedBlocks of blocksBySlots) {
+        const result = await this.blockPlacementValidator.searchPlaceableBlocks({
+          board: copiedProxyBoard,
+          slotIdx,
+          unusedBlocks: Array.from(unusedBlocks.keys()),
+        }, {
+          // [TODO] find proper magic number
+          earlyReturn: turn > 20,
+        });
+        if (!result) {
+          // emit no more available moves(retire)
+        }
+        return;
+      }
       return;
     }
     return reason;
@@ -468,9 +494,12 @@ export class BlockPlacementValidator {
           availableBlocks.push(blockType);
         }
       }
-      return availableBlocks;
+      if (availableBlocks.length > 0) {
+        return availableBlocks;
+      }
     } catch (e) {
       console.error(e);
     }
+    return false;
   }
 }

@@ -5,7 +5,10 @@
   import Board from "$lib/components/Board.svelte";
   import Controller from "$lib/components/Controller.svelte";
   import Players from "$lib/components/Players.svelte";
-  import { GameManager_Legacy } from "$lib/game/client.svelte";
+  import {
+    BlockPlacementValidator,
+    GameManager_Legacy,
+  } from "$lib/game/client.svelte";
   import {
     WebSocketMessageDispatcher,
     WebSocketMessageReceiver,
@@ -35,6 +38,7 @@
   let gameManager: GameManager_Legacy | null = $state(null);
   let messageReceiver: WebSocketMessageReceiver;
   let messageDispatcher: WebSocketMessageDispatcher;
+  let blockPlacementValidator: BlockPlacementValidator;
 
   let players: (ParticipantInf | undefined)[] = $state([]);
 
@@ -84,9 +88,14 @@
         resolve();
       });
     });
+    const workerModule = await import(
+      "$lib/workers/checkBlockPlaceability.worker?worker"
+    );
+    const worker = new workerModule.default();
 
     messageReceiver = new WebSocketMessageReceiver(socket);
     messageDispatcher = new WebSocketMessageDispatcher(socket);
+    blockPlacementValidator = new BlockPlacementValidator(worker);
     gameManager = new GameManager_Legacy({
       board,
       gameId: roomCache.gameId,
@@ -95,6 +104,7 @@
       users: [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3],
       messageReceiver,
       messageDispatcher,
+      blockPlacementValidator,
     });
 
     players = gameManager.users;
