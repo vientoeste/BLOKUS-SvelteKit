@@ -336,7 +336,7 @@ export class GameManager_Legacy {
           unusedBlocks: Array.from(unusedBlocks.keys()),
         }, {
           // [TODO] find proper magic number
-          earlyReturn: turn > 20,
+          earlyReturn: turn < 20,
         });
         if (!result) {
           // emit no more available moves(retire)
