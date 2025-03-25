@@ -324,7 +324,7 @@ export class GameManager_Legacy {
        * @description Creates a deep copy of the board to prevent "DOMException: Proxy object could not be cloned"
        * errors when sending to worker. This error occurs because:
        * 1. Web Workers use structured clone algorithm for message passing
-       * 2. Our original board is a Proxy object (from state management)
+       * 2. Our original board is a Proxy object (from $state)
        * 3. Proxy objects cannot be cloned by the structured clone algorithm
        */
       const copiedProxyBoard = this.board.map(e => [...e]);
