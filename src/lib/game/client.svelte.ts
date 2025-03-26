@@ -375,6 +375,10 @@ export class GameManager_Legacy {
       return;
     }
 
+    if (slotIdx !== this.turn % 4) {
+      this.turnPromiseRejecter?.('invalid slot');
+    }
+
     this.turnPromiseResolver({
       blockInfo, playerIdx: this.playerIdx, slotIdx, position, turn: this.turn,
     });
