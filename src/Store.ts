@@ -1,7 +1,7 @@
 import { preset } from '$lib/game/core';
 import type { BlockMatrix, BlockType, PlayerIdx, Rotation, SlotIdx, UserInfo } from '$types';
 import type { Undefinedable } from '$lib/utils';
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 
 export const userStore = writable<Undefinedable<UserInfo>>({
   id: undefined,
@@ -74,11 +74,39 @@ export const moveStore = writable<({ type: BlockType, rotation: Rotation, flip: 
 
 export const movePreviewStore = writable<string>('');
 
-export const blockStore = writable<{
-  blockType: BlockType,
-  slotIdx: SlotIdx,
-  isPlaced: boolean,
-  placeable: boolean,
-  rotation: Rotation,
-  flip: boolean,
-}[]>();
+export const blockStore = (() => {
+  const { set, subscribe, update } = writable<{
+    blockType: BlockType,
+    slotIdx: SlotIdx,
+    isPlaced: boolean,
+    placeable: boolean,
+    rotation: Rotation,
+    flip: boolean,
+  }[]>();
+
+  const initialize = (slotIdx: SlotIdx) => {
+    set(Object.keys(preset).map(blockType => ({
+      blockType: blockType as BlockType,
+      slotIdx,
+      isPlaced: false,
+      placeable: true,
+      rotation: 0,
+      flip: false,
+    })));
+  };
+  const getBlocksBySlot = (slotIdx: SlotIdx) => get({ subscribe }).filter(blocks => blocks.slotIdx === slotIdx);
+  const getUnusedBlocks = (slotIdx: SlotIdx) => get({ subscribe }).filter(blocks => blocks.slotIdx === slotIdx && !blocks.isPlaced);
+  const getAvailableBlocks = (slotIdx: SlotIdx) => get({ subscribe }).filter(blocks => blocks.slotIdx === slotIdx && !blocks.isPlaced && blocks.placeable);
+  const updateAvailableBlocks = ({ slotIdx, blocks }: { slotIdx: SlotIdx, blocks: BlockType[] }) =>
+    update((blockStore) =>
+      blockStore.filter(block =>
+        block.slotIdx === slotIdx
+        && blocks.includes(block.blockType)
+      )
+    );
+
+  return {
+    set, subscribe, update,
+    initialize, getBlocksBySlot, getUnusedBlocks, getAvailableBlocks, updateAvailableBlocks,
+  };
+})();
