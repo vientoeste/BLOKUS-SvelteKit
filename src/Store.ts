@@ -84,15 +84,15 @@ export const blockStore = (() => {
     flip: boolean,
   }[]>();
 
-  const initialize = (slotIdx: SlotIdx) => {
-    set(Object.keys(preset).map(blockType => ({
+  const initialize = (slots: SlotIdx[]) => {
+    set(slots.map(slotIdx => Object.keys(preset).map(blockType => ({
       blockType: blockType as BlockType,
       slotIdx,
       isPlaced: false,
       placeable: true,
-      rotation: 0,
+      rotation: 0 as Rotation,
       flip: false,
-    })));
+    }))).flat());
   };
   const getBlocksBySlot = (slotIdx: SlotIdx) => get({ subscribe }).filter(blocks => blocks.slotIdx === slotIdx);
   const getUnusedBlocks = (slotIdx: SlotIdx) => get({ subscribe }).filter(blocks => blocks.slotIdx === slotIdx && !blocks.isPlaced);
