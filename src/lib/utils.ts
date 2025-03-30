@@ -202,12 +202,12 @@ export const isRightTurn = ({ turn, playerIdx, activePlayerCount }: { turn: numb
 export const getPlayersSlot = ({
   players, playerIdx
 }: {
-  players: ({ id: string; username: string; } | undefined)[], playerIdx: PlayerIdx
-}) => (({
+  players: ({ id: string; username: string; } | undefined)[], playerIdx: PlayerIdx,
+}): SlotIdx[] => (({
   2: playerIdx === 0 ? [0, 2] : [1, 3],
   3: [playerIdx, players.findIndex(e => e === undefined)],
   4: [playerIdx]
-}[players.filter(e => e !== undefined).length]) as number[]);
+}[players.filter(e => e !== undefined).length]) as SlotIdx[]);
 
 export const convertBlockToStr = ({ flip, rotation, type }: Block): string => `t${type}r${rotation}${flip ? 'f' : ''}`;
 
