@@ -9,9 +9,6 @@
    * by update key, force re-rendering of blocks container
    */
   let key = $state(0);
-  gameStore.subscribe(() => {
-    key += 1;
-  });
 
   // [TODO] refactor to display blocks based on blockState
   let blockState: Map<BlockType, { rotation: number; flip: boolean }> = $state(
@@ -213,18 +210,16 @@
   };
 </script>
 
-{#key key}
-  <div id="blocks-container">
-    {#each blockStore.getUnusedBlocks(slotIdx) as block}
-      <DraggableBlock
-        block={preset[block.blockType]}
-        type={block.blockType}
-        {blockState}
-        {slotIdx}
-      />
-    {/each}
-  </div>
-{/key}
+<div id="blocks-container">
+  {#each blockStore.getUnusedBlocks(slotIdx) as block}
+    <DraggableBlock
+      block={preset[block.blockType]}
+      type={block.blockType}
+      {blockState}
+      {slotIdx}
+    />
+  {/each}
+</div>
 
 <style>
   #blocks-container {
