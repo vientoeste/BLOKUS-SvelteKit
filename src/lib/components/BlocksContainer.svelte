@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { BlockMatrix, BlockType } from "$types";
-  import { gameStore } from "../../Store";
+  import type { BlockMatrix, BlockType, SlotIdx } from "$types";
+  import { blockStore, gameStore } from "../../Store";
   import DraggableBlock from "./DraggableBlock.svelte";
 
   let { slotIdx }: { slotIdx: number } = $props();
@@ -13,7 +13,6 @@
     key += 1;
   });
 
-  let blocks = $state($gameStore.availableBlocksBySlots[slotIdx]);
   // [TODO] refactor to display blocks based on blockState
   let blockState: Map<BlockType, { rotation: number; flip: boolean }> = $state(
     new Map(),
@@ -216,10 +215,10 @@
 
 {#key key}
   <div id="blocks-container">
-    {#each blocks as block}
+    {#each blockStore.getUnusedBlocks(slotIdx as SlotIdx) as block}
       <DraggableBlock
-        block={preset[block[0]]}
-        type={block[0]}
+        block={preset[block.blockType]}
+        type={block.blockType}
         {blockState}
         {slotIdx}
       />

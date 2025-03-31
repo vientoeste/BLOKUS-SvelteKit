@@ -13,7 +13,7 @@
     WebSocketMessageDispatcher,
     WebSocketMessageReceiver,
   } from "$lib/websocket/client";
-  import { gameStore, modalStore } from "../../../Store";
+  import { blockStore, gameStore, modalStore } from "../../../Store";
   import type {
     BoardMatrix,
     ParticipantInf,
@@ -44,13 +44,13 @@
 
   onDestroy(() => {
     gameStore.set({
-      availableBlocksBySlots: [],
       isStarted: false,
       mySlots: [],
       playerIdx: 0,
       players: [],
       turn: -1,
     });
+    blockStore.set([]);
     socket?.close();
   });
 

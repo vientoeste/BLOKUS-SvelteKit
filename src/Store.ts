@@ -51,14 +51,12 @@ export const modalStore = createModalStore();
 
 export const gameStore = writable<{
   turn: number,
-  availableBlocksBySlots: Map<BlockType, BlockMatrix>[],
   playerIdx: PlayerIdx,
   players: ({ id: string, username: string, ready: boolean } | undefined)[],
   isStarted: boolean,
   mySlots: number[],
 }>({
   turn: -1,
-  availableBlocksBySlots: [],
   playerIdx: 0,
   players: [],
   isStarted: false,
@@ -104,9 +102,18 @@ export const blockStore = (() => {
         && blocks.includes(block.blockType)
       )
     );
-
+  const updateBlockPlacementStatus = ({ slotIdx, blockType }: { slotIdx: SlotIdx, blockType: BlockType }) => {
+    const store = get({ subscribe });
+    const index = store.findIndex(e => e.slotIdx === slotIdx && e.blockType === blockType);
+    if (index !== -1) {
+      update(e => {
+        e[index].isPlaced = true;
+        return e;
+      });
+    }
+  };
   return {
     set, subscribe, update,
-    initialize, getBlocksBySlot, getUnusedBlocks, getAvailableBlocks, updateAvailableBlocks,
+    initialize, getBlocksBySlot, getUnusedBlocks, getAvailableBlocks, updateAvailableBlocks, updateBlockPlacementStatus,
   };
 })();

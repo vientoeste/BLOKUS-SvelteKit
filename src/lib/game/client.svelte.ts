@@ -23,7 +23,7 @@ import type {
   InboundStartMessage,
   OutboundStartMessage,
 } from "$types";
-import { gameStore, modalStore, movePreviewStore } from "../../Store";
+import { blockStore, gameStore, modalStore, movePreviewStore } from "../../Store";
 import { createNewBoard, preset, putBlockOnBoard, rollbackMove } from "./core";
 import type {
   WebSocketMessageDispatcher,
@@ -301,14 +301,7 @@ export class GameManager_Legacy {
       slotIdx,
     });
     if (!reason) {
-      gameStore.update((store) => {
-        const slots = [...store.availableBlocksBySlots];
-        slots[slotIdx].delete(blockInfo.type);
-        return {
-          ...store,
-          availableBlocksBySlots: slots,
-        };
-      });
+      blockStore.updateBlockPlacementStatus({ slotIdx, blockType: blockInfo.type });
       this.moves.push({
         gameId: this.gameId,
         blockInfo,
@@ -328,18 +321,22 @@ export class GameManager_Legacy {
        * 3. Proxy objects cannot be cloned by the structured clone algorithm
        */
       const copiedProxyBoard = this.board.map(e => [...e]);
-      const blocksBySlots = get(gameStore).availableBlocksBySlots
-      for (const unusedBlocks of blocksBySlots) {
+      const slots = get(gameStore).mySlots as SlotIdx[];
+      for await (const slotIdx of slots) {
         const result = await this.blockPlacementValidator.searchPlaceableBlocks({
           board: copiedProxyBoard,
           slotIdx,
-          unusedBlocks: Array.from(unusedBlocks.keys()),
+          unusedBlocks: blockStore.getAvailableBlocks(slotIdx).map(block => block.blockType),
         }, {
           // [TODO] find proper magic number
           earlyReturn: turn < 20,
         });
         if (!result) {
           // emit no more available moves(retire)
+          return;
+        }
+        if (result instanceof Array) {
+          blockStore.updateAvailableBlocks({ slotIdx, blocks: result });
         }
         return;
       }
@@ -398,15 +395,16 @@ export class GameManager_Legacy {
   initiateGameStatus(gameId: string) {
     this.gameId = gameId;
     this.board = createNewBoard();
+    const slots = getPlayersSlot({
+      players: this.users,
+      playerIdx: this.playerIdx,
+    }) as SlotIdx[];
     gameStore.update((gameInfo) => ({
       ...gameInfo,
       isStarted: true,
-      mySlots: getPlayersSlot({
-        players: this.users,
-        playerIdx: this.playerIdx,
-      }),
-      availableBlocksBySlots: Array(4).fill(null).map(() => new Map(Object.entries(preset) as [BlockType, BlockMatrix][])),
+      mySlots: slots,
     }));
+    blockStore.initialize(slots);
     this.initiateNextTurn();
   }
 
@@ -425,25 +423,20 @@ export class GameManager_Legacy {
   }
 
   restoreGameState(moves: Move[]) {
-    gameStore.update((store) => {
-      this.moves = moves.sort((a, b) => a.turn - b.turn);
-      const availableBlocks = Array(4).fill(null).map(() => new Map(Object.entries(preset) as [BlockType, BlockMatrix][]));
-      moves.forEach((move) => {
-        if (!move.timeout) {
-          availableBlocks[move.slotIdx].delete(move.blockInfo.type);
-          putBlockOnBoard({
-            board: this.board,
-            blockInfo: move.blockInfo,
-            playerIdx: move.playerIdx,
-            position: move.position,
-            slotIdx: move.slotIdx,
-            turn: move.turn,
-          });
-        }
-      });
-      return {
-        ...store, availableBlocksBySlots: availableBlocks,
-      };
+    this.moves = moves.sort((a, b) => a.turn - b.turn);
+    blockStore.initialize(get(gameStore).mySlots);
+    this.moves.forEach((move) => {
+      if (!move.timeout) {
+        blockStore.updateBlockPlacementStatus({ blockType: move.blockInfo.type, slotIdx: move.slotIdx });
+        putBlockOnBoard({
+          board: this.board,
+          blockInfo: move.blockInfo,
+          playerIdx: move.playerIdx,
+          position: move.position,
+          slotIdx: move.slotIdx,
+          turn: move.turn,
+        });
+      }
     });
 
     const leftTime = moves[moves.length - 1].createdAt.valueOf() - Date.now();
@@ -480,7 +473,7 @@ export class BlockPlacementValidator {
   }) {
     const availableBlocks: BlockType[] = [];
     try {
-      for (const blockType of unusedBlocks.reverse()) {
+      for await (const blockType of unusedBlocks.reverse()) {
         const result = await new Promise<boolean>((res, rej) => {
           this.worker.onmessage = (e: MessageEvent<{ result: boolean }>) => {
             res(e.data.result);
