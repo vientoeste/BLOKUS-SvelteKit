@@ -100,7 +100,7 @@
       const capturedImage = await capturePartialBoard(
         getBlockMatrix({ type, rotation, flip }),
         position as [number, number],
-        slotIdx as SlotIdx,
+        slotIdx,
       );
       $movePreviewStore = capturedImage;
       relayMove({

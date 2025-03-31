@@ -3,7 +3,7 @@
   import { blockStore, gameStore } from "../../Store";
   import DraggableBlock from "./DraggableBlock.svelte";
 
-  let { slotIdx }: { slotIdx: number } = $props();
+  let { slotIdx }: { slotIdx: SlotIdx } = $props();
 
   /**
    * by update key, force re-rendering of blocks container
@@ -215,7 +215,7 @@
 
 {#key key}
   <div id="blocks-container">
-    {#each blockStore.getUnusedBlocks(slotIdx as SlotIdx) as block}
+    {#each blockStore.getUnusedBlocks(slotIdx) as block}
       <DraggableBlock
         block={preset[block.blockType]}
         type={block.blockType}

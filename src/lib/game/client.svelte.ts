@@ -321,7 +321,7 @@ export class GameManager_Legacy {
        * 3. Proxy objects cannot be cloned by the structured clone algorithm
        */
       const copiedProxyBoard = this.board.map(e => [...e]);
-      const slots = get(gameStore).mySlots as SlotIdx[];
+      const slots = get(gameStore).mySlots;
       for await (const slotIdx of slots) {
         const result = await this.blockPlacementValidator.searchPlaceableBlocks({
           board: copiedProxyBoard,
@@ -398,7 +398,7 @@ export class GameManager_Legacy {
     const slots = getPlayersSlot({
       players: this.users,
       playerIdx: this.playerIdx,
-    }) as SlotIdx[];
+    });
     gameStore.update((gameInfo) => ({
       ...gameInfo,
       isStarted: true,
