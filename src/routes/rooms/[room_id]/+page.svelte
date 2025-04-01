@@ -13,7 +13,7 @@
     WebSocketMessageDispatcher,
     WebSocketMessageReceiver,
   } from "$lib/websocket/client";
-  import { blockStore, gameStore, modalStore } from "../../../Store";
+  import { blockStore, gameStore, modalStore } from "$lib/store";
   import type {
     BoardMatrix,
     ParticipantInf,

@@ -6,7 +6,7 @@
     dragPositionOffsetStore,
     movePreviewStore,
     moveStore,
-  } from "../../Store";
+  } from "$lib/store";
   import html2canvas from "html2canvas";
 
   const { board, relayMove } = $props();

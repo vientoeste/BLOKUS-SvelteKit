@@ -8,7 +8,7 @@
   import UserInfo from "$lib/components/UserInfo.svelte";
 
   import { getUserInfoFromLocalStorage } from "$lib/utils";
-  import { gameStore, userStore } from "../Store";
+  import { gameStore, userStore } from "$lib/store";
   import "../app.css";
   import BlocksContainer from "$lib/components/BlocksContainer.svelte";
 

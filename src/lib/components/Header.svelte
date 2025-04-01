@@ -1,6 +1,6 @@
 <script>
   import { goto } from "$app/navigation";
-  import { modalStore } from "../../Store";
+  import { modalStore } from "$lib/store";
   import Alert from "./Alert.svelte";
 </script>
 

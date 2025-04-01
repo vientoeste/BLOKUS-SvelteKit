@@ -23,7 +23,7 @@ import type {
   InboundStartMessage,
   OutboundStartMessage,
 } from "$types";
-import { blockStore, gameStore, modalStore, movePreviewStore } from "../../Store";
+import { blockStore, gameStore, modalStore, movePreviewStore } from "$lib/store";
 import { createNewBoard, preset, putBlockOnBoard, rollbackMove } from "./core";
 import type {
   WebSocketMessageDispatcher,

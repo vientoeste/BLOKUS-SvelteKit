@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { gameStore } from "../../Store";
+  import { gameStore } from "$lib/store";
   const { startGame } = $props();
 </script>
 

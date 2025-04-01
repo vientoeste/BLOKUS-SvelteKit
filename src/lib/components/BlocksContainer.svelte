@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { BlockMatrix, BlockType, SlotIdx } from "$types";
-  import { blockStore, gameStore } from "../../Store";
+  import { blockStore } from "$lib/store";
   import DraggableBlock from "./DraggableBlock.svelte";
 
   let { slotIdx }: { slotIdx: SlotIdx } = $props();
