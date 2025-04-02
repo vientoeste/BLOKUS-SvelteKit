@@ -8,13 +8,13 @@
   import UserInfo from "$lib/components/UserInfo.svelte";
 
   import { getUserInfoFromLocalStorage } from "$lib/utils";
-  import { gameStore, userStore } from "$lib/store";
+  import { blockStore, gameStore, userStore } from "$lib/store";
   import "../app.css";
   import BlocksContainer from "$lib/components/BlocksContainer.svelte";
 
   let rerenderer = $state(0);
-  gameStore.subscribe((store) => {
-    if (store.mySlots.length !== 0) {
+  blockStore.subscribe(() => {
+    if ($gameStore.isStarted) {
       rerenderer += 1;
     }
   });
