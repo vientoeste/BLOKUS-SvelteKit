@@ -97,10 +97,15 @@ export const blockStore = (() => {
   const getAvailableBlocks = (slotIdx: SlotIdx) => get({ subscribe }).filter(blocks => blocks.slotIdx === slotIdx && !blocks.isPlaced && blocks.placeable);
   const updateAvailableBlocks = ({ slotIdx, blocks }: { slotIdx: SlotIdx, blocks: BlockType[] }) =>
     update((blockStore) =>
-      blockStore.filter(block =>
-        block.slotIdx === slotIdx
-        && blocks.includes(block.blockType)
-      )
+      blockStore.map(block => {
+        if (
+          block.slotIdx === slotIdx
+          && !blocks.includes(block.blockType)
+        ) {
+          return { ...block, placeable: false };
+        }
+        return block;
+      })
     );
   const updateBlockPlacementStatus = ({ slotIdx, blockType }: { slotIdx: SlotIdx, blockType: BlockType }) => {
     const store = get({ subscribe });
