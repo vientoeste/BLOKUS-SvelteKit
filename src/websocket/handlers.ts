@@ -22,6 +22,7 @@ import { extractPlayerCountFromCache, isRightTurn, parseJson } from "$lib/utils"
 import { getRoomCache } from "$lib/database/room";
 import { insertNonTimeoutMove, insertTimeoutMove } from "$lib/database/move";
 import { uuidv7 } from "uuidv7";
+import { updateStartedState } from "$lib/room";
 
 interface MessageProcessResult {
   success: boolean;
@@ -227,7 +228,7 @@ export class WebSocketMessageHandler {
       };
     }
 
-    // [TODO] should reflect to DB too
+    updateStartedState({ roomId: client.roomId, isStarted: true });
     const gameId = uuidv7();
     await this.redis.hSet(`room:${client.roomId}`, 'gameId', gameId);
     await this.redis.hSet(`room:${client.roomId}`, 'started', '1');

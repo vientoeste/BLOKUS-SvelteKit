@@ -60,6 +60,22 @@ export const updateRoomInfo = async (
   return result.value;
 };
 
+export const updateRoomStartedState = async ({ isStarted, roomId }: { roomId: RoomId, isStarted: boolean }): Promise<void> => {
+  const result = await Rooms.findOneAndUpdate({
+    _id: roomId,
+    isDeleted: false,
+  }, {
+    $set: {
+      isStarted,
+      updatedAt: new Date(),
+    },
+  }).catch(handleMongoError);
+
+  if (!result.value) {
+    throw new CustomError('not found', 404);
+  }
+};
+
 export const deleteRoomInfo = async (roomId: string): Promise<void> => {
   const result = await Rooms.findOneAndUpdate({
     id: roomId,
