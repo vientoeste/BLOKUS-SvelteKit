@@ -35,6 +35,7 @@
     return newArr.fill(false);
   });
 
+  let worker: Worker | null = null;
   let gameManager: GameManager_Legacy | null = $state(null);
   let messageReceiver: WebSocketMessageReceiver;
   let messageDispatcher: WebSocketMessageDispatcher;
@@ -91,7 +92,7 @@
     const workerModule = await import(
       "$lib/workers/checkBlockPlaceability.worker?worker"
     );
-    const worker = new workerModule.default();
+    worker = new workerModule.default();
 
     messageReceiver = new WebSocketMessageReceiver(socket);
     messageDispatcher = new WebSocketMessageDispatcher(socket);
@@ -115,6 +116,10 @@
       });
       gameManager?.restoreGameState(moves);
     }
+  });
+
+  onDestroy(() => {
+    worker?.terminate();
   });
 </script>
 
