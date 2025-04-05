@@ -12,7 +12,7 @@
     type: BlockType;
     block: ({ u: boolean; r: boolean; b: boolean; l: boolean } | null)[][];
     blockState: Map<BlockType, { rotation: number; flip: boolean }>;
-    slotIdx: number;
+    slotIdx: SlotIdx;
   } = $props();
 
   let blockMatrix: ({
