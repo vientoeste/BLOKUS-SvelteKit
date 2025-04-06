@@ -197,9 +197,18 @@ export class GameManager_Legacy {
     while (!isSubmitted) {
       // 3. resolve move
       const move = await this.waitMoveResolution().catch(() => null);
-      if (!move) {
+      if (move === null) {
         // if the move is empty, maybe that means the turnPromise was rejected
-        break;
+        /**
+         * @description sometimes move is passed with value 'null', so added this condition statement urgently.
+         * if turnPromise is already rejected, turnPromise and res/rej must be initialized to null,
+         * so I expect this 'continue' will work.
+         * BTW it'll be replaced by branch refactor/separate-god-class-GameManager
+         */
+        if (this.turnPromise === null) {
+          break;
+        }
+        continue;
       }
       // 4. validation
       const reason = putBlockOnBoard({
