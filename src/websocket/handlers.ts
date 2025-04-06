@@ -17,9 +17,11 @@ import type {
   OutboundStartMessage,
   MoveDTO,
   PlayerId,
+  InboundExhaustedMessage,
+  OutboundExhaustedMessage,
 } from "$types";
 import { extractPlayerCountFromCache, isRightTurn, parseJson } from "$lib/utils";
-import { getRoomCache } from "$lib/database/room";
+import { getRoomCache, markPlayerAsExhausted } from "$lib/database/room";
 import { insertNonTimeoutMove, insertTimeoutMove } from "$lib/database/move";
 import { uuidv7 } from "uuidv7";
 import { updateStartedState } from "$lib/room";
@@ -249,6 +251,19 @@ export class WebSocketMessageHandler {
     throw new Error("not implemented");
   }
 
+  private async handleExhausted(client: ActiveWebSocket, message: InboundExhaustedMessage): Promise<MessageProcessResult> {
+    await markPlayerAsExhausted({ roomId: client.roomId, slotIdx: message.slotIdx });
+    const exhaustedMessage: OutboundExhaustedMessage = {
+      type: 'EXHAUSTED',
+      slotIdx: message.slotIdx
+    };
+    return {
+      success: true,
+      shouldBroadcast: true,
+      payload: exhaustedMessage,
+    };
+  }
+
   async processMessage(client: ActiveWebSocket, message: InboundWebSocketMessage): Promise<MessageProcessResult> {
     switch (message.type) {
       case 'START':
@@ -265,6 +280,8 @@ export class WebSocketMessageHandler {
         return this.handleMove(client, message);
       case "REPORT":
         return this.handleReport(client, message);
+      case "EXHAUSTED":
+        return this.handleExhausted(client, message);
       default:
         return {
           success: false,

@@ -208,3 +208,10 @@ export const addUserToRoomCache = async ({ roomId, userInfo: { id, username } }:
   }
   throw new CustomError('room is full');
 };
+
+// [TODO] refactor this room structure with p0~3
+export const markPlayerAsExhausted = async ({ roomId, slotIdx }: { roomId: RoomId, slotIdx: SlotIdx }) => {
+  const exhaustedUserSlots = await redis.hGet(`room:${roomId}`, `exhausted`);
+  const updatedExhaustedUserSlots = exhaustedUserSlots === undefined ? `${slotIdx}` : `${exhaustedUserSlots},${slotIdx}`;
+  await redis.hSet(`room:${roomId}`, `exhausted`, updatedExhaustedUserSlots);
+};
