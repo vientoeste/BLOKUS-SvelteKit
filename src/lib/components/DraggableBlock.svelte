@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { BlockType, Rotation, SlotIdx } from "$types";
-  import { dragPositionOffsetStore, moveStore } from "$lib/store";
+  import { dragPositionOffsetStore, modalStore, moveStore } from "$lib/store";
   import Block from "./Block.svelte";
+  import Alert from "./Alert.svelte";
 
   let {
     type,
@@ -25,7 +26,21 @@
   } | null)[][] = $state(block);
 
   function handleDragStart(event: DragEvent) {
-    if (!event.dataTransfer) return;
+    if (!isAvailable) {
+      modalStore.open(Alert, {
+        title: "chosen block is not available",
+        content: "",
+      });
+      event.stopPropagation();
+      return;
+    }
+    if (!event.dataTransfer) {
+      console.error(
+        "Uncaught exception: handleDragStart's event.dataTransfer is null",
+      );
+      event.stopPropagation();
+      return;
+    }
     const state = blockState.get(type);
 
     moveStore.set({
