@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { BlockType, Rotation } from "$types";
+  import type { BlockType, Rotation, SlotIdx } from "$types";
   import { dragPositionOffsetStore, moveStore } from "$lib/store";
   import Block from "./Block.svelte";
 
