@@ -330,26 +330,22 @@ export class GameManager_Legacy {
        * 3. Proxy objects cannot be cloned by the structured clone algorithm
        */
       const copiedProxyBoard = this.board.map(e => [...e]);
-      const slots = get(gameStore).mySlots;
-      for await (const slotIdx of slots) {
-        const result = await this.blockPlacementValidator.searchPlaceableBlocks({
-          board: copiedProxyBoard,
-          slotIdx,
-          unusedBlocks: blockStore.getAvailableBlocksBySlot(slotIdx).map(block => block.blockType),
-        }, {
-          // [TODO] find proper magic number
-          earlyReturn: turn < 20,
-        });
-        if (!result) {
-          // emit no more available moves(retire)
-          return;
-        }
-        if (result instanceof Array) {
-          // [TODO] by recent commit this line will cause error
-          // blockStore.updateAvailableBlocks({ slotIdx, blocks: result });
-        }
+      const res = await this.blockPlacementValidator.searchPlaceableBlocks({
+        board: copiedProxyBoard,
+        blocks: blockStore.getUnusedBlocks(),
+      }, {
+        // [TODO] find proper magic number
+        earlyReturn: turn < 20,
+      });
+      if (res === true || res === undefined) {
         return;
       }
+      // [TODO] treat retire with each slot
+      if (res === false || res.available.length === 0) {
+        console.log('...retire');
+        return;
+      }
+      blockStore.updateUnavailableBlocks(res.unavailable);
       return;
     }
     return reason;
@@ -474,39 +470,37 @@ export class BlockPlacementValidator {
 
   private worker: Worker;
 
-  async searchPlaceableBlocks({ board, slotIdx, unusedBlocks }: {
+  async searchPlaceableBlocks({ board, blocks }: {
     board: BoardMatrix,
-    slotIdx: SlotIdx,
-    unusedBlocks: BlockType[],
+    blocks: {
+      slotIdx: SlotIdx,
+      blockType: BlockType
+    }[],
   }, options?: {
     earlyReturn?: boolean,
   }) {
-    const availableBlocks: BlockType[] = [];
+    if (options?.earlyReturn === true) {
+      return new Promise<boolean>((res, rej) => {
+        this.worker.onmessage = (e: MessageEvent<boolean>) => {
+          res(e.data);
+        };
+        this.worker.postMessage({ board, blocks });
+      });
+    }
+
     try {
-      for await (const blockType of unusedBlocks.reverse()) {
-        const result = await new Promise<boolean>((res, rej) => {
-          this.worker.onmessage = (e: MessageEvent<{ result: boolean }>) => {
-            res(e.data.result);
-          };
-          setTimeout(() => {
-            rej('timeout');
-          }, 3000);
-          this.worker.postMessage({ board, slotIdx, blockType });
-        });
-        this.worker.onmessage = null;
-        if (result && options?.earlyReturn) {
-          return true;
-        }
-        if (result) {
-          availableBlocks.push(blockType);
-        }
-      }
-      if (availableBlocks.length > 0) {
-        return availableBlocks;
-      }
+      return await new Promise<{ available: { blockType: BlockType, slotIdx: SlotIdx }[], unavailable: { blockType: BlockType, slotIdx: SlotIdx }[] }>((res, rej) => {
+        this.worker.onmessage = (e: MessageEvent<{ available: { blockType: BlockType, slotIdx: SlotIdx }[], unavailable: { blockType: BlockType, slotIdx: SlotIdx }[] }>) => {
+          if (typeof e.data === 'boolean') {
+            rej('unexpected boolean value returned from a non-early-return worker procedure');
+            return;
+          }
+          res(e.data);
+        };
+        this.worker.postMessage({ board, blocks });
+      });
     } catch (e) {
       console.error(e);
     }
-    return false;
   }
 }
