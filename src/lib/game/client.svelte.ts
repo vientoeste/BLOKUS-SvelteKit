@@ -322,16 +322,8 @@ export class GameManager_Legacy {
         timeout: false,
       })
       this.initiateNextTurn();
-      /**
-       * @description Creates a deep copy of the board to prevent "DOMException: Proxy object could not be cloned"
-       * errors when sending to worker. This error occurs because:
-       * 1. Web Workers use structured clone algorithm for message passing
-       * 2. Our original board is a Proxy object (from $state)
-       * 3. Proxy objects cannot be cloned by the structured clone algorithm
-       */
-      const copiedProxyBoard = this.board.map(e => [...e]);
       const res = await this.blockPlacementValidator.searchPlaceableBlocks({
-        board: copiedProxyBoard,
+        board: this.board,
         blocks: blockStore.getUnusedBlocks(),
       }, {
         // [TODO] find proper magic number
@@ -479,12 +471,20 @@ export class BlockPlacementValidator {
   }, options?: {
     earlyReturn?: boolean,
   }) {
+    /**
+     * @description Creates a deep copy of the board to prevent "DOMException: Proxy object could not be cloned"
+     * errors when sending to worker. This error occurs because:
+     * 1. Web Workers use structured clone algorithm for message passing
+     * 2. Our original board is a Proxy object (from $state)
+     * 3. Proxy objects cannot be cloned by the structured clone algorithm
+     */
+    const copiedProxyBoard = board.map(e => [...e]);
     if (options?.earlyReturn === true) {
       return new Promise<boolean>((res, rej) => {
         this.worker.onmessage = (e: MessageEvent<boolean>) => {
           res(e.data);
         };
-        this.worker.postMessage({ board, blocks });
+        this.worker.postMessage({ board: copiedProxyBoard, blocks });
       });
     }
 
@@ -497,7 +497,7 @@ export class BlockPlacementValidator {
           }
           res(e.data);
         };
-        this.worker.postMessage({ board, blocks });
+        this.worker.postMessage({ board: copiedProxyBoard, blocks });
       });
     } catch (e) {
       console.error(e);
