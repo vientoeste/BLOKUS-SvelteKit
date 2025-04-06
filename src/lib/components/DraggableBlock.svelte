@@ -8,11 +8,13 @@
     block,
     blockState,
     slotIdx,
+    isAvailable,
   }: {
     type: BlockType;
     block: ({ u: boolean; r: boolean; b: boolean; l: boolean } | null)[][];
     blockState: Map<BlockType, { rotation: number; flip: boolean }>;
     slotIdx: SlotIdx;
+    isAvailable: boolean;
   } = $props();
 
   let blockMatrix: ({

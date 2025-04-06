@@ -217,6 +217,7 @@
       type={block.blockType}
       {blockState}
       {slotIdx}
+      isAvailable={block.placeable}
     />
   {/each}
 </div>
