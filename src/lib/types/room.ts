@@ -50,6 +50,7 @@ export interface RoomCacheInf {
   p1?: { id: string, username: string, ready: boolean },
   p2?: { id: string, username: string, ready: boolean },
   p3?: { id: string, username: string, ready: boolean },
+  exhausted: string;
 }
 
 export interface CreateRoomCacheDTO {

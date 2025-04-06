@@ -1,5 +1,5 @@
 import { CustomError } from "$lib/error";
-import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf, UserInfo, CreateRoomCacheDTO, RawParticipantInf } from "$types";
+import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf, UserInfo, CreateRoomCacheDTO, RawParticipantInf, SlotIdx } from "$types";
 import { parseJson } from "$lib/utils";
 import { handleMongoError, Rooms } from "./mongo";
 import { redis } from "./redis";
@@ -144,7 +144,7 @@ export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
   if (!room || Object.keys(room).length === 0) {
     throw new CustomError('room cache not found', 404);
   }
-  const { id, name, turn, lastMove, started, gameId } = room;
+  const { id, name, turn, lastMove, started, gameId, exhausted } = room;
   const { p0, p1, p2, p3 } = room;
   const p0_ = parseJson<{ id: string, username: string, ready: boolean }>(p0);
   const p1_ = p1 ? parseJson<{ id: string, username: string, ready: boolean }>(p1) : undefined;
@@ -170,6 +170,7 @@ export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
     p1: p1_,
     p2: p2_,
     p3: p3_,
+    exhausted,
   };
 };
 
