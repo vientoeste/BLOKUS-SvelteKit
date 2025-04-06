@@ -93,20 +93,23 @@ export const blockStore = (() => {
     }))).flat());
   };
   const getBlocksBySlot = (slotIdx: SlotIdx) => get({ subscribe }).filter(blocks => blocks.slotIdx === slotIdx);
-  const getUnusedBlocks = (slotIdx: SlotIdx) => get({ subscribe }).filter(blocks => blocks.slotIdx === slotIdx && !blocks.isPlaced);
-  const getAvailableBlocks = (slotIdx: SlotIdx) => get({ subscribe }).filter(blocks => blocks.slotIdx === slotIdx && !blocks.isPlaced && blocks.placeable);
-  const updateAvailableBlocks = ({ slotIdx, blocks }: { slotIdx: SlotIdx, blocks: BlockType[] }) =>
-    update((blockStore) =>
-      blockStore.map(block => {
-        if (
-          block.slotIdx === slotIdx
-          && !blocks.includes(block.blockType)
-        ) {
-          return { ...block, placeable: false };
+  const getUnusedBlocks = () => get({ subscribe }).filter(blocks => !blocks.isPlaced);
+  const getUnusedBlocksBySlot = (slotIdx: SlotIdx) => get({ subscribe }).filter(blocks => blocks.slotIdx === slotIdx && !blocks.isPlaced);
+  const getAvailableBlocks = () => get({ subscribe }).filter(blocks => !blocks.isPlaced && blocks.placeable);
+  const getAvailableBlocksBySlot = (slotIdx: SlotIdx) => get({ subscribe }).filter(blocks => blocks.slotIdx === slotIdx && !blocks.isPlaced && blocks.placeable);
+  const updateUnavailableBlocks = (unavailableBlocks: { slotIdx: SlotIdx, blockType: BlockType }[]) => {
+    update((blockStore) => {
+      const currentStore = [...blockStore];
+      currentStore.map((block) => {
+        block.placeable = true;
+        if (unavailableBlocks.filter((unavailableBlock) => block.blockType === unavailableBlock.blockType && block.slotIdx === unavailableBlock.slotIdx).length !== 0) {
+          block.placeable = false;
         }
         return block;
-      })
-    );
+      });
+      return currentStore;
+    });
+  }
   const updateBlockPlacementStatus = ({ slotIdx, blockType }: { slotIdx: SlotIdx, blockType: BlockType }) => {
     const store = get({ subscribe });
     const index = store.findIndex(e => e.slotIdx === slotIdx && e.blockType === blockType);
@@ -119,6 +122,6 @@ export const blockStore = (() => {
   };
   return {
     set, subscribe, update,
-    initialize, getBlocksBySlot, getUnusedBlocks, getAvailableBlocks, updateAvailableBlocks, updateBlockPlacementStatus,
+    initialize, getBlocksBySlot, getUnusedBlocks, getUnusedBlocksBySlot, getAvailableBlocks, getAvailableBlocksBySlot, updateUnavailableBlocks, updateBlockPlacementStatus,
   };
 })();

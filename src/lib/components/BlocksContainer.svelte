@@ -211,7 +211,7 @@
 </script>
 
 <div id="blocks-container">
-  {#each blockStore.getUnusedBlocks(slotIdx) as block}
+  {#each blockStore.getUnusedBlocksBySlot(slotIdx) as block}
     <DraggableBlock
       block={preset[block.blockType]}
       type={block.blockType}

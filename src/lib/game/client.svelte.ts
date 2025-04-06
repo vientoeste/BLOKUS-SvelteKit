@@ -335,7 +335,7 @@ export class GameManager_Legacy {
         const result = await this.blockPlacementValidator.searchPlaceableBlocks({
           board: copiedProxyBoard,
           slotIdx,
-          unusedBlocks: blockStore.getAvailableBlocks(slotIdx).map(block => block.blockType),
+          unusedBlocks: blockStore.getAvailableBlocksBySlot(slotIdx).map(block => block.blockType),
         }, {
           // [TODO] find proper magic number
           earlyReturn: turn < 20,
@@ -345,7 +345,8 @@ export class GameManager_Legacy {
           return;
         }
         if (result instanceof Array) {
-          blockStore.updateAvailableBlocks({ slotIdx, blocks: result });
+          // [TODO] by recent commit this line will cause error
+          // blockStore.updateAvailableBlocks({ slotIdx, blocks: result });
         }
         return;
       }
