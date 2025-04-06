@@ -22,7 +22,7 @@ import type {
   Move,
   InboundStartMessage,
   OutboundStartMessage,
-  InboundRetireMessage,
+  InboundExhaustedMessage,
 } from "$types";
 import { blockStore, gameStore, modalStore, movePreviewStore } from "$lib/store";
 import { createNewBoard, preset, putBlockOnBoard, rollbackMove } from "./core";
@@ -343,11 +343,11 @@ export class GameManager_Legacy {
       );
       if (unavailableSlots.length !== 0) {
         unavailableSlots.forEach((slotIdx) => {
-          const retireMessage: InboundRetireMessage = {
-            type: 'RETIRE',
+          const exhaustedMessage: InboundExhaustedMessage = {
+            type: 'EXHAUSTED',
             slotIdx,
           };
-          this.messageDispatcher.dispatch(retireMessage);
+          this.messageDispatcher.dispatch(exhaustedMessage);
         });
       }
       blockStore.updateUnavailableBlocks(res.unavailable);

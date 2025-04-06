@@ -65,8 +65,8 @@ export interface InboundStartMessage extends WebSocketMessageBase, DispatchStart
   type: 'START';
 }
 
-export interface InboundRetireMessage extends WebSocketMessageBase {
-  type: 'RETIRE';
+export interface InboundExhaustedMessage extends WebSocketMessageBase {
+  type: 'EXHAUSTED';
   slotIdx: SlotIdx;
 }
 
@@ -116,8 +116,8 @@ export interface OutboundBadReqMessage extends WebSocketMessageBase {
   message: string;
 }
 
-export interface OutboundRetireMessage extends WebSocketMessageBase {
-  type: 'RETIRE';
+export interface OutboundExhaustedMessage extends WebSocketMessageBase {
+  type: 'EXHAUSTED';
   slotIdx: SlotIdx;
 }
 
@@ -128,7 +128,7 @@ export type InboundWebSocketMessage =
   InboundCancelReadyMessage | InboundConnectedMessage |
   InboundLeaveMessage | InboundMoveMessage |
   InboundReadyMessage | InboundReportMessage |
-  InboundStartMessage | InboundRetireMessage;
+  InboundStartMessage | InboundExhaustedMessage;
 
 /**
  * server -> clients
@@ -138,7 +138,7 @@ export type OutboundWebSocketMessage =
   OutboundLeaveMessage | OutboundMoveMessage |
   OutboundReadyMessage | OutboundMediateMessage |
   OutboundErrorMessage | OutboundStartMessage |
-  OutboundBadReqMessage | OutboundRetireMessage;
+  OutboundBadReqMessage | OutboundExhaustedMessage;
 
 export type WebSocketBrokerMessage = { payload: OutboundWebSocketMessage, roomId: string };
 
