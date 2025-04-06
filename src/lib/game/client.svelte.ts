@@ -22,6 +22,7 @@ import type {
   Move,
   InboundStartMessage,
   OutboundStartMessage,
+  InboundRetireMessage,
 } from "$types";
 import { blockStore, gameStore, modalStore, movePreviewStore } from "$lib/store";
 import { createNewBoard, preset, putBlockOnBoard, rollbackMove } from "./core";
@@ -332,10 +333,22 @@ export class GameManager_Legacy {
       if (res === true || res === undefined) {
         return;
       }
-      // [TODO] treat retire with each slot
-      if (res === false || res.available.length === 0) {
+      if (res === false) {
         console.log('...retire');
         return;
+      }
+      const slots = get(gameStore).mySlots;
+      const unavailableSlots = slots.filter(slotIdx =>
+        !res.available.some(block => block.slotIdx === slotIdx)
+      );
+      if (unavailableSlots.length !== 0) {
+        unavailableSlots.forEach((slotIdx) => {
+          const retireMessage: InboundRetireMessage = {
+            type: 'RETIRE',
+            slotIdx,
+          };
+          this.messageDispatcher.dispatch(retireMessage);
+        });
       }
       blockStore.updateUnavailableBlocks(res.unavailable);
       return;
