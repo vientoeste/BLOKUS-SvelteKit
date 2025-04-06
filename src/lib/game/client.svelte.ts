@@ -436,6 +436,10 @@ export class GameManager_Legacy {
         });
       }
     });
+    this.blockPlacementValidator.searchPlaceableBlocks({
+      board: this.board,
+      blocks: blockStore.getUnusedBlocks(),
+    });
 
     const leftTime = moves[moves.length - 1].createdAt.valueOf() - Date.now();
     if (!this.isMyTurn()) {
