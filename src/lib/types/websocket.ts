@@ -113,7 +113,7 @@ export interface OutboundBadReqMessage extends WebSocketMessageBase {
 
 /**
  * client -> server
-*/
+ */
 export type InboundWebSocketMessage =
   InboundCancelReadyMessage | InboundConnectedMessage |
   InboundLeaveMessage | InboundMoveMessage |
@@ -122,7 +122,7 @@ export type InboundWebSocketMessage =
 
 /**
  * server -> clients
-*/
+ */
 export type OutboundWebSocketMessage =
   OutboundCancelReadyMessage | OutboundConnectedMessage |
   OutboundLeaveMessage | OutboundMoveMessage |
