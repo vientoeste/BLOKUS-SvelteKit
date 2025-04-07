@@ -234,29 +234,31 @@ export class WebSocketMessageHandler {
         } as OutboundSkipTurnMessage,
       };
     }
-    if (exhausted) {
-      await insertExhaustedMove(moveId, {
+    /**
+     * @description this line infers if (exhausted) { ...
+     * but removed conditional statement because type guess causes undefined-return
+     */
+    await insertExhaustedMove(moveId, {
+      timeout: false,
+      exhausted: true,
+      turn,
+      playerIdx: client.playerIdx,
+      gameId,
+      slotIdx,
+      createdAt: new Date(),
+    });
+    return {
+      success: true,
+      shouldBroadcast: true,
+      payload: {
+        type: 'SKIP_TURN',
         timeout: false,
         exhausted: true,
-        turn,
         playerIdx: client.playerIdx,
-        gameId,
-        slotIdx,
-        createdAt: new Date(),
-      });
-      return {
-        success: true,
-        shouldBroadcast: true,
-        payload: {
-          type: 'SKIP_TURN',
-          timeout: false,
-          exhausted: true,
-          playerIdx: client.playerIdx,
-          turn: message.turn,
-          slotIdx: message.slotIdx
-        } as OutboundSkipTurnMessage,
-      };
-    }
+        turn: message.turn,
+        slotIdx: message.slotIdx
+      } as OutboundSkipTurnMessage,
+    };
   }
 
   private async handleStart(client: ActiveWebSocket): Promise<MessageProcessResult> {
