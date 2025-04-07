@@ -341,6 +341,8 @@ export class WebSocketMessageHandler {
         return this.handleReport(client, message);
       case "EXHAUSTED":
         return this.handleExhausted(client, message);
+      case 'SKIP_TURN':
+        return this.handleSkipTurnMessage(client, message);
       default:
         return {
           success: false,
