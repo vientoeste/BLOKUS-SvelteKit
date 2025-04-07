@@ -23,6 +23,8 @@ import type {
   InboundStartMessage,
   OutboundStartMessage,
   InboundExhaustedMessage,
+  InboundSkipTurnMessage,
+  OutboundSkipTurnMessage,
 } from "$types";
 import { blockStore, gameStore, modalStore, movePreviewStore } from "$lib/store";
 import { createNewBoard, preset, putBlockOnBoard, rollbackMove } from "./core";
@@ -68,6 +70,8 @@ export class GameManager_Legacy {
 
   gameId: string | undefined;
 
+  exhaustedSlots: SlotIdx[] = [];
+
   private playerIdx: PlayerIdx;
   board: BoardMatrix = $state([]);
   private turn: number;
@@ -93,6 +97,12 @@ export class GameManager_Legacy {
       case "MOVE":
         this.applyMove(message);
         break;
+      case "SKIP_TURN":
+        this.handleSkipTurnMessage(message);
+        break;
+      case "EXHAUSTED":
+        this.handleExhaustedMessage(message);
+        break;
       case "START":
         this.handleStartMessage(message);
         break;
@@ -110,6 +120,42 @@ export class GameManager_Legacy {
         });
         break;
     }
+  }
+
+  handleSkipTurnMessage(message: OutboundSkipTurnMessage) {
+    if (!this.gameId) {
+      throw new Error('gameId is not set');
+    }
+    const { timeout, exhausted, slotIdx, turn, playerIdx } = message;
+    // [MARK] state updater
+    if (exhausted) {
+      this.moves.push({
+        gameId: this.gameId,
+        playerIdx,
+        slotIdx,
+        turn,
+        createdAt: new Date(),
+        exhausted: true,
+        timeout: false,
+      });
+    } else if (timeout) {
+      this.moves.push({
+        gameId: this.gameId,
+        playerIdx,
+        slotIdx,
+        turn,
+        createdAt: new Date(),
+        exhausted: false,
+        timeout: true,
+      });
+    }
+    this.initiateNextTurn();
+    return;
+  }
+
+  handleExhaustedMessage(message: InboundExhaustedMessage) {
+    const { slotIdx } = message;
+    this.exhaustedSlots.push(slotIdx);
   }
 
   addUser(message: OutboundConnectedMessage) {
@@ -174,6 +220,17 @@ export class GameManager_Legacy {
   }
 
   async processMyTurn(leftTime?: number) {
+    const slotIdx: SlotIdx = this.turn % 4 as SlotIdx;
+    if (this.exhaustedSlots.includes(slotIdx)) {
+      const exhaustedSkipMessage: InboundSkipTurnMessage = {
+        type: 'SKIP_TURN',
+        exhausted: true,
+        slotIdx,
+        timeout: false,
+        turn: this.turn,
+      };
+      this.messageDispatcher.dispatch(exhaustedSkipMessage);
+    }
     modalStore.open(Alert, {
       title: 'your turn',
       message: 'please make your move',
@@ -184,11 +241,12 @@ export class GameManager_Legacy {
         title: `time's up`,
         message: '',
       });
-      const timeoutMessage: InboundMoveMessage = {
-        type: 'MOVE',
+      const timeoutMessage: InboundSkipTurnMessage = {
+        type: 'SKIP_TURN',
         timeout: true,
-        slotIdx: this.turn % 4 as SlotIdx,
+        slotIdx,
         turn: this.turn,
+        exhausted: false,
       };
       this.messageDispatcher.dispatch(timeoutMessage);
       this.turnPromiseRejecter?.('timeout');
@@ -288,19 +346,6 @@ export class GameManager_Legacy {
     if (!this.gameId) {
       throw new Error('gameId is not set');
     }
-    const { timeout } = message;
-    if (timeout) {
-      this.moves.push({
-        gameId: this.gameId,
-        playerIdx: message.playerIdx,
-        slotIdx: message.slotIdx,
-        turn: message.turn,
-        createdAt: new Date(),
-        timeout: true,
-      })
-      this.initiateNextTurn();
-      return;
-    }
     const { blockInfo, playerIdx, position, turn, slotIdx } = message;
     const reason = putBlockOnBoard({
       board: this.board,
@@ -321,6 +366,7 @@ export class GameManager_Legacy {
         turn,
         createdAt: new Date(),
         timeout: false,
+        exhausted: false,
       })
       this.initiateNextTurn();
       const res = await this.blockPlacementValidator.searchPlaceableBlocks({
@@ -437,7 +483,7 @@ export class GameManager_Legacy {
     this.moves = moves.sort((a, b) => a.turn - b.turn);
     blockStore.initialize(get(gameStore).mySlots);
     this.moves.forEach((move) => {
-      if (!move.timeout) {
+      if (!move.timeout && !move.exhausted) {
         blockStore.updateBlockPlacementStatus({ blockType: move.blockInfo.type, slotIdx: move.slotIdx });
         putBlockOnBoard({
           board: this.board,
@@ -459,11 +505,12 @@ export class GameManager_Legacy {
       return;
     }
     if (this.isMyTurn() && leftTime < 0) {
-      const timeoutMessage: InboundMoveMessage = {
-        type: 'MOVE',
+      const timeoutMessage: InboundSkipTurnMessage = {
+        type: 'SKIP_TURN',
         slotIdx: this.turn % 4 as SlotIdx,
         turn: this.turn,
         timeout: true,
+        exhausted: false,
       };
       this.messageDispatcher.dispatch(timeoutMessage);
       return;

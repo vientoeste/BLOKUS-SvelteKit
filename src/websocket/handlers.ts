@@ -19,10 +19,12 @@ import type {
   PlayerId,
   InboundExhaustedMessage,
   OutboundExhaustedMessage,
+  OutboundSkipTurnMessage,
+  InboundSkipTurnMessage,
 } from "$types";
 import { extractPlayerCountFromCache, isRightTurn, parseJson } from "$lib/utils";
 import { getRoomCache, markPlayerAsExhausted } from "$lib/database/room";
-import { insertNonTimeoutMove, insertTimeoutMove } from "$lib/database/move";
+import { insertExhaustedMove, insertRegularMove, insertTimeoutMove } from "$lib/database/move";
 import { uuidv7 } from "uuidv7";
 import { updateStartedState } from "$lib/room";
 
@@ -117,7 +119,7 @@ export class WebSocketMessageHandler {
   }
 
   private async handleMove(client: ActiveWebSocket, message: InboundMoveMessage): Promise<MessageProcessResult> {
-    const { timeout, turn, slotIdx } = message;
+    const { turn, slotIdx } = message;
     const roomCache = await getRoomCache(client.roomId);
     if (!isRightTurn({
       turn,
@@ -149,35 +151,13 @@ export class WebSocketMessageHandler {
     await this.redis.hSet(`room:${client.roomId}`, 'turn', turn + 1);
     const moveId = uuidv7();
 
-    if (timeout) {
-      await insertTimeoutMove(moveId, {
-        timeout: true,
-        turn,
-        playerIdx: client.playerIdx,
-        gameId,
-        slotIdx,
-        createdAt: new Date(),
-      });
-      return {
-        success: true,
-        shouldBroadcast: true,
-        payload: {
-          type: 'MOVE',
-          timeout: true,
-          playerIdx: client.playerIdx,
-          turn: message.turn,
-          slotIdx: message.slotIdx
-        } as OutboundMoveMessage,
-      };
-    }
     const { blockInfo, position } = message as MoveDTO;
-    await insertNonTimeoutMove(moveId, {
+    await insertRegularMove(moveId, {
       blockInfo,
       gameId,
       playerIdx: client.playerIdx,
       position,
       slotIdx,
-      timeout,
       turn,
       createdAt: new Date(),
     });
@@ -186,7 +166,6 @@ export class WebSocketMessageHandler {
     // [TODO] checksum - lastMove
     const moveMessage: OutboundMoveMessage = {
       type: 'MOVE',
-      timeout: false,
       blockInfo,
       playerIdx: client.playerIdx,
       slotIdx,
@@ -198,6 +177,86 @@ export class WebSocketMessageHandler {
       shouldBroadcast: true,
       payload: moveMessage,
     };
+  }
+
+  private async handleSkipTurnMessage(client: ActiveWebSocket, message: InboundSkipTurnMessage) {
+    const { exhausted, slotIdx, timeout, turn } = message;
+    const roomCache = await getRoomCache(client.roomId);
+    if (!isRightTurn({
+      turn,
+      activePlayerCount: extractPlayerCountFromCache(roomCache),
+      playerIdx: client.playerIdx,
+    }) || turn !== roomCache.turn) {
+      const badReqMessage: OutboundBadReqMessage = {
+        type: 'BAD_REQ',
+        message: 'wrong turn',
+      };
+      return {
+        success: true,
+        shouldBroadcast: false,
+        payload: badReqMessage,
+      };
+    }
+    const { gameId } = roomCache;
+    if (!gameId) {
+      const errMessage: OutboundErrorMessage = {
+        type: 'ERROR',
+      }
+      return {
+        success: false,
+        shouldBroadcast: false,
+        payload: errMessage,
+      }
+    }
+
+    await this.redis.hSet(`room:${client.roomId}`, 'turn', turn + 1);
+    const moveId = uuidv7();
+    if (timeout) {
+      await insertTimeoutMove(moveId, {
+        timeout: true,
+        exhausted: false,
+        turn,
+        playerIdx: client.playerIdx,
+        gameId,
+        slotIdx,
+        createdAt: new Date(),
+      });
+      return {
+        success: true,
+        shouldBroadcast: true,
+        payload: {
+          type: 'SKIP_TURN',
+          timeout: true,
+          exhausted: false,
+          playerIdx: client.playerIdx,
+          turn: message.turn,
+          slotIdx: message.slotIdx
+        } as OutboundSkipTurnMessage,
+      };
+    }
+    if (exhausted) {
+      await insertExhaustedMove(moveId, {
+        timeout: false,
+        exhausted: true,
+        turn,
+        playerIdx: client.playerIdx,
+        gameId,
+        slotIdx,
+        createdAt: new Date(),
+      });
+      return {
+        success: true,
+        shouldBroadcast: true,
+        payload: {
+          type: 'SKIP_TURN',
+          timeout: false,
+          exhausted: true,
+          playerIdx: client.playerIdx,
+          turn: message.turn,
+          slotIdx: message.slotIdx
+        } as OutboundSkipTurnMessage,
+      };
+    }
   }
 
   private async handleStart(client: ActiveWebSocket): Promise<MessageProcessResult> {

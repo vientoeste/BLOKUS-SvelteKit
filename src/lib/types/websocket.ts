@@ -16,11 +16,20 @@ export interface DispatchReadyMessageDto { }
 
 export interface DispatchCancelReadyMessageDto { }
 
-export type DispatchNonTimeoutMoveMessageDto = MoveDTO;
+export type DispatchMoveMessageDto = MoveDTO;
 
 export type DispatchTimeoutMoveMessageDto = {
   turn: number;
   slotIdx: SlotIdx;
+  exhausted: false;
+  timeout: true;
+}
+
+export type DispatchExhaustedMoveMessageDto = {
+  turn: number;
+  slotIdx: SlotIdx;
+  exhausted: true;
+  timeout: false;
 }
 
 export type DispatchMediateMessageDto = {
@@ -53,8 +62,13 @@ export interface InboundCancelReadyMessage extends WebSocketMessageBase, Dispatc
 }
 
 export type InboundMoveMessage = WebSocketMessageBase & { type: 'MOVE' } & (
-  (DispatchNonTimeoutMoveMessageDto & { timeout: false })
+  (DispatchMoveMessageDto & { timeout: false })
   | (DispatchTimeoutMoveMessageDto & { timeout: true })
+);
+
+export type InboundSkipTurnMessage = WebSocketMessageBase & { type: 'SKIP_TURN', turn: number, slotIdx: SlotIdx } & (
+  { timeout: true, exhausted: false } |
+  { exhausted: true, timeout: false }
 );
 
 export interface InboundReportMessage extends WebSocketMessageBase, DispatchReportMessageDto {
@@ -97,8 +111,17 @@ export interface OutboundCancelReadyMessage extends WebSocketMessageBase {
   playerIdx: PlayerIdx;
 }
 
-export type OutboundMoveMessage = WebSocketMessageBase & { type: 'MOVE' } & ((MoveDTO & { timeout: false })
-  | { timeout: true, playerIdx: PlayerIdx, turn: number, slotIdx: SlotIdx });
+export type OutboundMoveMessage = WebSocketMessageBase & { type: 'MOVE' } & MoveDTO;
+
+export type OutboundSkipTurnMessage = WebSocketMessageBase & {
+  type: 'SKIP_TURN',
+  playerIdx: PlayerIdx,
+  turn: number,
+  slotIdx: SlotIdx,
+} & (
+    { timeout: true, exhausted: false, } |
+    { exhausted: true, timeout: false, }
+  );
 
 export interface OutboundMediateMessage extends WebSocketMessageBase {
   type: 'MEDIATE';
@@ -128,7 +151,7 @@ export type InboundWebSocketMessage =
   InboundCancelReadyMessage | InboundConnectedMessage |
   InboundLeaveMessage | InboundMoveMessage |
   InboundReadyMessage | InboundReportMessage |
-  InboundStartMessage | InboundExhaustedMessage;
+  InboundStartMessage | InboundExhaustedMessage | InboundSkipTurnMessage;
 
 /**
  * server -> clients
@@ -138,7 +161,7 @@ export type OutboundWebSocketMessage =
   OutboundLeaveMessage | OutboundMoveMessage |
   OutboundReadyMessage | OutboundMediateMessage |
   OutboundErrorMessage | OutboundStartMessage |
-  OutboundBadReqMessage | OutboundExhaustedMessage;
+  OutboundBadReqMessage | OutboundExhaustedMessage | OutboundSkipTurnMessage;
 
 export type WebSocketBrokerMessage = { payload: OutboundWebSocketMessage, roomId: string };
 
