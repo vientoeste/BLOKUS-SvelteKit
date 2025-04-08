@@ -217,3 +217,13 @@ export const convertBlockToObj = (blockInfo: string): Block => {
   const flip = blockInfo.indexOf('f') !== -1;
   return { flip, rotation, type };
 };
+
+export const convertBoardToStr = (board: BoardMatrix) =>
+  board.map((boardLine) =>
+    boardLine.map((cell) => cell === false ? 4 : cell).join(''))
+    .join('');
+
+export const convertBoardToArr = (board: string) =>
+  Array.from({ length: 20 }, (_, i) =>
+    board.slice(i * 20, i * 20 + 20).split('').map(cell => (cell === '4' ? false : parseInt(cell)))
+  );
