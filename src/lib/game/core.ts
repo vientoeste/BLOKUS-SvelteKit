@@ -334,3 +334,19 @@ export const hasValidPlacement = ({ board, slotIdx, blockType }: {
     }
   }
 };
+
+// [TODO] add last-monomino-rule
+export const calculatePlayerScores = (board: string): Record<SlotIdx, number> => {
+  const BoardMatrix = convertBoardToArr(board);
+  const scores: Record<SlotIdx, number> = { 0: 0, 1: 0, 2: 0, 3: 0 };
+
+  BoardMatrix.forEach(row => {
+    row.forEach(cell => {
+      if (cell !== false) {
+        scores[cell as SlotIdx] += 1;
+      }
+    });
+  });
+
+  return scores;
+};
