@@ -70,7 +70,7 @@ export class GameManager_Legacy {
 
   gameId: string | undefined;
 
-  exhaustedSlots: SlotIdx[] = [];
+  exhaustedSlots: Set<SlotIdx> = new Set();
 
   private playerIdx: PlayerIdx;
   board: BoardMatrix = $state([]);
@@ -155,7 +155,7 @@ export class GameManager_Legacy {
 
   handleExhaustedMessage(message: InboundExhaustedMessage) {
     const { slotIdx } = message;
-    this.exhaustedSlots.push(slotIdx);
+    this.exhaustedSlots.add(slotIdx);
   }
 
   addUser(message: OutboundConnectedMessage) {
@@ -221,7 +221,7 @@ export class GameManager_Legacy {
 
   async processMyTurn(leftTime?: number) {
     const slotIdx: SlotIdx = this.turn % 4 as SlotIdx;
-    if (this.exhaustedSlots.includes(slotIdx)) {
+    if (this.exhaustedSlots.has(slotIdx)) {
       const exhaustedSkipMessage: InboundSkipTurnMessage = {
         type: 'SKIP_TURN',
         exhausted: true,
@@ -387,15 +387,15 @@ export class GameManager_Legacy {
       const unavailableSlots = slots.filter(slotIdx =>
         !res.available.some(block => block.slotIdx === slotIdx)
       );
-      if (unavailableSlots.length !== 0) {
-        unavailableSlots.forEach((slotIdx) => {
+      unavailableSlots.forEach((slotIdx) => {
+        if (!this.exhaustedSlots.has(slotIdx)) {
           const exhaustedMessage: InboundExhaustedMessage = {
             type: 'EXHAUSTED',
             slotIdx,
           };
           this.messageDispatcher.dispatch(exhaustedMessage);
-        });
-      }
+        }
+      });
       blockStore.updateUnavailableBlocks(res.unavailable);
       return;
     }
