@@ -210,8 +210,13 @@ export const addUserToRoomCache = async ({ roomId, userInfo: { id, username } }:
 };
 
 // [TODO] refactor this room structure with p0~3
-export const markPlayerAsExhausted = async ({ roomId, slotIdx }: { roomId: RoomId, slotIdx: SlotIdx }) => {
+export const markPlayerAsExhausted = async ({ roomId, slotIdx }: { roomId: RoomId, slotIdx: SlotIdx }): Promise<SlotIdx[]> => {
   const exhaustedUserSlots = await redis.hGet(`room:${roomId}`, `exhausted`);
-  const updatedExhaustedUserSlots = exhaustedUserSlots === undefined ? `${slotIdx}` : `${exhaustedUserSlots},${slotIdx}`;
+  if (exhaustedUserSlots === undefined) {
+    await redis.hSet(`room:${roomId}`, `exhausted`, slotIdx);
+    return [slotIdx];
+  }
+  const updatedExhaustedUserSlots = `${exhaustedUserSlots}${slotIdx}`;
   await redis.hSet(`room:${roomId}`, `exhausted`, updatedExhaustedUserSlots);
+  return updatedExhaustedUserSlots.split('').map(e => parseInt(e) as SlotIdx);
 };
