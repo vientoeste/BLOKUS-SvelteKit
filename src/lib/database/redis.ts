@@ -50,7 +50,6 @@ export const redisModelFactory = {
 };
 
 export const { repository: roomCacheRepository, schema: roomCacheSchema } = redisModelFactory.create('room', {
-  id: { type: 'string' as const },
   name: { type: 'string' as const },
   gameId: { type: 'string' as const },
   turn: { type: 'number' as const },
