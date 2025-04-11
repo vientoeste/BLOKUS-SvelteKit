@@ -137,37 +137,57 @@ export const insertRoomCache = async (
 };
 
 export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
-  const room = await redis.hGetAll(`room:${roomId}`);
+  const room = await roomCacheRepository.fetch(roomId);
   if (!room || Object.keys(room).length === 0) {
     throw new CustomError('room cache not found', 404);
   }
-  const { name, turn, lastMove, started, gameId, exhausted } = room;
-  const { p0, p1, p2, p3 } = room;
-  const p0_ = parseJson<{ id: string, username: string, ready: boolean }>(p0);
-  const p1_ = p1 ? parseJson<{ id: string, username: string, ready: boolean }>(p1) : undefined;
-  const p2_ = p2 ? parseJson<{ id: string, username: string, ready: boolean }>(p2) : undefined;
-  const p3_ = p3 ? parseJson<{ id: string, username: string, ready: boolean }>(p3) : undefined;
-  if (
-    typeof p0_ === 'string' ||
-    typeof p1_ === 'string' ||
-    typeof p2_ === 'string' ||
-    typeof p3_ === 'string'
-  ) {
-    // [CHECK] invalidate cache & DB?
-    throw new CustomError('failed to parse players');
+
+  const { name, turn, lastMove, started, gameId, p0_exhausted, p0_id, p0_ready, p0_username, p1_exhausted, p1_id, p1_ready, p1_username, p2_exhausted, p2_id, p2_ready, p2_username, p3_exhausted, p3_id, p3_ready, p3_username } = room;
+  if (!name || started === undefined || turn === undefined || p0_id === undefined || p0_ready === undefined || p0_username === undefined || p0_exhausted === undefined) {
+    throw new Error('invalid room cache type');
   }
+  if (p1_id !== undefined && (p1_ready === undefined || p1_username === undefined || p1_exhausted === undefined)) {
+    throw new Error('invalid p1 info at room cache')
+  }
+  if (p2_id !== undefined && (p2_ready === undefined || p2_username === undefined || p2_exhausted === undefined)) {
+    throw new Error('invalid p2 info at room cache')
+  }
+  if (p3_id !== undefined && (p3_ready === undefined || p3_username === undefined || p3_exhausted === undefined)) {
+    throw new Error('invalid p3 info at room cache')
+  }
+
   return {
     id: roomId,
     name,
-    gameId: gameId ?? undefined,
-    turn: parseInt(turn),
-    lastMove: lastMove,
-    started: started !== '0',
-    p0: p0_,
-    p1: p1_,
-    p2: p2_,
-    p3: p3_,
-    exhausted,
+    gameId: gameId,
+    // [TODO] currently lastMove is not used
+    lastMove: '',
+    turn,
+    started,
+    p0: {
+      id: p0_id,
+      ready: p0_ready,
+      username: p0_username,
+      exhausted: p0_exhausted,
+    },
+    p1: p1_id !== undefined ? {
+      id: p1_id,
+      ready: p1_ready as boolean,
+      username: p1_username as string,
+      exhausted: p1_exhausted as boolean,
+    } : undefined,
+    p2: p2_id !== undefined ? {
+      id: p2_id,
+      ready: p2_ready as boolean,
+      username: p2_username as string,
+      exhausted: p2_exhausted as boolean,
+    } : undefined,
+    p3: p3_id !== undefined ? {
+      id: p3_id,
+      ready: p3_ready as boolean,
+      username: p3_username as string,
+      exhausted: p3_exhausted as boolean,
+    } : undefined,
   };
 };
 
