@@ -2,7 +2,7 @@ import { CustomError } from "$lib/error";
 import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf, UserInfo, CreateRoomCacheDTO, RawParticipantInf, SlotIdx } from "$types";
 import { parseJson } from "$lib/utils";
 import { handleMongoError, Rooms } from "./mongo";
-import { redis } from "./redis";
+import { redis, roomCacheRepository } from "./redis";
 
 export const getRooms = async ({
   limit, lastDocId,
@@ -122,20 +122,17 @@ export const insertRoomCache = async (
   createRoomCacheDTO: CreateRoomCacheDTO,
 ) => {
   const { name, user } = createRoomCacheDTO;
-  const result = await redis.hSet(`room:${roomId}`, {
-    id: roomId,
+  const result = await roomCacheRepository.save(roomId, {
     name,
     turn: -1,
-    lastMove: '',
-    started: 0,
-    p0: JSON.stringify({ id: user.id, username: user.username, ready: 0 }),
-    p1: '',
-    p2: '',
-    p3: '',
+    started: false,
+    p0_id: user.id,
+    p0_username: user.username,
+    p0_ready: false,
+    p0_exhausted: false,
   });
-  if (result === 0) {
-    // [TODO] flush?
-    throw new Error('room already existing');
+  if (result.name === undefined) {
+    throw new Error('insert room cache failed');
   }
 };
 
