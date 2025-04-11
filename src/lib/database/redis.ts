@@ -11,6 +11,7 @@ type SchemaTypeMapping = {
   'number[]': number[];
   'boolean[]': boolean[];
   'text': string;
+  'date': Date;
 };
 
 type SchemaFieldDefinition = {
