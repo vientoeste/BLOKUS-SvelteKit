@@ -32,10 +32,11 @@ type InferSchemaType<T extends CustomSchemaDefinition> = Partial<{
 // [TODO] force Id
 export const redisModelFactory = {
   /**
-   * @param name name of redis key
-   * @param schemaDef object of type SchemaDefinition. add 'as const' to value of key 'type'
-   * @example repositoryFactory.create('someKey', { someKeyField1: { type: 'string' as const }, });
-   * @returns typed `Repository` and `Schema` - can use auto complete on its methods
+   * Creates a Redis repository and schema for the given key & schema definition.
+   * @param name name of the Redis key
+   * @param schemaDef object defining the schema. Use 'as const' for the 'type' property values
+   * @example redisModelFactory.create('someKey', { someKeyField1: { type: 'string' as const } });
+   * @returns object containing a typed `Repository` and `Schema` with auto-completion support.
    */
   create: <T extends CustomSchemaDefinition>(name: string, schemaDef: T): { schema: Schema<InferSchemaType<T>>, repository: Repository<InferSchemaType<T>> } => {
     const schema = new Schema<InferSchemaType<T>>(name, schemaDef as SchemaDefinition<InferSchemaType<T>>, {
