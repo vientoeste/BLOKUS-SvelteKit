@@ -279,11 +279,9 @@ export class WebSocketMessageHandler {
       };
     }
 
-    updateStartedState({ roomId: client.roomId, isStarted: true });
     const gameId = uuidv7();
-    await this.redis.hSet(`room:${client.roomId}`, 'gameId', gameId);
-    await this.redis.hSet(`room:${client.roomId}`, 'started', '1');
-    await this.redis.hSet(`room:${client.roomId}`, 'turn', 0);
+    await updateStartedState({ roomId: client.roomId, isStarted: true, gameId });
+
     const startMessage: OutboundStartMessage = {
       type: 'START',
       gameId,

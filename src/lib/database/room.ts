@@ -286,3 +286,13 @@ export const markPlayerAsExhausted = async ({ roomId, slotIdx }: { roomId: RoomI
     p3_exhausted === true ? 3 : false,
   ].filter(e => typeof e === 'number') as SlotIdx[];
 };
+
+export const updateRoomCacheStartedState = async ({ roomId, isStarted, gameId }: { roomId: RoomId, isStarted: boolean, gameId: RoomId }) => {
+  const room = await roomCacheRepository.fetch(roomId);
+  await roomCacheRepository.save(roomId, {
+    ...room,
+    gameId,
+    started: isStarted,
+    turn: 0,
+  });
+};

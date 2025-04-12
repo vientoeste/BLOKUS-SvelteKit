@@ -1,4 +1,4 @@
-import { getRoomCache, getRoomInfo, getRooms, insertRoom, insertRoomCache, updateRoomStartedState } from "./database/room";
+import { getRoomCache, getRoomInfo, getRooms, insertRoom, insertRoomCache, updateRoomCacheStartedState, updateRoomStartedState } from "./database/room";
 import { CustomError } from "./error";
 import type { CreateRoomDTO, RoomCacheInf, RoomDocumentInf, RoomId, RoomInf } from "./types";
 
@@ -24,6 +24,7 @@ export const getRoomById = async (roomId: RoomId): Promise<{ room: RoomDocumentI
   };
 };
 
-export const updateStartedState = async ({ roomId, isStarted }: { roomId: RoomId, isStarted: boolean }): Promise<void> => {
+export const updateStartedState = async ({ roomId, isStarted, gameId }: { roomId: RoomId, isStarted: boolean, gameId: RoomId }): Promise<void> => {
   await updateRoomStartedState({ roomId, isStarted });
+  await updateRoomCacheStartedState({ roomId, isStarted, gameId });
 };
