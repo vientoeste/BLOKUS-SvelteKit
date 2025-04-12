@@ -46,11 +46,10 @@ export interface RoomCacheInf {
   turn: number;
   lastMove: string;
   started: boolean;
-  p0: { id: string, username: string, ready: boolean },
-  p1?: { id: string, username: string, ready: boolean },
-  p2?: { id: string, username: string, ready: boolean },
-  p3?: { id: string, username: string, ready: boolean },
-  exhausted: string;
+  p0: { id: string, username: string, ready: boolean, exhausted: boolean },
+  p1?: { id: string, username: string, ready: boolean, exhausted: boolean },
+  p2?: { id: string, username: string, ready: boolean, exhausted: boolean },
+  p3?: { id: string, username: string, ready: boolean, exhausted: boolean },
 }
 
 export interface CreateRoomCacheDTO {
