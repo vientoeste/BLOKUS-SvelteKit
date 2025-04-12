@@ -1,5 +1,5 @@
 import { CustomError } from "$lib/error";
-import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf, UserInfo, CreateRoomCacheDTO, RawParticipantInf, SlotIdx } from "$types";
+import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf, UserInfo, CreateRoomCacheDTO, RawParticipantInf, SlotIdx, PlayerIdx } from "$types";
 import { parseJson } from "$lib/utils";
 import { handleMongoError, Rooms } from "./mongo";
 import { redis, roomCacheRepository } from "./redis";
@@ -256,12 +256,20 @@ export const updatePlayerReadyState = async ({ roomId, playerIdx, ready }: { roo
   });
 };
 
-export const markPlayerAsExhausted = async ({ roomId, slotIdx }: { roomId: RoomId, slotIdx: SlotIdx }): Promise<SlotIdx[]> => {
-  const exhaustedSlot = slotIdx === 0 ? { p0_exhausted: true } :
-    slotIdx === 1 ? { p1_exhausted: true } :
-      slotIdx === 2 ? { p2_exhausted: true } :
-        { p3_exhausted: true };
+export const markPlayerAsExhausted = async ({ roomId, slotIdx }: { roomId: RoomId, slotIdx: SlotIdx }) => {
   const room = await roomCacheRepository.fetch(roomId);
+  const {
+    p0_exhausted: p0_exhausted_,
+    p1_exhausted: p1_exhausted_,
+    p2_exhausted: p2_exhausted_,
+    p3_exhausted: p3_exhausted_,
+  } = room;
+  const exhaustedSlot = {
+    0: { p0_exhausted: true, p1_exhausted: p1_exhausted_, p2_exhausted: p2_exhausted_, p3_exhausted: p3_exhausted_ },
+    1: { p1_exhausted: true, p0_exhausted: p0_exhausted_, p2_exhausted: p2_exhausted_, p3_exhausted: p3_exhausted_ },
+    2: { p2_exhausted: true, p0_exhausted: p0_exhausted_, p1_exhausted: p1_exhausted_, p3_exhausted: p3_exhausted_ },
+    3: { p3_exhausted: true, p0_exhausted: p0_exhausted_, p1_exhausted: p1_exhausted_, p2_exhausted: p2_exhausted_ },
+  }[slotIdx];
   const {
     p0_exhausted,
     p1_exhausted,
