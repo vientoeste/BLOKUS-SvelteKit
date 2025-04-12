@@ -192,48 +192,74 @@ export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
 };
 
 export const addUserToRoomCache = async ({ roomId, userInfo: { id, username } }: { userInfo: UserInfo, roomId: RoomId }) => {
-  const room = await getRoomCache(roomId);
-  const { p0, p1, p2, p3 } = room;
+  const room = await roomCacheRepository.fetch(roomId);
+  const { p0_id, p1_id, p2_id, p3_id } = room;
 
-  if (p0 && p0.id === id) {
+  if (p0_id === id) {
     return 0;
   }
-  if (p1 && p1.id === id) {
+  if (p1_id === id) {
     return 1;
   }
-  if (p2 && p2.id === id) {
+  if (p2_id === id) {
     return 2;
   }
-  if (p3 && p3.id === id) {
+  if (p3_id === id) {
     return 3;
   }
 
-  const participant: RawParticipantInf = {
-    id, username, ready: 0,
-  };
-  if (p1 === undefined) {
-    await redis.hSet(`room:${roomId}`, 'p1', JSON.stringify(participant));
+  if (p1_id === undefined) {
+    await roomCacheRepository.save(roomId, {
+      ...room,
+      p1_id: id,
+      p1_username: username,
+      p1_ready: false,
+      p1_exhausted: false,
+    });
     return 1;
   }
-  if (p2 === undefined) {
-    await redis.hSet(`room:${roomId}`, 'p2', JSON.stringify(participant));
+  if (p2_id === undefined) {
+    await roomCacheRepository.save(roomId, {
+      ...room,
+      p2_id: id,
+      p2_username: username,
+      p2_ready: false,
+      p2_exhausted: false,
+    });
     return 2;
   }
-  if (p3 === undefined) {
-    await redis.hSet(`room:${roomId}`, 'p3', JSON.stringify(participant));
+  if (p3_id === undefined) {
+    await roomCacheRepository.save(roomId, {
+      ...room,
+      p3_id: id,
+      p3_username: username,
+      p3_ready: false,
+      p3_exhausted: false,
+    });
     return 3;
   }
   throw new CustomError('room is full');
 };
 
-// [TODO] refactor this room structure with p0~3
 export const markPlayerAsExhausted = async ({ roomId, slotIdx }: { roomId: RoomId, slotIdx: SlotIdx }): Promise<SlotIdx[]> => {
-  const exhaustedUserSlots = await redis.hGet(`room:${roomId}`, `exhausted`);
-  if (exhaustedUserSlots === undefined) {
-    await redis.hSet(`room:${roomId}`, `exhausted`, slotIdx);
-    return [slotIdx];
-  }
-  const updatedExhaustedUserSlots = `${exhaustedUserSlots}${slotIdx}`;
-  await redis.hSet(`room:${roomId}`, `exhausted`, updatedExhaustedUserSlots);
-  return updatedExhaustedUserSlots.split('').map(e => parseInt(e) as SlotIdx);
+  const exhaustedSlot = slotIdx === 0 ? { p0_exhausted: true } :
+    slotIdx === 1 ? { p1_exhausted: true } :
+      slotIdx === 2 ? { p2_exhausted: true } :
+        { p3_exhausted: true };
+  const room = await roomCacheRepository.fetch(roomId);
+  const {
+    p0_exhausted,
+    p1_exhausted,
+    p2_exhausted,
+    p3_exhausted,
+  } = await roomCacheRepository.save(roomId, {
+    ...room,
+    ...exhaustedSlot,
+  });
+  return [
+    p0_exhausted === true ? 0 : false,
+    p1_exhausted === true ? 1 : false,
+    p2_exhausted === true ? 2 : false,
+    p3_exhausted === true ? 3 : false,
+  ].filter(e => typeof e === 'number') as SlotIdx[];
 };
