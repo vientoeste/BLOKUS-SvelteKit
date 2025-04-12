@@ -23,7 +23,7 @@ import type {
   InboundSkipTurnMessage,
 } from "$types";
 import { extractPlayerCountFromCache, isRightTurn, parseJson } from "$lib/utils";
-import { getRoomCache, markPlayerAsExhausted } from "$lib/database/room";
+import { getRoomCache, markPlayerAsExhausted, updatePlayerReadyState } from "$lib/database/room";
 import { insertExhaustedMove, insertRegularMove, insertTimeoutMove } from "$lib/database/move";
 import { uuidv7 } from "uuidv7";
 import { updateStartedState } from "$lib/room";
@@ -79,13 +79,7 @@ export class WebSocketMessageHandler {
   }
 
   private async handleReady(client: ActiveWebSocket): Promise<MessageProcessResult> {
-    const roomCache = await getRoomCache(client.roomId);
-    const player = client.playerIdx === 0 ? (roomCache.p0) :
-      client.playerIdx === 1 ? (roomCache.p1) :
-        client.playerIdx === 2 ? (roomCache.p2) : (roomCache.p3);
-    await this.redis.hSet(`room:${client.roomId}`, `p${client.playerIdx}`, JSON.stringify({
-      ...player, ready: 1,
-    }));
+    await updatePlayerReadyState({ roomId: client.roomId, playerIdx: client.playerIdx, ready: true });
 
     const readyMessage: OutboundReadyMessage = {
       type: 'READY',
@@ -99,13 +93,7 @@ export class WebSocketMessageHandler {
   }
 
   private async handleCancelReady(client: ActiveWebSocket): Promise<MessageProcessResult> {
-    const roomCache = await getRoomCache(client.roomId);
-    const player = client.playerIdx === 0 ? roomCache.p0 :
-      client.playerIdx === 1 ? roomCache.p1 :
-        client.playerIdx === 2 ? roomCache.p2 : roomCache.p3;
-    await this.redis.hSet(`room:${client.roomId}`, `p${client.playerIdx}`, JSON.stringify({
-      ...player, ready: 0,
-    }));
+    await updatePlayerReadyState({ roomId: client.roomId, playerIdx: client.playerIdx, ready: false });
 
     const cancelReadyMessage: OutboundCancelReadyMessage = {
       type: 'CANCEL_READY',

@@ -241,6 +241,21 @@ export const addUserToRoomCache = async ({ roomId, userInfo: { id, username } }:
   throw new CustomError('room is full');
 };
 
+export const updatePlayerReadyState = async ({ roomId, playerIdx, ready }: { roomId: RoomId, playerIdx: PlayerIdx, ready: boolean }) => {
+  const room = await roomCacheRepository.fetch(roomId);
+  const { p0_ready, p1_ready, p2_ready, p3_ready } = room;
+  const playerReadyState = {
+    0: { p0_ready: ready, p1_ready, p2_ready, p3_ready },
+    1: { p1_ready: ready, p0_ready, p2_ready, p3_ready },
+    2: { p2_ready: ready, p0_ready, p1_ready, p3_ready },
+    3: { p3_ready: ready, p0_ready, p1_ready, p2_ready },
+  }[playerIdx];
+  await roomCacheRepository.save(roomId, {
+    ...room,
+    ...playerReadyState
+  });
+};
+
 export const markPlayerAsExhausted = async ({ roomId, slotIdx }: { roomId: RoomId, slotIdx: SlotIdx }): Promise<SlotIdx[]> => {
   const exhaustedSlot = slotIdx === 0 ? { p0_exhausted: true } :
     slotIdx === 1 ? { p1_exhausted: true } :
