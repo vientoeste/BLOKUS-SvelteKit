@@ -49,7 +49,7 @@ export const redisModelFactory = {
   },
 };
 
-export const { repository: roomCacheRepository, schema: roomCacheSchema } = redisModelFactory.create('room', {
+const roomCacheSchemaDef = {
   name: { type: 'string' as const },
   gameId: { type: 'string' as const },
   turn: { type: 'number' as const },
@@ -71,7 +71,9 @@ export const { repository: roomCacheRepository, schema: roomCacheSchema } = redi
   p3_username: { type: 'string' as const },
   p3_ready: { type: 'boolean' as const },
   p3_exhausted: { type: 'boolean' as const },
-});
+};
+export const { repository: roomCacheRepository, schema: roomCacheSchema } = redisModelFactory.create('room', roomCacheSchemaDef);
+export type RoomCacheEntity = InferSchemaType<typeof roomCacheSchemaDef>;
 
 export const { repository: gameEndSequenceRepository, schema: gameEndSequenceSchema } = redisModelFactory.create('game_end_sequence', {
   finalBoardState: { type: 'string' as const },
