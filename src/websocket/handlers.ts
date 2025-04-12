@@ -26,7 +26,7 @@ import { extractPlayerCountFromCache_LEGACY, isRightTurn, parseJson } from "$lib
 import { getRoomCache, markPlayerAsExhausted, updatePlayerReadyState } from "$lib/database/room";
 import { insertExhaustedMove, insertRegularMove, insertTimeoutMove } from "$lib/database/move";
 import { uuidv7 } from "uuidv7";
-import { updateStartedState } from "$lib/room";
+import { applyMove, updateStartedState } from "$lib/room";
 
 interface MessageProcessResult {
   success: boolean;
@@ -107,16 +107,21 @@ export class WebSocketMessageHandler {
   }
 
   private async handleMove(client: ActiveWebSocket, message: InboundMoveMessage): Promise<MessageProcessResult> {
-    const { turn, slotIdx } = message;
-    const roomCache = await getRoomCache(client.roomId);
-    if (!isRightTurn({
-      turn,
-      activePlayerCount: extractPlayerCountFromCache_LEGACY(roomCache),
-      playerIdx: client.playerIdx,
-    }) || turn !== roomCache.turn) {
+    const { blockInfo, playerIdx, position, slotIdx, turn } = message;
+    const result = await applyMove({
+      move: {
+        blockInfo,
+        playerIdx,
+        position,
+        slotIdx,
+        turn,
+      },
+      roomId: client.roomId,
+    });
+    if (!result.success) {
       const badReqMessage: OutboundBadReqMessage = {
         type: 'BAD_REQ',
-        message: 'wrong turn',
+        message: result.reason ?? 'unknown error occured',
       };
       return {
         success: true,
@@ -124,33 +129,6 @@ export class WebSocketMessageHandler {
         payload: badReqMessage,
       };
     }
-    const { gameId } = roomCache;
-    if (!gameId) {
-      const errMessage: OutboundErrorMessage = {
-        type: 'ERROR',
-      }
-      return {
-        success: false,
-        shouldBroadcast: false,
-        payload: errMessage,
-      }
-    }
-
-    await this.redis.hSet(`room:${client.roomId}`, 'turn', turn + 1);
-    const moveId = uuidv7();
-
-    const { blockInfo, position } = message as MoveDTO;
-    await insertRegularMove(moveId, {
-      blockInfo,
-      gameId,
-      playerIdx: client.playerIdx,
-      position,
-      slotIdx,
-      turn,
-      createdAt: new Date(),
-    });
-    const compressedMove = `${client.playerIdx}:${blockInfo.type}[${position[0]},${position[1]}]r${blockInfo.rotation}f${blockInfo.flip ? 0 : 1}`;
-    await this.redis.hSet(`room:${client.roomId}`, 'lastMove', compressedMove);
     // [TODO] checksum - lastMove
     const moveMessage: OutboundMoveMessage = {
       type: 'MOVE',
