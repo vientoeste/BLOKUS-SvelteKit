@@ -1,4 +1,4 @@
-import type { ApiResponse, Block, BlockType, PlayerIdx, RoomCacheInf, Rotation, SlotIdx } from "$types";
+import type { ApiResponse, Block, BlockType, BoardMatrix, PlayerIdx, RoomCacheInf, Rotation, SlotIdx } from "$types";
 import { json } from "@sveltejs/kit";
 import { CustomError } from "./error";
 import type { RoomCacheEntity } from "./database/redis";
@@ -229,3 +229,33 @@ export const convertBoardToArr = (board: string) =>
   Array.from({ length: 20 }, (_, i) =>
     board.slice(i * 20, i * 20 + 20).split('').map(cell => (cell === '4' ? false : parseInt(cell)))
   );
+
+export const compressMove = ({
+  playerIdx,
+  type,
+  position,
+  rotation,
+  flip,
+}: {
+  playerIdx: PlayerIdx,
+  type: BlockType,
+  position: [number, number],
+  rotation: Rotation,
+  flip: boolean,
+}) =>
+  `${playerIdx}:${type}[${position[0]},${position[1]}]r${rotation}${flip ? 'f' : ''}`;
+
+export const decompressMove = (compressedMove: string) => {
+  const [playerIdx, ...rest1] = compressedMove.split(':');
+  const [type, ...rest2] = rest1[0].split('[');
+  const [position0, ...rest3] = rest2[0].split(',');
+  const [position1, ...rest4] = rest3[0].split(']');
+  const [, rotation, ...flip] = rest4[0].split('');
+  return {
+    playerIdx: parseInt(playerIdx) as PlayerIdx,
+    type: type as BlockType,
+    position: [parseInt(position0), parseInt(position1)],
+    rotation: parseInt(rotation) % 4 as Rotation,
+    flip: flip.length !== 0,
+  };
+};
