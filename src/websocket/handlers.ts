@@ -22,7 +22,7 @@ import type {
   OutboundSkipTurnMessage,
   InboundSkipTurnMessage,
 } from "$types";
-import { extractPlayerCountFromCache, isRightTurn, parseJson } from "$lib/utils";
+import { extractPlayerCountFromCache_LEGACY, isRightTurn, parseJson } from "$lib/utils";
 import { getRoomCache, markPlayerAsExhausted, updatePlayerReadyState } from "$lib/database/room";
 import { insertExhaustedMove, insertRegularMove, insertTimeoutMove } from "$lib/database/move";
 import { uuidv7 } from "uuidv7";
@@ -111,7 +111,7 @@ export class WebSocketMessageHandler {
     const roomCache = await getRoomCache(client.roomId);
     if (!isRightTurn({
       turn,
-      activePlayerCount: extractPlayerCountFromCache(roomCache),
+      activePlayerCount: extractPlayerCountFromCache_LEGACY(roomCache),
       playerIdx: client.playerIdx,
     }) || turn !== roomCache.turn) {
       const badReqMessage: OutboundBadReqMessage = {
@@ -172,7 +172,7 @@ export class WebSocketMessageHandler {
     const roomCache = await getRoomCache(client.roomId);
     if (!isRightTurn({
       turn,
-      activePlayerCount: extractPlayerCountFromCache(roomCache),
+      activePlayerCount: extractPlayerCountFromCache_LEGACY(roomCache),
       playerIdx: client.playerIdx,
     }) || turn !== roomCache.turn) {
       const badReqMessage: OutboundBadReqMessage = {

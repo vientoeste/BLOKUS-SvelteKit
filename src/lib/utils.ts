@@ -1,6 +1,7 @@
 import type { ApiResponse, Block, BlockType, PlayerIdx, RoomCacheInf, Rotation, SlotIdx } from "$types";
 import { json } from "@sveltejs/kit";
 import { CustomError } from "./error";
+import type { RoomCacheEntity } from "./database/redis";
 
 export type Undefinedable<T> = {
   [K in keyof T]: T[K] | undefined;
@@ -190,7 +191,8 @@ export const handleApiError = (e: unknown): Response => {
   return json(response, { status: response.status });
 };
 
-export const extractPlayerCountFromCache = (roomCache: RoomCacheInf) => 1 + (+(roomCache.p1 !== undefined)) + (+(roomCache.p2 !== undefined)) + (+(roomCache.p3 !== undefined));
+export const extractPlayerCountFromCache_LEGACY = (roomCache: RoomCacheInf) => 1 + (+(roomCache.p1 !== undefined)) + (+(roomCache.p2 !== undefined)) + (+(roomCache.p3 !== undefined));
+export const extractPlayerCountFromCache = (roomCache: RoomCacheEntity) => 1 + (+(roomCache.p1_id !== undefined)) + (+(roomCache.p2_id !== undefined)) + (+(roomCache.p3_id !== undefined));
 
 export const isRightTurn = ({ turn, playerIdx, activePlayerCount }: { turn: number, playerIdx: PlayerIdx, activePlayerCount: number }) => ({
   2: turn % 2 === playerIdx,
