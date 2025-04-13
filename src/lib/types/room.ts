@@ -1,6 +1,7 @@
 import type { PlayerId } from '.';
 
 export type RoomId = string;
+export type GameId = string;
 
 export interface RoomPrimitiveInf {
   id: RoomId;
