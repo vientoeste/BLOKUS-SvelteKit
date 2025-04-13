@@ -119,7 +119,19 @@ export class WebSocketMessageHandler {
   }
 
   private async handleMove(client: ActiveWebSocket, message: InboundMoveMessage): Promise<MessageProcessResult> {
-    const { turn, slotIdx } = message;
+    const { turn, slotIdx, blockInfo, playerIdx, position } = message;
+    if (playerIdx !== client.playerIdx) {
+      const badReqMessage: OutboundBadReqMessage = {
+        type: 'BAD_REQ',
+        message: "player can't request other slot's move",
+      };
+      return {
+        success: true,
+        shouldBroadcast: false,
+        payload: badReqMessage,
+      };
+    }
+
     const roomCache = await getRoomCache(client.roomId);
     if (!isRightTurn({
       turn,
@@ -150,20 +162,6 @@ export class WebSocketMessageHandler {
 
     await this.redis.hSet(`room:${client.roomId}`, 'turn', turn + 1);
     const moveId = uuidv7();
-
-    const { blockInfo, position, playerIdx } = message as MoveDTO;
-    if (playerIdx !== client.playerIdx) {
-      const badReqMessage: OutboundBadReqMessage = {
-        type: 'BAD_REQ',
-        message: "player can't request other slot's move",
-      };
-      return {
-        success: true,
-        shouldBroadcast: false,
-        payload: badReqMessage,
-      };
-    }
-
     await insertRegularMove(moveId, {
       blockInfo,
       gameId,

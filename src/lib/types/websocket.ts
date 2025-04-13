@@ -61,10 +61,7 @@ export interface InboundCancelReadyMessage extends WebSocketMessageBase, Dispatc
   type: 'CANCEL_READY';
 }
 
-export type InboundMoveMessage = WebSocketMessageBase & { type: 'MOVE' } & (
-  (DispatchMoveMessageDto & { timeout: false })
-  | (DispatchTimeoutMoveMessageDto & { timeout: true })
-);
+export type InboundMoveMessage = WebSocketMessageBase & { type: 'MOVE' } & DispatchMoveMessageDto;
 
 export type InboundSkipTurnMessage = WebSocketMessageBase & { type: 'SKIP_TURN', turn: number, slotIdx: SlotIdx } & (
   { timeout: true, exhausted: false } |
