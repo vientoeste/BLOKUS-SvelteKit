@@ -151,7 +151,19 @@ export class WebSocketMessageHandler {
     await this.redis.hSet(`room:${client.roomId}`, 'turn', turn + 1);
     const moveId = uuidv7();
 
-    const { blockInfo, position } = message as MoveDTO;
+    const { blockInfo, position, playerIdx } = message as MoveDTO;
+    if (playerIdx !== client.playerIdx) {
+      const badReqMessage: OutboundBadReqMessage = {
+        type: 'BAD_REQ',
+        message: "player can't request other slot's move",
+      };
+      return {
+        success: true,
+        shouldBroadcast: false,
+        payload: badReqMessage,
+      };
+    }
+
     await insertRegularMove(moveId, {
       blockInfo,
       gameId,
