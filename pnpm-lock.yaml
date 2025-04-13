@@ -21,7 +21,7 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       bcrypt:
-        specifier: ^5.1.0
+        specifier: ^5.1.1
         version: 5.1.1
       express:
         specifier: ^4.21.2
