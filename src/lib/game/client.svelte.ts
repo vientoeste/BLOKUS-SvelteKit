@@ -302,7 +302,6 @@ export class GameManager_Legacy {
               playerIdx: this.playerIdx,
               slotIdx: move.slotIdx,
               position: move.position,
-              timeout: false,
               turn: move.turn,
             };
             this.messageDispatcher.dispatch(moveMessage);
