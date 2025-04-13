@@ -26,7 +26,7 @@ import { extractPlayerCountFromCache_LEGACY, isRightTurn, parseJson } from "$lib
 import { getRoomCache, markPlayerAsExhausted, updatePlayerReadyState } from "$lib/database/room";
 import { insertExhaustedMove, insertRegularMove, insertTimeoutMove } from "$lib/database/move";
 import { uuidv7 } from "uuidv7";
-import { applyMove, updateStartedState } from "$lib/room";
+import { applyMove, applySkipTurn, updateStartedState } from "$lib/room";
 
 interface MessageProcessResult {
   success: boolean;
@@ -147,15 +147,10 @@ export class WebSocketMessageHandler {
 
   private async handleSkipTurnMessage(client: ActiveWebSocket, message: InboundSkipTurnMessage) {
     const { exhausted, slotIdx, timeout, turn } = message;
-    const roomCache = await getRoomCache(client.roomId);
-    if (!isRightTurn({
-      turn,
-      activePlayerCount: extractPlayerCountFromCache_LEGACY(roomCache),
-      playerIdx: client.playerIdx,
-    }) || turn !== roomCache.turn) {
+    if (exhausted === timeout) {
       const badReqMessage: OutboundBadReqMessage = {
         type: 'BAD_REQ',
-        message: 'wrong turn',
+        message: 'exhausted move cannot be timeout move',
       };
       return {
         success: true,
@@ -163,67 +158,36 @@ export class WebSocketMessageHandler {
         payload: badReqMessage,
       };
     }
-    const { gameId } = roomCache;
-    if (!gameId) {
-      const errMessage: OutboundErrorMessage = {
-        type: 'ERROR',
-      }
-      return {
-        success: false,
-        shouldBroadcast: false,
-        payload: errMessage,
-      }
-    }
-
-    await this.redis.hSet(`room:${client.roomId}`, 'turn', turn + 1);
-    const moveId = uuidv7();
-    if (timeout) {
-      await insertTimeoutMove(moveId, {
-        timeout: true,
-        exhausted: false,
-        turn,
-        playerIdx: client.playerIdx,
-        gameId,
-        slotIdx,
-        createdAt: new Date(),
-      });
+    const result = await applySkipTurn({
+      playerIdx: client.playerIdx,
+      roomId: client.roomId,
+      slotIdx,
+      turn,
+      type: timeout ? 'timeout' : 'exhausted',
+    });
+    if (!result.success) {
+      const badReqMessage: OutboundBadReqMessage = {
+        type: 'BAD_REQ',
+        message: result.reason ?? 'unknown error occured',
+      };
       return {
         success: true,
-        shouldBroadcast: true,
-        payload: {
-          type: 'SKIP_TURN',
-          timeout: true,
-          exhausted: false,
-          playerIdx: client.playerIdx,
-          turn: message.turn,
-          slotIdx: message.slotIdx
-        } as OutboundSkipTurnMessage,
+        shouldBroadcast: false,
+        payload: badReqMessage,
       };
     }
-    /**
-     * @description this line infers if (exhausted) { ...
-     * but removed conditional statement because type guess causes undefined-return
-     */
-    await insertExhaustedMove(moveId, {
-      timeout: false,
-      exhausted: true,
-      turn,
+    const skipTurnMessage = {
+      type: 'SKIP_TURN',
+      exhausted: exhausted === true,
       playerIdx: client.playerIdx,
-      gameId,
       slotIdx,
-      createdAt: new Date(),
-    });
+      timeout: exhausted === false,
+      turn,
+    } as OutboundSkipTurnMessage;
     return {
       success: true,
       shouldBroadcast: true,
-      payload: {
-        type: 'SKIP_TURN',
-        timeout: false,
-        exhausted: true,
-        playerIdx: client.playerIdx,
-        turn: message.turn,
-        slotIdx: message.slotIdx
-      } as OutboundSkipTurnMessage,
+      payload: skipTurnMessage,
     };
   }
 

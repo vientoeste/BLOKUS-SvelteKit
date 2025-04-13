@@ -1,9 +1,9 @@
 import { uuidv7 } from "uuidv7";
-import { insertRegularMove } from "./database/move";
+import { insertExhaustedMove, insertRegularMove, insertTimeoutMove } from "./database/move";
 import { roomCacheRepository } from "./database/redis";
 import { getRoomCache, getRoomInfo, getRooms, insertRoom, insertRoomCache, updateRoomCacheStartedState, updateRoomStartedState } from "./database/room";
 import { CustomError } from "./error";
-import type { CreateRoomDTO, MoveDTO, RoomCacheInf, RoomDocumentInf, RoomId } from "./types";
+import type { CreateRoomDTO, MoveDTO, PlayerIdx, RoomCacheInf, RoomDocumentInf, RoomId, SlotIdx } from "./types";
 import { compressMove, extractPlayerCountFromCache, isRightTurn } from "./utils";
 
 export const createRoom = async (roomId: RoomId, createRoomDTO: CreateRoomDTO): Promise<RoomId> => {
@@ -85,6 +85,75 @@ export const applyMove = async ({
   await roomCacheRepository.save({
     ...roomCache,
     lastMove: compressedMove,
+    turn: turn + 1,
+  });
+  return {
+    success: true,
+  };
+};
+
+// [TODO] integrate validation with applyMove
+export const applySkipTurn = async ({
+  roomId,
+  type,
+  turn,
+  playerIdx,
+  slotIdx,
+}: {
+  roomId: RoomId
+  type: 'timeout' | 'exhausted',
+  turn: number,
+  playerIdx: PlayerIdx,
+  slotIdx: SlotIdx,
+}) => {
+  const roomCache = await roomCacheRepository.fetch(roomId);
+  if (!isRightTurn({
+    turn,
+    activePlayerCount: extractPlayerCountFromCache(roomCache),
+    playerIdx,
+  }) || turn !== roomCache.turn) {
+    return {
+      success: false,
+      reason: 'wrong turn',
+    };
+  }
+  if (!roomCache.gameId) {
+    // [TODO] invalidate cache & ...
+    return {
+      success: false,
+      reason: 'invalid game id',
+    };
+  }
+  const moveId = uuidv7();
+  switch (type) {
+    case 'timeout':
+      await insertTimeoutMove(moveId, {
+        turn,
+        gameId: roomCache.gameId,
+        exhausted: false,
+        playerIdx,
+        slotIdx,
+        timeout: true,
+        createdAt: new Date(),
+      });
+      break;
+    case 'exhausted':
+      await insertExhaustedMove(moveId, {
+        createdAt: new Date(),
+        exhausted: true,
+        gameId: roomCache.gameId,
+        playerIdx,
+        slotIdx,
+        timeout: false,
+        turn,
+      });
+      break;
+    default:
+      // cause error
+      break;
+  }
+  await roomCacheRepository.save({
+    ...roomCache,
     turn: turn + 1,
   });
   return {
