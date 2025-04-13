@@ -225,7 +225,7 @@ export const convertBoardToStr = (board: BoardMatrix) =>
     boardLine.map((cell) => cell === false ? 4 : cell).join(''))
     .join('');
 
-export const convertBoardToArr = (board: string) =>
+export const convertBoardToArr = (board: string): BoardMatrix =>
   Array.from({ length: 20 }, (_, i) =>
     board.slice(i * 20, i * 20 + 20).split('').map(cell => (cell === '4' ? false : parseInt(cell)))
   );
