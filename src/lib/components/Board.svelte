@@ -135,11 +135,11 @@
     partialBoard.style.display = "flex";
     partialBoard.style.flexDirection = "column";
 
-    for (let i = startRow; i <= endRow; i++) {
+    for (let i = startRow; i <= endRow; i += 1) {
       const row = document.createElement("div");
       row.style.display = "flex";
 
-      for (let j = startCol; j <= endCol; j++) {
+      for (let j = startCol; j <= endCol; j += 1) {
         const originalCell = boardElement.children[i].children[j].cloneNode(
           true,
         ) as HTMLElement;
