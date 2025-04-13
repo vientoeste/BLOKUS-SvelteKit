@@ -44,7 +44,7 @@ export const redisModelFactory = {
     });
     return {
       schema,
-      repository: new Repository<InferSchemaType<T>>(schema, redis)
+      repository: new Repository<InferSchemaType<T>>(schema, redis),
     };
   },
 };
