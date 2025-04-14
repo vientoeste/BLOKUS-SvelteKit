@@ -3,9 +3,13 @@ import { convertBlockToObj, convertBlockToStr } from "$lib/utils";
 import type { InsertExhaustedMoveDto, InsertRegularMoveDto, InsertTimeoutMoveDto, Move } from "$types";
 import { handleMongoError, Moves } from "./mongo";
 
-export const getMovesByGameId = async (gameId: string): Promise<Move[]> => {
+// [TODO] when onlyRegularMoves is true, narrow its return type to RegularMove[]
+export const getMovesByGameId = async (gameId: string, options: {
+  onlyRegularMoves?: boolean,
+} = {}): Promise<Move[]> => {
+  const { onlyRegularMoves = false } = options;
   const moves = await Moves
-    .find({ gameId })
+    .find(onlyRegularMoves ? { gameId, timeout: false, exhausted: false } : { gameId })
     .sort({ _id: -1 })
     .toArray()
     .catch(handleMongoError);
