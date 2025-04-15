@@ -150,14 +150,18 @@ export interface OutboundExhaustedMessage extends WebSocketMessageBase {
   slotIdx: SlotIdx;
 }
 
-export interface OutboundScoreValidationMessage extends WebSocketMessageBase {
-  type: 'SCORE_VALIDATION';
+export interface OutboundScoreConfirmationMessage extends WebSocketMessageBase {
+  type: 'SCORE_CONFIRM';
   score: {
     0: number;
     1: number;
     2: number;
     3: number;
   };
+}
+
+export interface OutboundGameEndMessage extends WebSocketMessageBase {
+  type: 'GAME_END';
 }
 
 /**
@@ -180,7 +184,7 @@ export type OutboundWebSocketMessage =
   OutboundReadyMessage | OutboundMediateMessage |
   OutboundErrorMessage | OutboundStartMessage |
   OutboundBadReqMessage | OutboundExhaustedMessage |
-  OutboundSkipTurnMessage | OutboundScoreValidationMessage;
+  OutboundSkipTurnMessage | OutboundScoreConfirmationMessage;
 
 export type WebSocketBrokerMessage = { payload: OutboundWebSocketMessage, roomId: string };
 
