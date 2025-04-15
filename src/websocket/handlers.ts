@@ -15,7 +15,6 @@ import type {
   OutboundCancelReadyMessage,
   OutboundMoveMessage,
   OutboundStartMessage,
-  MoveDTO,
   PlayerId,
   InboundExhaustedMessage,
   OutboundExhaustedMessage,
@@ -23,9 +22,8 @@ import type {
   InboundSkipTurnMessage,
   OutboundScoreConfirmationMessage,
 } from "$types";
-import { extractPlayerCountFromCache_LEGACY, isRightTurn, parseJson } from "$lib/utils";
+import { parseJson } from "$lib/utils";
 import { getRoomCache, markPlayerAsExhausted, updatePlayerReadyState } from "$lib/database/room";
-import { insertExhaustedMove, insertRegularMove, insertTimeoutMove } from "$lib/database/move";
 import { uuidv7 } from "uuidv7";
 import { applyMove, applySkipTurn, updateStartedState } from "$lib/room";
 import { initiateGameEndProcess } from "$lib/game";
