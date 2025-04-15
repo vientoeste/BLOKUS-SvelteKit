@@ -21,12 +21,14 @@ import type {
   OutboundExhaustedMessage,
   OutboundSkipTurnMessage,
   InboundSkipTurnMessage,
+  OutboundScoreConfirmationMessage,
 } from "$types";
 import { extractPlayerCountFromCache_LEGACY, isRightTurn, parseJson } from "$lib/utils";
 import { getRoomCache, markPlayerAsExhausted, updatePlayerReadyState } from "$lib/database/room";
 import { insertExhaustedMove, insertRegularMove, insertTimeoutMove } from "$lib/database/move";
 import { uuidv7 } from "uuidv7";
 import { applyMove, applySkipTurn, updateStartedState } from "$lib/room";
+import { initiateGameEndProcess } from "$lib/game";
 
 interface MessageProcessResult {
   success: boolean;
@@ -253,6 +255,22 @@ export class WebSocketMessageHandler {
     };
   }
 
+  private async handleGameEndRequest(client: ActiveWebSocket): Promise<MessageProcessResult> {
+    const score = await initiateGameEndProcess({
+      playerIdx: client.playerIdx,
+      roomId: client.roomId,
+    });
+    const scoreValidationMessage: OutboundScoreConfirmationMessage = {
+      type: 'SCORE_CONFIRM',
+      score: score.toRecord(),
+    };
+    return {
+      success: true,
+      shouldBroadcast: true,
+      payload: scoreValidationMessage,
+    };
+  }
+
   async processMessage(client: ActiveWebSocket, message: InboundWebSocketMessage): Promise<MessageProcessResult> {
     switch (message.type) {
       case 'START':
@@ -273,6 +291,8 @@ export class WebSocketMessageHandler {
         return this.handleExhausted(client, message);
       case 'SKIP_TURN':
         return this.handleSkipTurnMessage(client, message);
+      case "GAME_END_REQ":
+        return this.handleGameEndRequest(client);
       default:
         return {
           success: false,
