@@ -84,7 +84,6 @@ export interface InboundExhaustedMessage extends WebSocketMessageBase {
 
 export interface InboundGameEndReqMessage extends WebSocketMessageBase {
   type: 'GAME_END_REQ';
-  board: string;
 }
 
 export interface InboundScoreConfirmationMessage extends WebSocketMessageBase {
