@@ -75,16 +75,22 @@ const roomCacheSchemaDef = {
 export const { repository: roomCacheRepository, schema: roomCacheSchema } = redisModelFactory.create('room', roomCacheSchemaDef);
 export type RoomCacheEntity = InferSchemaType<typeof roomCacheSchemaDef>;
 
+const gameEndSchemaDef = {
+  gameId: { type: 'string' as const },
+  refScore: { type: 'string' as const },
+  p0_score: { type: 'string' as const },
+  p1_score: { type: 'string' as const },
+  p2_score: { type: 'string' as const },
+  p3_score: { type: 'string' as const },
+  initiatedAt: { type: 'date' as const },
+  initiatedBy: { type: 'number' as const },
+  completedAt: { type: 'date' as const },
+};
 /**
  * @description Changed the key pattern from 'room:{id}:game-end-sequence' to 'GameEndSequence:{roomId}'
  * to access the sequence by its room's ID.
  * This change aligns with Redis OM's key design pattern, which differs from traditional Redis.
  * Following Redis OM's recommended approach allows us to better utilize its indexing and search capabilities.
  */
-export const { repository: gameEndSequenceRepository, schema: gameEndSequenceSchema } = redisModelFactory.create('game_end_sequence', {
-  finalBoardState: { type: 'string' as const },
-  initiatedBy: { type: 'number' as const },
-  endDate: { type: 'date' as const },
-  finalScore: { type: 'number' as const },
-  confirmationStatus: { type: 'number[]' as const },
-});
+export const { repository: gameEndSequenceRepository, schema: gameEndSequenceSchema } = redisModelFactory.create('game_end_sequence', gameEndSchemaDef);
+export type GameEndSequenceEntity = InferSchemaType<typeof gameEndSchemaDef>;
