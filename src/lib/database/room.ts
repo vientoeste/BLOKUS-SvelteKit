@@ -3,6 +3,7 @@ import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheIn
 import { parseJson } from "$lib/utils";
 import { handleMongoError, Rooms } from "./mongo";
 import { gameEndSequenceRepository, redis, roomCacheRepository } from "./redis";
+import type { Score } from "$lib/domain/score";
 
 export const getRooms = async ({
   limit, lastDocId,
@@ -300,13 +301,13 @@ export const updateRoomCacheStartedState = async ({ roomId, isStarted, gameId }:
 export const createScoreValidationSequence = async ({ roomId, gameId, playerIdx, score }: {
   roomId: RoomId;
   gameId: GameId;
-  score: string;
+  score: Score;
   playerIdx: PlayerIdx,
 }) => {
   await gameEndSequenceRepository.save(roomId, {
     gameId,
     initiatedAt: new Date(),
     initiatedBy: playerIdx,
-    refScore: score,
+    refScore: score.toString(),
   });
 };
