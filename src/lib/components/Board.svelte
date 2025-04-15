@@ -1,7 +1,6 @@
 <script lang="ts">
   import { getBlockMatrix } from "$lib/game/core";
-  import type { BlockMatrix, BlockType, SlotIdx } from "$types";
-  import { parseJson } from "$lib/utils";
+  import type { BlockMatrix, SlotIdx } from "$types";
   import {
     dragPositionOffsetStore,
     movePreviewStore,

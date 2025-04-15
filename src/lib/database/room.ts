@@ -1,8 +1,7 @@
 import { CustomError } from "$lib/error";
-import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf, UserInfo, CreateRoomCacheDTO, RawParticipantInf, SlotIdx, PlayerIdx, GameId } from "$types";
-import { parseJson } from "$lib/utils";
+import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf, UserInfo, CreateRoomCacheDTO, SlotIdx, PlayerIdx, GameId } from "$types";
 import { handleMongoError, Rooms } from "./mongo";
-import { gameEndSequenceRepository, redis, roomCacheRepository } from "./redis";
+import { gameEndSequenceRepository, roomCacheRepository } from "./redis";
 import type { Score } from "$lib/domain/score";
 
 export const getRooms = async ({

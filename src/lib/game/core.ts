@@ -1,4 +1,3 @@
-import { convertBoardToArr } from "$lib/utils";
 import type { Block, BlockMatrix, BlockType, BoardMatrix, PlaceBlockDTO, PutBlockDTO, Rotation, SlotIdx, SubmitMoveDTO } from "../types";
 
 export const preset: Record<BlockType, BlockMatrix> = {

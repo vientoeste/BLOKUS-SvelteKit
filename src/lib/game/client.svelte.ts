@@ -1,5 +1,4 @@
 import type {
-  BlockMatrix,
   BlockType,
   BoardMatrix,
   MoveDTO,
@@ -27,7 +26,7 @@ import type {
   OutboundSkipTurnMessage,
 } from "$types";
 import { blockStore, gameStore, modalStore, movePreviewStore } from "$lib/store";
-import { createNewBoard, preset, putBlockOnBoard, rollbackMove } from "./core";
+import { createNewBoard, putBlockOnBoard, rollbackMove } from "./core";
 import type {
   WebSocketMessageDispatcher,
   WebSocketMessageReceiver,

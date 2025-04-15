@@ -5,7 +5,6 @@ import type {
   InboundReportMessage,
   InboundWebSocketMessage,
   OutboundBadReqMessage,
-  OutboundErrorMessage,
   OutboundWebSocketMessage,
   ActiveWebSocket,
   WebSocketBrokerMessage,

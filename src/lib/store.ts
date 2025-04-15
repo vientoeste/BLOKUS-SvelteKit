@@ -1,5 +1,5 @@
 import { preset } from '$lib/game/core';
-import type { BlockMatrix, BlockType, PlayerIdx, Rotation, SlotIdx, UserInfo } from '$types';
+import type { BlockType, PlayerIdx, Rotation, SlotIdx, UserInfo } from '$types';
 import type { Undefinedable } from '$lib/utils';
 import { get, writable } from 'svelte/store';
 

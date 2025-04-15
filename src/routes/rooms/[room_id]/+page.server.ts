@@ -6,7 +6,7 @@ import { getMovesByGameId } from "$lib/database/move";
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
   try {
-    const { id, userId, username } = await validateSessionCookie(cookies);
+    const { id } = await validateSessionCookie(cookies);
     const { room_id: roomId } = params;
     const { room, roomCache } = await getRoomById(roomId);
     const { p0, p1, p2, p3 } = roomCache;
