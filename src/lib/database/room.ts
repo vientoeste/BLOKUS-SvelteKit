@@ -1,8 +1,8 @@
 import { CustomError } from "$lib/error";
-import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf, UserInfo, CreateRoomCacheDTO, RawParticipantInf, SlotIdx, PlayerIdx } from "$types";
+import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf, UserInfo, CreateRoomCacheDTO, RawParticipantInf, SlotIdx, PlayerIdx, GameId } from "$types";
 import { parseJson } from "$lib/utils";
 import { handleMongoError, Rooms } from "./mongo";
-import { redis, roomCacheRepository } from "./redis";
+import { gameEndSequenceRepository, redis, roomCacheRepository } from "./redis";
 
 export const getRooms = async ({
   limit, lastDocId,
@@ -294,5 +294,19 @@ export const updateRoomCacheStartedState = async ({ roomId, isStarted, gameId }:
     gameId,
     started: isStarted,
     turn: 0,
+  });
+};
+
+export const createScoreValidationSequence = async ({ roomId, gameId, playerIdx, score }: {
+  roomId: RoomId;
+  gameId: GameId;
+  score: string;
+  playerIdx: PlayerIdx,
+}) => {
+  await gameEndSequenceRepository.save(roomId, {
+    gameId,
+    initiatedAt: new Date(),
+    initiatedBy: playerIdx,
+    refScore: score,
   });
 };
