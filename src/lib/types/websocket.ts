@@ -149,12 +149,6 @@ export interface OutboundExhaustedMessage extends WebSocketMessageBase {
 
 export interface OutboundScoreConfirmationMessage extends WebSocketMessageBase {
   type: 'SCORE_CONFIRM';
-  score: {
-    0: number;
-    1: number;
-    2: number;
-    3: number;
-  };
 }
 
 export interface OutboundGameEndMessage extends WebSocketMessageBase {

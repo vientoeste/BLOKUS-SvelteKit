@@ -24,6 +24,7 @@ import type {
   InboundExhaustedMessage,
   InboundSkipTurnMessage,
   OutboundSkipTurnMessage,
+  InboundScoreConfirmationMessage,
 } from "$types";
 import { blockStore, gameStore, modalStore, movePreviewStore } from "$lib/store";
 import { createNewBoard, putBlockOnBoard, rollbackMove } from "./core";
@@ -35,6 +36,7 @@ import Alert from "$lib/components/Alert.svelte";
 import Confirm from "$lib/components/Confirm.svelte";
 import { getPlayersSlot, isRightTurn } from "$lib/utils";
 import { get } from "svelte/store";
+import { Score } from "$lib/domain/score";
 
 export class GameManager_Legacy {
   constructor({
@@ -111,6 +113,9 @@ export class GameManager_Legacy {
       case "MEDIATE":
         break;
       case "ERROR":
+        break;
+      case "SCORE_CONFIRM":
+        this.handleScoreConfirmationMessage();
         break;
       default:
         modalStore.open(Alert, {
@@ -191,6 +196,15 @@ export class GameManager_Legacy {
     if (this.users[playerIdx]) {
       this.users[playerIdx].ready = type === 'READY';
     }
+  }
+
+  handleScoreConfirmationMessage() {
+    const score = Score.fromBoard(this.board);
+    const scoreConfirmMessage: InboundScoreConfirmationMessage = {
+      type: 'SCORE_CONFIRM',
+      score: score.toString(),
+    };
+    this.messageDispatcher.dispatch(scoreConfirmMessage);
   }
 
   handleError(message: OutboundErrorMessage) {

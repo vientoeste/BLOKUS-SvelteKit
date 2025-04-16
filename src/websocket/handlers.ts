@@ -27,7 +27,7 @@ import { parseJson } from "$lib/utils";
 import { getRoomCache, markPlayerAsExhausted, updatePlayerReadyState } from "$lib/database/room";
 import { uuidv7 } from "uuidv7";
 import { applyMove, applySkipTurn, updateStartedState } from "$lib/room";
-import { confirmScore, initiateGameEndSequence } from "$lib/game";
+import { confirmScore } from "$lib/game";
 import { Score } from "$lib/domain/score";
 
 interface MessageAction {
@@ -279,13 +279,8 @@ export class WebSocketMessageHandler {
 
     const { isGameEnd } = await markPlayerAsExhausted({ roomId: client.roomId, slotIdx: message.slotIdx });
     if (isGameEnd) {
-      const score = await initiateGameEndSequence({
-        playerIdx: client.playerIdx,
-        roomId: client.roomId,
-      });
       const scoreValidationMessage: OutboundScoreConfirmationMessage = {
         type: 'SCORE_CONFIRM',
-        score: score.toRecord(),
       };
       messages.push({
         action: 'broadcast',
