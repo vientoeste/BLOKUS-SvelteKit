@@ -84,7 +84,7 @@ export interface InboundExhaustedMessage extends WebSocketMessageBase {
 
 export interface InboundScoreConfirmationMessage extends WebSocketMessageBase {
   type: 'SCORE_CONFIRM';
-  score: 'string';
+  score: string;
 }
 
 export interface OutboundStartMessage extends WebSocketMessageBase {
