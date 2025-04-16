@@ -25,7 +25,7 @@ import { parseJson } from "$lib/utils";
 import { getRoomCache, markPlayerAsExhausted, updatePlayerReadyState } from "$lib/database/room";
 import { uuidv7 } from "uuidv7";
 import { applyMove, applySkipTurn, updateStartedState } from "$lib/room";
-import { initiateGameEndProcess } from "$lib/game";
+import { initiateGameEndSequence } from "$lib/game";
 
 interface MessageProcessResult {
   success: boolean;
@@ -253,7 +253,7 @@ export class WebSocketMessageHandler {
   }
 
   private async handleGameEndRequest(client: ActiveWebSocket): Promise<MessageProcessResult> {
-    const score = await initiateGameEndProcess({
+    const score = await initiateGameEndSequence({
       playerIdx: client.playerIdx,
       roomId: client.roomId,
     });
