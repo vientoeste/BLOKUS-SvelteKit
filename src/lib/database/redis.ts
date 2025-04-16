@@ -78,6 +78,7 @@ export type RoomCacheEntity = InferSchemaType<typeof roomCacheSchemaDef>;
 const gameEndSchemaDef = {
   gameId: { type: 'string' as const },
   refScore: { type: 'string' as const },
+  participantCount: { type: 'number' as const },
   p0_confirm: { type: 'boolean' as const },
   p1_confirm: { type: 'boolean' as const },
   p2_confirm: { type: 'boolean' as const },
