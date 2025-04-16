@@ -20,12 +20,15 @@ import type {
   OutboundSkipTurnMessage,
   InboundSkipTurnMessage,
   OutboundScoreConfirmationMessage,
+  InboundScoreConfirmationMessage,
+  OutboundGameEndMessage,
 } from "$types";
 import { parseJson } from "$lib/utils";
 import { getRoomCache, markPlayerAsExhausted, updatePlayerReadyState } from "$lib/database/room";
 import { uuidv7 } from "uuidv7";
 import { applyMove, applySkipTurn, updateStartedState } from "$lib/room";
-import { initiateGameEndSequence } from "$lib/game";
+import { confirmScore, initiateGameEndSequence } from "$lib/game";
+import { Score } from "$lib/domain/score";
 
 interface MessageProcessResult {
   success: boolean;
@@ -268,6 +271,40 @@ export class WebSocketMessageHandler {
     };
   }
 
+  private async handleScoreConfirmationMessage(client: ActiveWebSocket, message: InboundScoreConfirmationMessage): Promise<MessageProcessResult> {
+    const score = new Score(message.score);
+    const result = await confirmScore({
+      playerIdx: client.playerIdx,
+      roomId: client.roomId,
+      score,
+    });
+    if (!result.success) {
+      const badReqMessage: OutboundBadReqMessage = {
+        type: 'BAD_REQ',
+        message: result.reason ?? 'unknown error occured',
+      };
+      return {
+        success: true,
+        action: 'reply',
+        payload: badReqMessage,
+      };
+    }
+    if (result.isDone) {
+      const gameEndMessage: OutboundGameEndMessage = {
+        type: 'GAME_END',
+      };
+      return {
+        success: true,
+        action: 'broadcast',
+        payload: gameEndMessage,
+      };
+    }
+    return {
+      success: true,
+      action: 'none',
+    };
+  }
+
   async processMessage(client: ActiveWebSocket, message: InboundWebSocketMessage): Promise<MessageProcessResult> {
     switch (message.type) {
       case 'START':
@@ -290,6 +327,8 @@ export class WebSocketMessageHandler {
         return this.handleSkipTurnMessage(client, message);
       case "GAME_END_REQ":
         return this.handleGameEndRequest(client);
+      case "SCORE_CONFIRM":
+        return this.handleScoreConfirmationMessage(client, message);
       default:
         return {
           success: false,

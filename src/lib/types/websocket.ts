@@ -88,6 +88,7 @@ export interface InboundGameEndReqMessage extends WebSocketMessageBase {
 
 export interface InboundScoreConfirmationMessage extends WebSocketMessageBase {
   type: 'SCORE_CONFIRM';
+  score: 'string';
 }
 
 export interface OutboundStartMessage extends WebSocketMessageBase {
@@ -184,7 +185,8 @@ export type OutboundWebSocketMessage =
   OutboundReadyMessage | OutboundMediateMessage |
   OutboundErrorMessage | OutboundStartMessage |
   OutboundBadReqMessage | OutboundExhaustedMessage |
-  OutboundSkipTurnMessage | OutboundScoreConfirmationMessage;
+  OutboundSkipTurnMessage | OutboundScoreConfirmationMessage |
+  OutboundGameEndMessage;
 
 export type WebSocketBrokerMessage = { payload: OutboundWebSocketMessage, roomId: string };
 
