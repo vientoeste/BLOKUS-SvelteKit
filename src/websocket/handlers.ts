@@ -275,33 +275,35 @@ export class WebSocketMessageHandler {
   }
 
   private async handleExhausted(client: ActiveWebSocket, message: InboundExhaustedMessage): Promise<MessageProcessResult> {
-    await markPlayerAsExhausted({ roomId: client.roomId, slotIdx: message.slotIdx });
+    const messages: MessageAction[] = [];
+
+    const { isGameEnd } = await markPlayerAsExhausted({ roomId: client.roomId, slotIdx: message.slotIdx });
+    if (isGameEnd) {
+      const score = await initiateGameEndSequence({
+        playerIdx: client.playerIdx,
+        roomId: client.roomId,
+      });
+      const scoreValidationMessage: OutboundScoreConfirmationMessage = {
+        type: 'SCORE_CONFIRM',
+        score: score.toRecord(),
+      };
+      messages.push({
+        action: 'broadcast',
+        payload: scoreValidationMessage,
+      });
+    }
+
     const exhaustedMessage: OutboundExhaustedMessage = {
       type: 'EXHAUSTED',
       slotIdx: message.slotIdx
     };
-    return {
-      success: true,
-      actions: [{
-        action: 'broadcast',
-        payload: exhaustedMessage,
-      }],
-    };
-  }
-
-  private async handleGameEndRequest(client: ActiveWebSocket): Promise<MessageProcessResult> {
-    const score = await initiateGameEndSequence({
-      playerIdx: client.playerIdx,
-      roomId: client.roomId,
-    });
-    const scoreValidationMessage: OutboundScoreConfirmationMessage = {
-      type: 'SCORE_CONFIRM',
-      score: score.toRecord(),
-    };
-    return {
-      success: true,
+    messages.unshift({
       action: 'broadcast',
-      payload: scoreValidationMessage,
+      payload: exhaustedMessage,
+    });
+    return {
+      success: true,
+      actions: messages,
     };
   }
 
@@ -363,8 +365,6 @@ export class WebSocketMessageHandler {
         return this.handleExhausted(client, message);
       case 'SKIP_TURN':
         return this.handleSkipTurnMessage(client, message);
-      case "GAME_END_REQ":
-        return this.handleGameEndRequest(client);
       case "SCORE_CONFIRM":
         return this.handleScoreConfirmationMessage(client, message);
       default:

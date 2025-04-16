@@ -82,10 +82,6 @@ export interface InboundExhaustedMessage extends WebSocketMessageBase {
   board?: string;
 }
 
-export interface InboundGameEndReqMessage extends WebSocketMessageBase {
-  type: 'GAME_END_REQ';
-}
-
 export interface InboundScoreConfirmationMessage extends WebSocketMessageBase {
   type: 'SCORE_CONFIRM';
   score: 'string';
@@ -173,8 +169,7 @@ export type InboundWebSocketMessage =
   InboundLeaveMessage | InboundMoveMessage |
   InboundReadyMessage | InboundReportMessage |
   InboundStartMessage | InboundExhaustedMessage |
-  InboundSkipTurnMessage | InboundGameEndReqMessage |
-  InboundScoreConfirmationMessage;
+  InboundSkipTurnMessage | InboundScoreConfirmationMessage;
 
 /**
  * server -> clients

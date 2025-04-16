@@ -272,19 +272,25 @@ export const markPlayerAsExhausted = async ({ roomId, slotIdx }: { roomId: RoomI
   }[slotIdx];
   const {
     p0_exhausted,
+    p1_id,
     p1_exhausted,
+    p2_id,
     p2_exhausted,
+    p3_id,
     p3_exhausted,
   } = await roomCacheRepository.save(roomId, {
     ...room,
     ...exhaustedSlot,
   });
-  return [
-    p0_exhausted === true ? 0 : false,
-    p1_exhausted === true ? 1 : false,
-    p2_exhausted === true ? 2 : false,
-    p3_exhausted === true ? 3 : false,
-  ].filter(e => typeof e === 'number') as SlotIdx[];
+  if (
+    p0_exhausted &&
+    (p1_id === undefined || p1_exhausted) &&
+    (p2_id === undefined || p2_exhausted) &&
+    (p3_id === undefined || p3_exhausted)
+  ) {
+    return { isGameEnd: true };
+  }
+  return { isGameEnd: false };
 };
 
 export const updateRoomCacheStartedState = async ({ roomId, isStarted, gameId }: { roomId: RoomId, isStarted: boolean, gameId: RoomId }) => {
