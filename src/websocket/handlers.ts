@@ -30,10 +30,14 @@ import { applyMove, applySkipTurn, updateStartedState } from "$lib/room";
 import { confirmScore, initiateGameEndSequence } from "$lib/game";
 import { Score } from "$lib/domain/score";
 
+interface MessageAction {
+  action: 'broadcast' | 'reply';
+  payload: OutboundWebSocketMessage;
+}
+
 interface MessageProcessResult {
   success: boolean;
-  action: 'broadcast' | 'reply' | 'none';
-  payload?: OutboundWebSocketMessage;
+  actions: MessageAction[];
 }
 
 export class WebSocketMessageHandler {
@@ -51,8 +55,10 @@ export class WebSocketMessageHandler {
       };
       return {
         success: true,
-        action: 'reply',
-        payload: message,
+        actions: [{
+          action: 'reply',
+          payload: message,
+        }],
       };
     }
     const connectedMessage: OutboundConnectedMessage = {
@@ -63,8 +69,10 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      action: 'broadcast',
-      payload: connectedMessage,
+      actions: [{
+        action: 'broadcast',
+        payload: connectedMessage,
+      }]
     };
   }
 
@@ -75,8 +83,10 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      action: 'broadcast',
-      payload: leaveMessage,
+      actions: [{
+        action: 'broadcast',
+        payload: leaveMessage,
+      }],
     };
   }
 
@@ -89,8 +99,10 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      action: 'broadcast',
-      payload: readyMessage,
+      actions: [{
+        action: 'broadcast',
+        payload: readyMessage,
+      }],
     };
   }
 
@@ -103,8 +115,10 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      action: 'broadcast',
-      payload: cancelReadyMessage,
+      actions: [{
+        action: 'broadcast',
+        payload: cancelReadyMessage,
+      }],
     };
   }
 
@@ -127,8 +141,10 @@ export class WebSocketMessageHandler {
       };
       return {
         success: true,
-        action: 'reply',
-        payload: badReqMessage,
+        actions: [{
+          action: 'reply',
+          payload: badReqMessage,
+        }],
       };
     }
     // [TODO] checksum - lastMove
@@ -142,8 +158,10 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      action: 'broadcast',
-      payload: moveMessage,
+      actions: [{
+        action: 'broadcast',
+        payload: moveMessage,
+      }],
     };
   }
 
@@ -156,8 +174,10 @@ export class WebSocketMessageHandler {
       };
       return {
         success: true,
-        action: 'reply',
-        payload: badReqMessage,
+        actions: [{
+          action: 'reply',
+          payload: badReqMessage,
+        }],
       };
     }
     const result = await applySkipTurn({
@@ -174,8 +194,10 @@ export class WebSocketMessageHandler {
       };
       return {
         success: true,
-        action: 'reply',
-        payload: badReqMessage,
+        actions: [{
+          action: 'reply',
+          payload: badReqMessage,
+        }],
       };
     }
     const skipTurnMessage = {
@@ -188,8 +210,10 @@ export class WebSocketMessageHandler {
     } as OutboundSkipTurnMessage;
     return {
       success: true,
-      action: 'broadcast',
-      payload: skipTurnMessage,
+      actions: [{
+        action: 'broadcast',
+        payload: skipTurnMessage,
+      }],
     };
   }
 
@@ -197,8 +221,10 @@ export class WebSocketMessageHandler {
     if (client.playerIdx !== 0) {
       return {
         success: true,
-        action: 'reply',
-        payload: { type: 'BAD_REQ', message: 'unauthorized' },
+        actions: [{
+          action: 'reply',
+          payload: { type: 'BAD_REQ', message: 'unauthorized' },
+        }],
       };
     }
 
@@ -206,8 +232,10 @@ export class WebSocketMessageHandler {
     if (roomCache.started) {
       return {
         success: true,
-        action: 'reply',
-        payload: { type: 'BAD_REQ', message: 'game already started' },
+        actions: [{
+          action: 'reply',
+          payload: { type: 'BAD_REQ', message: 'game already started' },
+        }],
       };
     }
     // [TODO] consider the case that number of user is lower than 4
@@ -218,8 +246,10 @@ export class WebSocketMessageHandler {
     if (!isReadied) {
       return {
         success: true,
-        action: 'reply',
-        payload: { type: 'BAD_REQ', message: 'not readied' },
+        actions: [{
+          action: 'reply',
+          payload: { type: 'BAD_REQ', message: 'not readied' },
+        }],
       };
     }
 
@@ -232,8 +262,10 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      action: 'broadcast',
-      payload: startMessage,
+      actions: [{
+        action: 'broadcast',
+        payload: startMessage,
+      }],
     };
   }
 
@@ -250,8 +282,10 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      action: 'broadcast',
-      payload: exhaustedMessage,
+      actions: [{
+        action: 'broadcast',
+        payload: exhaustedMessage,
+      }],
     };
   }
 
@@ -285,8 +319,10 @@ export class WebSocketMessageHandler {
       };
       return {
         success: true,
-        action: 'reply',
-        payload: badReqMessage,
+        actions: [{
+          action: 'reply',
+          payload: badReqMessage,
+        }],
       };
     }
     if (result.isDone) {
@@ -295,13 +331,15 @@ export class WebSocketMessageHandler {
       };
       return {
         success: true,
-        action: 'broadcast',
-        payload: gameEndMessage,
+        actions: [{
+          action: 'broadcast',
+          payload: gameEndMessage,
+        }],
       };
     }
     return {
       success: true,
-      action: 'none',
+      actions: [],
     };
   }
 
@@ -332,8 +370,10 @@ export class WebSocketMessageHandler {
       default:
         return {
           success: false,
-          action: 'reply',
-          payload: { type: 'BAD_REQ', message: 'not supported message type' },
+          actions: [{
+            action: 'reply',
+            payload: { type: 'BAD_REQ', message: 'not supported message type' },
+          }],
         };
     }
   }
@@ -461,14 +501,18 @@ export class WebSocketConnectionOrchestrator {
       // const traceId = uuidv7();
       // [TODO] log
       const result = await this.messageHandler.processMessage(client, message);
-      if (result.action === 'reply' && result.payload !== undefined) {
-        client.send(JSON.stringify(result.payload));
-        return;
-      }
-      if (result.action === 'broadcast' && result.payload !== undefined) {
-        this.messageBroker.publishMessage({ message: result.payload, roomId: client.roomId });
-      }
-      return;
+      result.actions.forEach((messageAction) => {
+        switch (messageAction.action) {
+          case "broadcast":
+            this.messageBroker.publishMessage({ message: messageAction.payload, roomId: client.roomId });
+            break;
+          case "reply":
+            client.send(JSON.stringify(messageAction.payload));
+            break;
+          default:
+            throw new Error(`unknown action detected: ${messageAction.action}`);
+        }
+      });
     } catch (e) {
       // [TODO] log
     }
