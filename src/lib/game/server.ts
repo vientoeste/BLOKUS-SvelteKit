@@ -21,6 +21,6 @@ export const generateGameSummary = async (gameId: GameId): Promise<Score> => {
   return Score.fromBoard(board);
 };
 
-export const compareScores = async (score1: Score, score2: Score) => {
+export const compareScores = (score1: Score, score2: Score) => {
   return score1.toString() === score2.toString();
 };
