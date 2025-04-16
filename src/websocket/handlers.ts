@@ -29,8 +29,8 @@ import { initiateGameEndSequence } from "$lib/game";
 
 interface MessageProcessResult {
   success: boolean;
-  shouldBroadcast: boolean;
-  payload: OutboundWebSocketMessage;
+  action: 'broadcast' | 'reply' | 'none';
+  payload?: OutboundWebSocketMessage;
 }
 
 export class WebSocketMessageHandler {
@@ -48,7 +48,7 @@ export class WebSocketMessageHandler {
       };
       return {
         success: true,
-        shouldBroadcast: false,
+        action: 'reply',
         payload: message,
       };
     }
@@ -60,7 +60,7 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      shouldBroadcast: true,
+      action: 'broadcast',
       payload: connectedMessage,
     };
   }
@@ -72,7 +72,7 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      shouldBroadcast: true,
+      action: 'broadcast',
       payload: leaveMessage,
     };
   }
@@ -86,7 +86,7 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      shouldBroadcast: true,
+      action: 'broadcast',
       payload: readyMessage,
     };
   }
@@ -100,7 +100,7 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      shouldBroadcast: true,
+      action: 'broadcast',
       payload: cancelReadyMessage,
     };
   }
@@ -124,7 +124,7 @@ export class WebSocketMessageHandler {
       };
       return {
         success: true,
-        shouldBroadcast: false,
+        action: 'reply',
         payload: badReqMessage,
       };
     }
@@ -139,12 +139,12 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      shouldBroadcast: true,
+      action: 'broadcast',
       payload: moveMessage,
     };
   }
 
-  private async handleSkipTurnMessage(client: ActiveWebSocket, message: InboundSkipTurnMessage) {
+  private async handleSkipTurnMessage(client: ActiveWebSocket, message: InboundSkipTurnMessage): Promise<MessageProcessResult> {
     const { exhausted, slotIdx, timeout, turn } = message;
     if (exhausted === timeout) {
       const badReqMessage: OutboundBadReqMessage = {
@@ -153,7 +153,7 @@ export class WebSocketMessageHandler {
       };
       return {
         success: true,
-        shouldBroadcast: false,
+        action: 'reply',
         payload: badReqMessage,
       };
     }
@@ -171,7 +171,7 @@ export class WebSocketMessageHandler {
       };
       return {
         success: true,
-        shouldBroadcast: false,
+        action: 'reply',
         payload: badReqMessage,
       };
     }
@@ -185,7 +185,7 @@ export class WebSocketMessageHandler {
     } as OutboundSkipTurnMessage;
     return {
       success: true,
-      shouldBroadcast: true,
+      action: 'broadcast',
       payload: skipTurnMessage,
     };
   }
@@ -194,7 +194,7 @@ export class WebSocketMessageHandler {
     if (client.playerIdx !== 0) {
       return {
         success: true,
-        shouldBroadcast: false,
+        action: 'reply',
         payload: { type: 'BAD_REQ', message: 'unauthorized' },
       };
     }
@@ -203,7 +203,7 @@ export class WebSocketMessageHandler {
     if (roomCache.started) {
       return {
         success: true,
-        shouldBroadcast: false,
+        action: 'reply',
         payload: { type: 'BAD_REQ', message: 'game already started' },
       };
     }
@@ -215,7 +215,7 @@ export class WebSocketMessageHandler {
     if (!isReadied) {
       return {
         success: true,
-        shouldBroadcast: false,
+        action: 'reply',
         payload: { type: 'BAD_REQ', message: 'not readied' },
       };
     }
@@ -229,7 +229,7 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      shouldBroadcast: true,
+      action: 'broadcast',
       payload: startMessage,
     };
   }
@@ -247,7 +247,7 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      shouldBroadcast: true,
+      action: 'broadcast',
       payload: exhaustedMessage,
     };
   }
@@ -263,7 +263,7 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      shouldBroadcast: true,
+      action: 'broadcast',
       payload: scoreValidationMessage,
     };
   }
@@ -293,7 +293,7 @@ export class WebSocketMessageHandler {
       default:
         return {
           success: false,
-          shouldBroadcast: false,
+          action: 'reply',
           payload: { type: 'BAD_REQ', message: 'not supported message type' },
         };
     }
@@ -422,11 +422,13 @@ export class WebSocketConnectionOrchestrator {
       // const traceId = uuidv7();
       // [TODO] log
       const result = await this.messageHandler.processMessage(client, message);
-      if (!result.shouldBroadcast) {
+      if (result.action === 'reply' && result.payload !== undefined) {
         client.send(JSON.stringify(result.payload));
         return;
       }
-      this.messageBroker.publishMessage({ message: result.payload, roomId: client.roomId });
+      if (result.action === 'broadcast' && result.payload !== undefined) {
+        this.messageBroker.publishMessage({ message: result.payload, roomId: client.roomId });
+      }
       return;
     } catch (e) {
       // [TODO] log
