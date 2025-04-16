@@ -129,7 +129,10 @@ export const insertRoomCache = async (
     p0_id: user.id,
     p0_username: user.username,
     p0_ready: false,
-    p0_exhausted: false,
+    slot0_exhausted: false,
+    slot1_exhausted: false,
+    slot2_exhausted: false,
+    slot3_exhausted: false,
   });
   if (result.name === undefined) {
     throw new Error('insert room cache failed');
@@ -142,17 +145,27 @@ export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
     throw new CustomError('room cache not found', 404);
   }
 
-  const { name, turn, lastMove, started, gameId, p0_exhausted, p0_id, p0_ready, p0_username, p1_exhausted, p1_id, p1_ready, p1_username, p2_exhausted, p2_id, p2_ready, p2_username, p3_exhausted, p3_id, p3_ready, p3_username } = room;
-  if (!name || started === undefined || turn === undefined || p0_id === undefined || p0_ready === undefined || p0_username === undefined || p0_exhausted === undefined) {
+  const {
+    name, turn, started, gameId,
+    slot0_exhausted, slot1_exhausted, slot2_exhausted, slot3_exhausted,
+    p0_id, p0_ready, p0_username,
+    p1_id, p1_ready, p1_username,
+    p2_id, p2_ready, p2_username,
+    p3_id, p3_ready, p3_username,
+  } = room;
+  if (
+    !name || started === undefined || turn === undefined || p0_id === undefined || p0_ready === undefined || p0_username === undefined
+    || slot0_exhausted === undefined || slot1_exhausted === undefined || slot2_exhausted === undefined || slot3_exhausted === undefined
+  ) {
     throw new Error('invalid room cache type');
   }
-  if (p1_id !== undefined && (p1_ready === undefined || p1_username === undefined || p1_exhausted === undefined)) {
+  if (p1_id !== undefined && (p1_ready === undefined || p1_username === undefined)) {
     throw new Error('invalid p1 info at room cache')
   }
-  if (p2_id !== undefined && (p2_ready === undefined || p2_username === undefined || p2_exhausted === undefined)) {
+  if (p2_id !== undefined && (p2_ready === undefined || p2_username === undefined)) {
     throw new Error('invalid p2 info at room cache')
   }
-  if (p3_id !== undefined && (p3_ready === undefined || p3_username === undefined || p3_exhausted === undefined)) {
+  if (p3_id !== undefined && (p3_ready === undefined || p3_username === undefined)) {
     throw new Error('invalid p3 info at room cache')
   }
 
@@ -164,29 +177,26 @@ export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
     lastMove: '',
     turn,
     started,
+    exhausted: [slot0_exhausted, slot1_exhausted, slot2_exhausted, slot3_exhausted],
     p0: {
       id: p0_id,
       ready: p0_ready,
       username: p0_username,
-      exhausted: p0_exhausted,
     },
     p1: p1_id !== undefined ? {
       id: p1_id,
       ready: p1_ready as boolean,
       username: p1_username as string,
-      exhausted: p1_exhausted as boolean,
     } : undefined,
     p2: p2_id !== undefined ? {
       id: p2_id,
       ready: p2_ready as boolean,
       username: p2_username as string,
-      exhausted: p2_exhausted as boolean,
     } : undefined,
     p3: p3_id !== undefined ? {
       id: p3_id,
       ready: p3_ready as boolean,
       username: p3_username as string,
-      exhausted: p3_exhausted as boolean,
     } : undefined,
   };
 };
@@ -214,7 +224,6 @@ export const addUserToRoomCache = async ({ roomId, userInfo: { id, username } }:
       p1_id: id,
       p1_username: username,
       p1_ready: false,
-      p1_exhausted: false,
     });
     return 1;
   }
@@ -224,7 +233,6 @@ export const addUserToRoomCache = async ({ roomId, userInfo: { id, username } }:
       p2_id: id,
       p2_username: username,
       p2_ready: false,
-      p2_exhausted: false,
     });
     return 2;
   }
@@ -234,7 +242,6 @@ export const addUserToRoomCache = async ({ roomId, userInfo: { id, username } }:
       p3_id: id,
       p3_username: username,
       p3_ready: false,
-      p3_exhausted: false,
     });
     return 3;
   }
@@ -259,35 +266,27 @@ export const updatePlayerReadyState = async ({ roomId, playerIdx, ready }: { roo
 export const markPlayerAsExhausted = async ({ roomId, slotIdx }: { roomId: RoomId, slotIdx: SlotIdx }) => {
   const room = await roomCacheRepository.fetch(roomId);
   const {
-    p0_exhausted: p0_exhausted_,
-    p1_exhausted: p1_exhausted_,
-    p2_exhausted: p2_exhausted_,
-    p3_exhausted: p3_exhausted_,
+    slot0_exhausted: slot0_exhausted_,
+    slot1_exhausted: slot1_exhausted_,
+    slot2_exhausted: slot2_exhausted_,
+    slot3_exhausted: slot3_exhausted_,
   } = room;
   const exhaustedSlot = {
-    0: { p0_exhausted: true, p1_exhausted: p1_exhausted_, p2_exhausted: p2_exhausted_, p3_exhausted: p3_exhausted_ },
-    1: { p1_exhausted: true, p0_exhausted: p0_exhausted_, p2_exhausted: p2_exhausted_, p3_exhausted: p3_exhausted_ },
-    2: { p2_exhausted: true, p0_exhausted: p0_exhausted_, p1_exhausted: p1_exhausted_, p3_exhausted: p3_exhausted_ },
-    3: { p3_exhausted: true, p0_exhausted: p0_exhausted_, p1_exhausted: p1_exhausted_, p2_exhausted: p2_exhausted_ },
+    0: { slot0_exhausted: true, slot1_exhausted: slot1_exhausted_, slot2_exhausted: slot2_exhausted_, slot3_exhausted: slot3_exhausted_ },
+    1: { slot1_exhausted: true, slot0_exhausted: slot0_exhausted_, slot2_exhausted: slot2_exhausted_, slot3_exhausted: slot3_exhausted_ },
+    2: { slot2_exhausted: true, slot0_exhausted: slot0_exhausted_, slot1_exhausted: slot1_exhausted_, slot3_exhausted: slot3_exhausted_ },
+    3: { slot3_exhausted: true, slot0_exhausted: slot0_exhausted_, slot1_exhausted: slot1_exhausted_, slot2_exhausted: slot2_exhausted_ },
   }[slotIdx];
   const {
-    p0_exhausted,
-    p1_id,
-    p1_exhausted,
-    p2_id,
-    p2_exhausted,
-    p3_id,
-    p3_exhausted,
+    slot0_exhausted,
+    slot1_exhausted,
+    slot2_exhausted,
+    slot3_exhausted,
   } = await roomCacheRepository.save(roomId, {
     ...room,
     ...exhaustedSlot,
   });
-  if (
-    p0_exhausted &&
-    (p1_id === undefined || p1_exhausted) &&
-    (p2_id === undefined || p2_exhausted) &&
-    (p3_id === undefined || p3_exhausted)
-  ) {
+  if (slot0_exhausted && slot1_exhausted && slot2_exhausted && slot3_exhausted) {
     return { isGameEnd: true };
   }
   return { isGameEnd: false };
