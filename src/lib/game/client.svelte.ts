@@ -117,6 +117,9 @@ export class GameManager_Legacy {
       case "SCORE_CONFIRM":
         this.handleScoreConfirmationMessage();
         break;
+      case "GAME_END":
+        this.handleGameEnd();
+        break;
       default:
         modalStore.open(Alert, {
           title: "received unknown message",
@@ -205,6 +208,10 @@ export class GameManager_Legacy {
       score: score.toString(),
     };
     this.messageDispatcher.dispatch(scoreConfirmMessage);
+  }
+
+  handleGameEnd() {
+    // init game state & wait for next game
   }
 
   handleError(message: OutboundErrorMessage) {
