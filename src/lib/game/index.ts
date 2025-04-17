@@ -34,7 +34,7 @@ export const confirmScore = async ({ roomId, score, playerIdx }: { roomId: RoomI
   }
 
   sequenceCache[`p${playerIdx}_confirm`] = true;
-  const { p0_confirm, p1_confirm, p2_confirm, p3_confirm, participantCount } = await gameEndSequenceRepository.save(sequenceCache);
+  const { p0_confirm, p1_confirm, p2_confirm, p3_confirm, participantCount } = await gameEndSequenceRepository.save(roomId, sequenceCache);
   return {
     success: true,
     isDone: [p0_confirm, p1_confirm, p2_confirm, p3_confirm]
