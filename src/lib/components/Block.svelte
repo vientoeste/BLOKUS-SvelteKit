@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { gameStore } from "../../Store";
-
   const { block, slotIdx } = $props();
 </script>
 

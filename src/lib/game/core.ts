@@ -141,10 +141,7 @@ export const isWithinBoardBounds = ({ block, position }: PlaceBlockDTO) => {
   );
 };
 
-export const isFirstMoveValid = ({ block, slotIdx, turn, position }: PlaceBlockDTO) => {
-  if (turn > 3) {
-    return true;
-  }
+export const isFirstMoveValid = ({ block, slotIdx, position }: PlaceBlockDTO) => {
   const [row, col] = position;
 
   const blockHeight = block.length;
@@ -240,16 +237,37 @@ export const hasOverlap = ({ block, board, position }: PlaceBlockDTO) => {
   );
 };
 
+export const hasPlayerMadeFirstMove = ({
+  board, slotIdx,
+}: PlaceBlockDTO) => {
+  const cornerPosition = {
+    0: [0, 0],
+    1: [0, 19],
+    2: [19, 19],
+    3: [19, 0],
+  }[slotIdx];
+  const cornerCell = board[cornerPosition[0]][cornerPosition[1]];
+  return cornerCell === slotIdx;
+};
+
 export const isBlockPlaceableAt = ({ block, position, board, slotIdx, turn }: PlaceBlockDTO): { result: boolean, reason?: string } => {
   if (!isWithinBoardBounds({ block, position, board, slotIdx, turn })) {
     return { result: false, reason: 'bound' };
   }
 
-  if (!isFirstMoveValid({ block, position, board, slotIdx, turn })) {
+  // [TODO] test must be updated
+  const isFirstMoveMade = hasPlayerMadeFirstMove({ block, board, position, slotIdx, turn });
+  if (
+    !isFirstMoveMade
+    && !isFirstMoveValid({ block, position, board, slotIdx, turn })
+  ) {
     return { result: false, reason: 'invalid first move' };
   }
 
-  if (turn > 3 && !hasDiagonalConnection({ block, position, board, slotIdx, turn })) {
+  if (
+    isFirstMoveMade
+    && !hasDiagonalConnection({ block, position, board, slotIdx, turn })
+  ) {
     return { result: false, reason: 'no connection' };
   }
 

@@ -7,7 +7,7 @@
     validateUserId,
     validateUsername,
   } from "$lib/utils";
-  import { modalStore } from "../../Store";
+  import { modalStore } from "$lib/store";
 
   const submitSignUp = async (event: Event) => {
     event.preventDefault();

@@ -1,6 +1,7 @@
 import type { PlayerId } from '.';
 
 export type RoomId = string;
+export type GameId = string;
 
 export interface RoomPrimitiveInf {
   id: RoomId;
@@ -46,6 +47,7 @@ export interface RoomCacheInf {
   turn: number;
   lastMove: string;
   started: boolean;
+  exhausted: boolean[];
   p0: { id: string, username: string, ready: boolean },
   p1?: { id: string, username: string, ready: boolean },
   p2?: { id: string, username: string, ready: boolean },

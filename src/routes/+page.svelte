@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { getUserInfoFromLocalStorage, parseJson } from "$lib/utils";
-  import { userStore } from "../Store";
+  import { getUserInfoFromLocalStorage } from "$lib/utils";
+  import { userStore } from "$lib/store";
 
   onMount(() => {
     const user = getUserInfoFromLocalStorage(localStorage);

@@ -22,32 +22,49 @@ export type MoveBase = {
 
 export type InsertTimeoutMoveDto = MoveBase & {
   timeout: true;
+  exhausted: false;
 }
 
-export type InsertNonTimeoutMoveDto = MoveBase & {
+export type InsertRegularMoveDto = MoveBase & {
   blockInfo: Block;
   position: [number, number];
+}
+
+export type InsertExhaustedMoveDto = MoveBase & {
   timeout: false;
+  exhausted: true;
 }
 
 export type MoveDocumentInf = MoveBase & {
   _id: string;
 } & ({
   timeout: true;
+  exhausted: false;
+} | {
+  timeout: false;
+  exhausted: true;
 } | {
   blockInfo: string;
   position: [number, number];
   timeout: false;
+  exhausted: false;
 });
 
-export type Move = TimeoutMove | NonTimeoutMove;
+export type Move = RegularMove | TimeoutMove | ExhaustedMove;
 
 export type TimeoutMove = MoveBase & {
   timeout: true;
+  exhausted: false;
 }
 
-export type NonTimeoutMove = MoveBase & {
+export type RegularMove = MoveBase & {
   blockInfo: Block;
   position: [number, number];
+  timeout: false;
+  exhausted: false;
+}
+
+export type ExhaustedMove = MoveBase & {
+  exhausted: true;
   timeout: false;
 }

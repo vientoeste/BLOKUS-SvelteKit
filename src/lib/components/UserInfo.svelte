@@ -1,6 +1,6 @@
 <script lang="ts">
   import { clearLocalStorageAuthStatus } from "$lib/utils";
-  import { modalStore, userStore } from "../../Store";
+  import { modalStore, userStore } from "$lib/store";
   import Alert from "./Alert.svelte";
 
   const submitSignOut = async (event: Event) => {

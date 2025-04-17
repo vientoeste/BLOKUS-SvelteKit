@@ -1,12 +1,11 @@
 <script lang="ts">
   import { getBlockMatrix } from "$lib/game/core";
-  import type { BlockMatrix, BlockType, SlotIdx } from "$types";
-  import { parseJson } from "$lib/utils";
+  import type { BlockMatrix, SlotIdx } from "$types";
   import {
     dragPositionOffsetStore,
     movePreviewStore,
     moveStore,
-  } from "../../Store";
+  } from "$lib/store";
   import html2canvas from "html2canvas";
 
   const { board, relayMove } = $props();
@@ -100,7 +99,7 @@
       const capturedImage = await capturePartialBoard(
         getBlockMatrix({ type, rotation, flip }),
         position as [number, number],
-        slotIdx as SlotIdx,
+        slotIdx,
       );
       $movePreviewStore = capturedImage;
       relayMove({
@@ -135,11 +134,11 @@
     partialBoard.style.display = "flex";
     partialBoard.style.flexDirection = "column";
 
-    for (let i = startRow; i <= endRow; i++) {
+    for (let i = startRow; i <= endRow; i += 1) {
       const row = document.createElement("div");
       row.style.display = "flex";
 
-      for (let j = startCol; j <= endCol; j++) {
+      for (let j = startCol; j <= endCol; j += 1) {
         const originalCell = boardElement.children[i].children[j].cloneNode(
           true,
         ) as HTMLElement;

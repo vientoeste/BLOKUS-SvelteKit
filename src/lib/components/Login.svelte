@@ -7,7 +7,7 @@
     validateUserId,
   } from "$lib/utils";
   import { writable } from "svelte/store";
-  import { modalStore, userStore } from "../../Store";
+  import { modalStore, userStore } from "$lib/store";
   import Alert from "./Alert.svelte";
   import SignUp from "./SignUp.svelte";
   import { onMount } from "svelte";

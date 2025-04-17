@@ -2,7 +2,7 @@
   import { goto } from "$app/navigation";
   import type { ApiResponse, RoomPreviewInf } from "$types";
   import { clearLocalStorageAuthStatus, parseJson } from "$lib/utils";
-  import { modalStore } from "../../Store";
+  import { modalStore } from "$lib/store";
   import Alert from "./Alert.svelte";
   interface $$Props extends RoomPreviewInf {}
 

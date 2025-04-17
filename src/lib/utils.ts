@@ -1,6 +1,7 @@
-import type { ApiResponse, Block, BlockType, PlayerIdx, RoomCacheInf, Rotation } from "$types";
+import type { ApiResponse, Block, BlockType, BoardMatrix, PlayerIdx, RoomCacheInf, Rotation, SlotIdx } from "$types";
 import { json } from "@sveltejs/kit";
 import { CustomError } from "./error";
+import type { RoomCacheEntity } from "./database/redis";
 
 export type Undefinedable<T> = {
   [K in keyof T]: T[K] | undefined;
@@ -190,7 +191,8 @@ export const handleApiError = (e: unknown): Response => {
   return json(response, { status: response.status });
 };
 
-export const extractPlayerCountFromCache = (roomCache: RoomCacheInf) => 1 + (+(roomCache.p1 !== undefined)) + (+(roomCache.p2 !== undefined)) + (+(roomCache.p3 !== undefined));
+export const extractPlayerCountFromCache_LEGACY = (roomCache: RoomCacheInf) => 1 + (+(roomCache.p1 !== undefined)) + (+(roomCache.p2 !== undefined)) + (+(roomCache.p3 !== undefined));
+export const extractPlayerCountFromCache = (roomCache: RoomCacheEntity) => 1 + (+(roomCache.p1_id !== undefined)) + (+(roomCache.p2_id !== undefined)) + (+(roomCache.p3_id !== undefined));
 
 export const isRightTurn = ({ turn, playerIdx, activePlayerCount }: { turn: number, playerIdx: PlayerIdx, activePlayerCount: number }) => ({
   2: turn % 2 === playerIdx,
@@ -202,12 +204,12 @@ export const isRightTurn = ({ turn, playerIdx, activePlayerCount }: { turn: numb
 export const getPlayersSlot = ({
   players, playerIdx
 }: {
-  players: ({ id: string; username: string; } | undefined)[], playerIdx: PlayerIdx
-}) => (({
+  players: ({ id: string; username: string; } | undefined)[], playerIdx: PlayerIdx,
+}): SlotIdx[] => (({
   2: playerIdx === 0 ? [0, 2] : [1, 3],
   3: [playerIdx, players.findIndex(e => e === undefined)],
   4: [playerIdx]
-}[players.filter(e => e !== undefined).length]) as number[]);
+}[players.filter(e => e !== undefined).length]) as SlotIdx[]);
 
 export const convertBlockToStr = ({ flip, rotation, type }: Block): string => `t${type}r${rotation}${flip ? 'f' : ''}`;
 
@@ -216,4 +218,44 @@ export const convertBlockToObj = (blockInfo: string): Block => {
   const rotation = parseInt(blockInfo[blockInfo.indexOf('r') + 1]) as Rotation;
   const flip = blockInfo.indexOf('f') !== -1;
   return { flip, rotation, type };
+};
+
+export const convertBoardToStr = (board: BoardMatrix) =>
+  board.map((boardLine) =>
+    boardLine.map((cell) => cell === false ? 4 : cell).join(''))
+    .join('');
+
+export const convertBoardToArr = (board: string): BoardMatrix =>
+  Array.from({ length: 20 }, (_, i) =>
+    board.slice(i * 20, i * 20 + 20).split('').map(cell => (cell === '4' ? false : parseInt(cell)))
+  );
+
+export const compressMove = ({
+  playerIdx,
+  type,
+  position,
+  rotation,
+  flip,
+}: {
+  playerIdx: PlayerIdx,
+  type: BlockType,
+  position: [number, number],
+  rotation: Rotation,
+  flip: boolean,
+}) =>
+  `${playerIdx}:${type}[${position[0]},${position[1]}]r${rotation}${flip ? 'f' : ''}`;
+
+export const decompressMove = (compressedMove: string) => {
+  const [playerIdx, ...rest1] = compressedMove.split(':');
+  const [type, ...rest2] = rest1[0].split('[');
+  const [position0, ...rest3] = rest2[0].split(',');
+  const [position1, ...rest4] = rest3[0].split(']');
+  const [, rotation, ...flip] = rest4[0].split('');
+  return {
+    playerIdx: parseInt(playerIdx) as PlayerIdx,
+    type: type as BlockType,
+    position: [parseInt(position0), parseInt(position1)],
+    rotation: parseInt(rotation) % 4 as Rotation,
+    flip: flip.length !== 0,
+  };
 };

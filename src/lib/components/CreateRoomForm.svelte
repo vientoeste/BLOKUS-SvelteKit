@@ -2,7 +2,7 @@
   import { goto } from "$app/navigation";
   import type { ApiResponse, CreateRoomResponse } from "$types";
   import { isFormDataFieldsValid, parseJson } from "$lib/utils";
-  import { modalStore } from "../../Store";
+  import { modalStore } from "$lib/store";
   import Alert from "./Alert.svelte";
 
   const submitCreateRoom = async (e: Event) => {

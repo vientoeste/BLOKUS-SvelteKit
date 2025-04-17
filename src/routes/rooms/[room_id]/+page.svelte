@@ -5,12 +5,15 @@
   import Board from "$lib/components/Board.svelte";
   import Controller from "$lib/components/Controller.svelte";
   import Players from "$lib/components/Players.svelte";
-  import { GameManager_Legacy } from "$lib/game/client.svelte";
+  import {
+    BlockPlacementValidator,
+    GameManager_Legacy,
+  } from "$lib/game/client.svelte";
   import {
     WebSocketMessageDispatcher,
     WebSocketMessageReceiver,
   } from "$lib/websocket/client";
-  import { gameStore, modalStore } from "../../../Store";
+  import { blockStore, gameStore, modalStore } from "$lib/store";
   import type {
     BoardMatrix,
     ParticipantInf,
@@ -34,9 +37,11 @@
     return newArr.fill(false);
   });
 
+  let worker: Worker | null = null;
   let gameManager: GameManager_Legacy | null = $state(null);
   let messageReceiver: WebSocketMessageReceiver;
   let messageDispatcher: WebSocketMessageDispatcher;
+  let blockPlacementValidator: BlockPlacementValidator;
   let playerStateManager: PlayerStateManager;
   let eventBus = new EventBus();
 
@@ -44,13 +49,13 @@
 
   onDestroy(() => {
     gameStore.set({
-      availableBlocksBySlots: [],
       isStarted: false,
       mySlots: [],
       playerIdx: 0,
       players: [],
       turn: -1,
     });
+    blockStore.set([]);
     socket?.close();
   });
 
@@ -88,9 +93,14 @@
         resolve();
       });
     });
+    const workerModule = await import(
+      "$lib/workers/checkBlockPlaceability.worker?worker"
+    );
+    worker = new workerModule.default();
 
     messageReceiver = new WebSocketMessageReceiver(socket);
     messageDispatcher = new WebSocketMessageDispatcher(socket);
+    blockPlacementValidator = new BlockPlacementValidator(worker);
     players = [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3];
     playerStateManager = new PlayerStateManager({
       players,
@@ -104,6 +114,7 @@
       messageReceiver,
       messageDispatcher,
       playerStateManager,
+      blockPlacementValidator,
     });
 
     if (roomCache.started) {
@@ -113,6 +124,10 @@
       });
       gameManager?.restoreGameState(moves);
     }
+  });
+
+  onDestroy(() => {
+    worker?.terminate();
   });
 </script>
 

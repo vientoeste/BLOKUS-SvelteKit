@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { modalStore } from "../../Store";
+  import { modalStore } from "$lib/store";
 
   let { showModal = $bindable() } = $props();
 

@@ -16,11 +16,20 @@ export interface DispatchReadyMessageDto { }
 
 export interface DispatchCancelReadyMessageDto { }
 
-export type DispatchNonTimeoutMoveMessageDto = MoveDTO;
+export type DispatchMoveMessageDto = MoveDTO;
 
 export type DispatchTimeoutMoveMessageDto = {
   turn: number;
   slotIdx: SlotIdx;
+  exhausted: false;
+  timeout: true;
+}
+
+export type DispatchExhaustedMoveMessageDto = {
+  turn: number;
+  slotIdx: SlotIdx;
+  exhausted: true;
+  timeout: false;
 }
 
 export type DispatchMediateMessageDto = {
@@ -52,9 +61,11 @@ export interface InboundCancelReadyMessage extends WebSocketMessageBase, Dispatc
   type: 'CANCEL_READY';
 }
 
-export type InboundMoveMessage = WebSocketMessageBase & { type: 'MOVE' } & (
-  (DispatchNonTimeoutMoveMessageDto & { timeout: false })
-  | (DispatchTimeoutMoveMessageDto & { timeout: true })
+export type InboundMoveMessage = WebSocketMessageBase & { type: 'MOVE' } & DispatchMoveMessageDto;
+
+export type InboundSkipTurnMessage = WebSocketMessageBase & { type: 'SKIP_TURN', turn: number, slotIdx: SlotIdx } & (
+  { timeout: true, exhausted: false } |
+  { exhausted: true, timeout: false }
 );
 
 export interface InboundReportMessage extends WebSocketMessageBase, DispatchReportMessageDto {
@@ -63,6 +74,17 @@ export interface InboundReportMessage extends WebSocketMessageBase, DispatchRepo
 
 export interface InboundStartMessage extends WebSocketMessageBase, DispatchStartMessageDto {
   type: 'START';
+}
+
+export interface InboundExhaustedMessage extends WebSocketMessageBase {
+  type: 'EXHAUSTED';
+  slotIdx: SlotIdx;
+  board?: string;
+}
+
+export interface InboundScoreConfirmationMessage extends WebSocketMessageBase {
+  type: 'SCORE_CONFIRM';
+  score: string;
 }
 
 export interface OutboundStartMessage extends WebSocketMessageBase {
@@ -92,8 +114,17 @@ export interface OutboundCancelReadyMessage extends WebSocketMessageBase {
   playerIdx: PlayerIdx;
 }
 
-export type OutboundMoveMessage = WebSocketMessageBase & { type: 'MOVE' } & ((MoveDTO & { timeout: false })
-  | { timeout: true, playerIdx: PlayerIdx, turn: number, slotIdx: SlotIdx });
+export type OutboundMoveMessage = WebSocketMessageBase & { type: 'MOVE' } & MoveDTO;
+
+export type OutboundSkipTurnMessage = WebSocketMessageBase & {
+  type: 'SKIP_TURN',
+  playerIdx: PlayerIdx,
+  turn: number,
+  slotIdx: SlotIdx,
+} & (
+    { timeout: true, exhausted: false, } |
+    { exhausted: true, timeout: false, }
+  );
 
 export interface OutboundMediateMessage extends WebSocketMessageBase {
   type: 'MEDIATE';
@@ -111,24 +142,40 @@ export interface OutboundBadReqMessage extends WebSocketMessageBase {
   message: string;
 }
 
+export interface OutboundExhaustedMessage extends WebSocketMessageBase {
+  type: 'EXHAUSTED';
+  slotIdx: SlotIdx;
+}
+
+export interface OutboundScoreConfirmationMessage extends WebSocketMessageBase {
+  type: 'SCORE_CONFIRM';
+}
+
+export interface OutboundGameEndMessage extends WebSocketMessageBase {
+  type: 'GAME_END';
+}
+
 /**
  * client -> server
-*/
+ */
 export type InboundWebSocketMessage =
   InboundCancelReadyMessage | InboundConnectedMessage |
   InboundLeaveMessage | InboundMoveMessage |
   InboundReadyMessage | InboundReportMessage |
-  InboundStartMessage;
+  InboundStartMessage | InboundExhaustedMessage |
+  InboundSkipTurnMessage | InboundScoreConfirmationMessage;
 
 /**
  * server -> clients
-*/
+ */
 export type OutboundWebSocketMessage =
   OutboundCancelReadyMessage | OutboundConnectedMessage |
   OutboundLeaveMessage | OutboundMoveMessage |
   OutboundReadyMessage | OutboundMediateMessage |
   OutboundErrorMessage | OutboundStartMessage |
-  OutboundBadReqMessage;
+  OutboundBadReqMessage | OutboundExhaustedMessage |
+  OutboundSkipTurnMessage | OutboundScoreConfirmationMessage |
+  OutboundGameEndMessage;
 
 export type WebSocketBrokerMessage = { payload: OutboundWebSocketMessage, roomId: string };
 

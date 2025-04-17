@@ -5,7 +5,6 @@ import type {
   InboundReportMessage,
   InboundWebSocketMessage,
   OutboundBadReqMessage,
-  OutboundErrorMessage,
   OutboundWebSocketMessage,
   ActiveWebSocket,
   WebSocketBrokerMessage,
@@ -15,18 +14,30 @@ import type {
   OutboundCancelReadyMessage,
   OutboundMoveMessage,
   OutboundStartMessage,
-  MoveDTO,
   PlayerId,
+  InboundExhaustedMessage,
+  OutboundExhaustedMessage,
+  OutboundSkipTurnMessage,
+  InboundSkipTurnMessage,
+  OutboundScoreConfirmationMessage,
+  InboundScoreConfirmationMessage,
+  OutboundGameEndMessage,
 } from "$types";
-import { extractPlayerCountFromCache, isRightTurn, parseJson } from "$lib/utils";
-import { getRoomCache } from "$lib/database/room";
-import { insertNonTimeoutMove, insertTimeoutMove } from "$lib/database/move";
+import { parseJson } from "$lib/utils";
+import { getRoomCache, markPlayerAsExhausted, updatePlayerReadyState } from "$lib/database/room";
 import { uuidv7 } from "uuidv7";
+import { applyMove, applySkipTurn, updateStartedState } from "$lib/room";
+import { confirmScore, initiateGameEndSequence } from "$lib/game";
+import { Score } from "$lib/domain/score";
+
+interface MessageAction {
+  action: 'broadcast' | 'reply';
+  payload: OutboundWebSocketMessage;
+}
 
 interface MessageProcessResult {
   success: boolean;
-  shouldBroadcast: boolean;
-  payload: OutboundWebSocketMessage;
+  actions: MessageAction[];
 }
 
 export class WebSocketMessageHandler {
@@ -44,8 +55,10 @@ export class WebSocketMessageHandler {
       };
       return {
         success: true,
-        shouldBroadcast: false,
-        payload: message,
+        actions: [{
+          action: 'reply',
+          payload: message,
+        }],
       };
     }
     const connectedMessage: OutboundConnectedMessage = {
@@ -56,8 +69,10 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      shouldBroadcast: true,
-      payload: connectedMessage,
+      actions: [{
+        action: 'broadcast',
+        payload: connectedMessage,
+      }]
     };
   }
 
@@ -68,19 +83,15 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      shouldBroadcast: true,
-      payload: leaveMessage,
+      actions: [{
+        action: 'broadcast',
+        payload: leaveMessage,
+      }],
     };
   }
 
   private async handleReady(client: ActiveWebSocket): Promise<MessageProcessResult> {
-    const roomCache = await getRoomCache(client.roomId);
-    const player = client.playerIdx === 0 ? (roomCache.p0) :
-      client.playerIdx === 1 ? (roomCache.p1) :
-        client.playerIdx === 2 ? (roomCache.p2) : (roomCache.p3);
-    await this.redis.hSet(`room:${client.roomId}`, `p${client.playerIdx}`, JSON.stringify({
-      ...player, ready: 1,
-    }));
+    await updatePlayerReadyState({ roomId: client.roomId, playerIdx: client.playerIdx, ready: true });
 
     const readyMessage: OutboundReadyMessage = {
       type: 'READY',
@@ -88,19 +99,15 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      shouldBroadcast: true,
-      payload: readyMessage,
+      actions: [{
+        action: 'broadcast',
+        payload: readyMessage,
+      }],
     };
   }
 
   private async handleCancelReady(client: ActiveWebSocket): Promise<MessageProcessResult> {
-    const roomCache = await getRoomCache(client.roomId);
-    const player = client.playerIdx === 0 ? roomCache.p0 :
-      client.playerIdx === 1 ? roomCache.p1 :
-        client.playerIdx === 2 ? roomCache.p2 : roomCache.p3;
-    await this.redis.hSet(`room:${client.roomId}`, `p${client.playerIdx}`, JSON.stringify({
-      ...player, ready: 0,
-    }));
+    await updatePlayerReadyState({ roomId: client.roomId, playerIdx: client.playerIdx, ready: false });
 
     const cancelReadyMessage: OutboundCancelReadyMessage = {
       type: 'CANCEL_READY',
@@ -108,82 +115,41 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      shouldBroadcast: true,
-      payload: cancelReadyMessage,
+      actions: [{
+        action: 'broadcast',
+        payload: cancelReadyMessage,
+      }],
     };
   }
 
   private async handleMove(client: ActiveWebSocket, message: InboundMoveMessage): Promise<MessageProcessResult> {
-    const { timeout, turn, slotIdx } = message;
-    const roomCache = await getRoomCache(client.roomId);
-    if (!isRightTurn({
-      turn,
-      activePlayerCount: extractPlayerCountFromCache(roomCache),
-      playerIdx: client.playerIdx,
-    }) || turn !== roomCache.turn) {
+    const { blockInfo, playerIdx, position, slotIdx, turn } = message;
+    const result = await applyMove({
+      move: {
+        blockInfo,
+        playerIdx,
+        position,
+        slotIdx,
+        turn,
+      },
+      roomId: client.roomId,
+    });
+    if (!result.success) {
       const badReqMessage: OutboundBadReqMessage = {
         type: 'BAD_REQ',
-        message: 'wrong turn',
+        message: result.reason ?? 'unknown error occured',
       };
       return {
         success: true,
-        shouldBroadcast: false,
-        payload: badReqMessage,
+        actions: [{
+          action: 'reply',
+          payload: badReqMessage,
+        }],
       };
     }
-    const { gameId } = roomCache;
-    if (!gameId) {
-      const errMessage: OutboundErrorMessage = {
-        type: 'ERROR',
-      }
-      return {
-        success: false,
-        shouldBroadcast: false,
-        payload: errMessage,
-      }
-    }
-
-    await this.redis.hSet(`room:${client.roomId}`, 'turn', turn + 1);
-    const moveId = uuidv7();
-
-    if (timeout) {
-      await insertTimeoutMove(moveId, {
-        timeout: true,
-        turn,
-        playerIdx: client.playerIdx,
-        gameId,
-        slotIdx,
-        createdAt: new Date(),
-      });
-      return {
-        success: true,
-        shouldBroadcast: true,
-        payload: {
-          type: 'MOVE',
-          timeout: true,
-          playerIdx: client.playerIdx,
-          turn: message.turn,
-          slotIdx: message.slotIdx
-        } as OutboundMoveMessage,
-      };
-    }
-    const { blockInfo, position } = message as MoveDTO;
-    await insertNonTimeoutMove(moveId, {
-      blockInfo,
-      gameId,
-      playerIdx: client.playerIdx,
-      position,
-      slotIdx,
-      timeout,
-      turn,
-      createdAt: new Date(),
-    });
-    const compressedMove = `${client.playerIdx}:${blockInfo.type}[${position[0]},${position[1]}]r${blockInfo.rotation}f${blockInfo.flip ? 0 : 1}`;
-    await this.redis.hSet(`room:${client.roomId}`, 'lastMove', compressedMove);
     // [TODO] checksum - lastMove
     const moveMessage: OutboundMoveMessage = {
       type: 'MOVE',
-      timeout: false,
       blockInfo,
       playerIdx: client.playerIdx,
       slotIdx,
@@ -192,8 +158,62 @@ export class WebSocketMessageHandler {
     };
     return {
       success: true,
-      shouldBroadcast: true,
-      payload: moveMessage,
+      actions: [{
+        action: 'broadcast',
+        payload: moveMessage,
+      }],
+    };
+  }
+
+  private async handleSkipTurnMessage(client: ActiveWebSocket, message: InboundSkipTurnMessage): Promise<MessageProcessResult> {
+    const { exhausted, slotIdx, timeout, turn } = message;
+    if (exhausted === timeout) {
+      const badReqMessage: OutboundBadReqMessage = {
+        type: 'BAD_REQ',
+        message: 'exhausted move cannot be timeout move',
+      };
+      return {
+        success: true,
+        actions: [{
+          action: 'reply',
+          payload: badReqMessage,
+        }],
+      };
+    }
+    const result = await applySkipTurn({
+      playerIdx: client.playerIdx,
+      roomId: client.roomId,
+      slotIdx,
+      turn,
+      type: timeout ? 'timeout' : 'exhausted',
+    });
+    if (!result.success) {
+      const badReqMessage: OutboundBadReqMessage = {
+        type: 'BAD_REQ',
+        message: result.reason ?? 'unknown error occured',
+      };
+      return {
+        success: true,
+        actions: [{
+          action: 'reply',
+          payload: badReqMessage,
+        }],
+      };
+    }
+    const skipTurnMessage = {
+      type: 'SKIP_TURN',
+      exhausted: exhausted === true,
+      playerIdx: client.playerIdx,
+      slotIdx,
+      timeout: exhausted === false,
+      turn,
+    } as OutboundSkipTurnMessage;
+    return {
+      success: true,
+      actions: [{
+        action: 'broadcast',
+        payload: skipTurnMessage,
+      }],
     };
   }
 
@@ -201,8 +221,10 @@ export class WebSocketMessageHandler {
     if (client.playerIdx !== 0) {
       return {
         success: true,
-        shouldBroadcast: false,
-        payload: { type: 'BAD_REQ', message: 'unauthorized' },
+        actions: [{
+          action: 'reply',
+          payload: { type: 'BAD_REQ', message: 'unauthorized' },
+        }],
       };
     }
 
@@ -210,8 +232,10 @@ export class WebSocketMessageHandler {
     if (roomCache.started) {
       return {
         success: true,
-        shouldBroadcast: false,
-        payload: { type: 'BAD_REQ', message: 'game already started' },
+        actions: [{
+          action: 'reply',
+          payload: { type: 'BAD_REQ', message: 'game already started' },
+        }],
       };
     }
     // [TODO] consider the case that number of user is lower than 4
@@ -222,30 +246,102 @@ export class WebSocketMessageHandler {
     if (!isReadied) {
       return {
         success: true,
-        shouldBroadcast: false,
-        payload: { type: 'BAD_REQ', message: 'not readied' },
+        actions: [{
+          action: 'reply',
+          payload: { type: 'BAD_REQ', message: 'not readied' },
+        }],
       };
     }
 
-    // [TODO] should reflect to DB too
     const gameId = uuidv7();
-    await this.redis.hSet(`room:${client.roomId}`, 'gameId', gameId);
-    await this.redis.hSet(`room:${client.roomId}`, 'started', '1');
-    await this.redis.hSet(`room:${client.roomId}`, 'turn', 0);
+    await updateStartedState({ roomId: client.roomId, isStarted: true, gameId });
+
     const startMessage: OutboundStartMessage = {
       type: 'START',
       gameId,
     };
     return {
       success: true,
-      shouldBroadcast: true,
-      payload: startMessage,
+      actions: [{
+        action: 'broadcast',
+        payload: startMessage,
+      }],
     };
   }
 
   private handleReport(client: ActiveWebSocket, message: InboundReportMessage): MessageProcessResult {
     // [TODO] validate move here
     throw new Error("not implemented");
+  }
+
+  private async handleExhausted(client: ActiveWebSocket, message: InboundExhaustedMessage): Promise<MessageProcessResult> {
+    const messages: MessageAction[] = [];
+
+    const { isGameEnd } = await markPlayerAsExhausted({ roomId: client.roomId, slotIdx: message.slotIdx });
+    if (isGameEnd) {
+      await initiateGameEndSequence({
+        roomId: client.roomId,
+        playerIdx: client.playerIdx,
+      });
+      const scoreValidationMessage: OutboundScoreConfirmationMessage = {
+        type: 'SCORE_CONFIRM',
+      };
+      messages.push({
+        action: 'broadcast',
+        payload: scoreValidationMessage,
+      });
+    }
+
+    const exhaustedMessage: OutboundExhaustedMessage = {
+      type: 'EXHAUSTED',
+      slotIdx: message.slotIdx
+    };
+    messages.unshift({
+      action: 'broadcast',
+      payload: exhaustedMessage,
+    });
+    return {
+      success: true,
+      actions: messages,
+    };
+  }
+
+  private async handleScoreConfirmationMessage(client: ActiveWebSocket, message: InboundScoreConfirmationMessage): Promise<MessageProcessResult> {
+    const score = new Score(message.score);
+    const result = await confirmScore({
+      playerIdx: client.playerIdx,
+      roomId: client.roomId,
+      score,
+    });
+    if (!result.success) {
+      const badReqMessage: OutboundBadReqMessage = {
+        type: 'BAD_REQ',
+        message: result.reason ?? 'unknown error occured',
+      };
+      return {
+        success: true,
+        actions: [{
+          action: 'reply',
+          payload: badReqMessage,
+        }],
+      };
+    }
+    if (result.isDone) {
+      const gameEndMessage: OutboundGameEndMessage = {
+        type: 'GAME_END',
+      };
+      return {
+        success: true,
+        actions: [{
+          action: 'broadcast',
+          payload: gameEndMessage,
+        }],
+      };
+    }
+    return {
+      success: true,
+      actions: [],
+    };
   }
 
   async processMessage(client: ActiveWebSocket, message: InboundWebSocketMessage): Promise<MessageProcessResult> {
@@ -264,11 +360,19 @@ export class WebSocketMessageHandler {
         return this.handleMove(client, message);
       case "REPORT":
         return this.handleReport(client, message);
+      case "EXHAUSTED":
+        return this.handleExhausted(client, message);
+      case 'SKIP_TURN':
+        return this.handleSkipTurnMessage(client, message);
+      case "SCORE_CONFIRM":
+        return this.handleScoreConfirmationMessage(client, message);
       default:
         return {
           success: false,
-          shouldBroadcast: false,
-          payload: { type: 'BAD_REQ', message: 'not supported message type' },
+          actions: [{
+            action: 'reply',
+            payload: { type: 'BAD_REQ', message: 'not supported message type' },
+          }],
         };
     }
   }
@@ -396,12 +500,18 @@ export class WebSocketConnectionOrchestrator {
       // const traceId = uuidv7();
       // [TODO] log
       const result = await this.messageHandler.processMessage(client, message);
-      if (!result.shouldBroadcast) {
-        client.send(JSON.stringify(result.payload));
-        return;
-      }
-      this.messageBroker.publishMessage({ message: result.payload, roomId: client.roomId });
-      return;
+      result.actions.forEach((messageAction) => {
+        switch (messageAction.action) {
+          case "broadcast":
+            this.messageBroker.publishMessage({ message: messageAction.payload, roomId: client.roomId });
+            break;
+          case "reply":
+            client.send(JSON.stringify(messageAction.payload));
+            break;
+          default:
+            throw new Error(`unknown action detected: ${messageAction.action}`);
+        }
+      });
     } catch (e) {
       // [TODO] log
     }

@@ -1,5 +1,4 @@
 import type {
-  BlockMatrix,
   BlockType,
   BoardMatrix,
   MoveDTO,
@@ -22,9 +21,13 @@ import type {
   Move,
   InboundStartMessage,
   OutboundStartMessage,
+  InboundExhaustedMessage,
+  InboundSkipTurnMessage,
+  OutboundSkipTurnMessage,
+  InboundScoreConfirmationMessage,
 } from "$types";
-import { gameStore, modalStore, movePreviewStore } from "../../Store";
-import { createNewBoard, preset, putBlockOnBoard, rollbackMove } from "./core";
+import { blockStore, gameStore, modalStore, movePreviewStore } from "$lib/store";
+import { createNewBoard, putBlockOnBoard, rollbackMove } from "./core";
 import type {
   WebSocketMessageDispatcher,
   WebSocketMessageReceiver,
@@ -34,16 +37,18 @@ import Confirm from "$lib/components/Confirm.svelte";
 import { getPlayersSlot, isRightTurn } from "$lib/utils";
 import { get } from "svelte/store";
 import type { PlayerStateManager } from "$lib/client/game/state/player";
+import { Score } from "$lib/domain/score";
 
 export class GameManager_Legacy {
   constructor({
-    board, playerIdx, turn, gameId, messageDispatcher, messageReceiver, playerStateManager,
+    board, playerIdx, turn, gameId, messageDispatcher, messageReceiver, playerStateManager, blockPlacementValidator,
   }: {
     board: BoardMatrix, playerIdx: PlayerIdx, turn?: number,
     gameId?: string,
     messageDispatcher: WebSocketMessageDispatcher,
     messageReceiver: WebSocketMessageReceiver,
     playerStateManager: PlayerStateManager,
+    blockPlacementValidator: BlockPlacementValidator,
   }) {
     this.board = board;
     this.turn = turn ?? -1;
@@ -55,14 +60,18 @@ export class GameManager_Legacy {
     this.messageDispatcher = messageDispatcher;
     this.messageReceiver = messageReceiver;
     this.playerStateManager = playerStateManager;
+    this.blockPlacementValidator = blockPlacementValidator;
 
     this.messageReceiver.onMessage((m) => { this.handleIncomingMessage(m) });
   }
   private messageReceiver: WebSocketMessageReceiver;
   private messageDispatcher: WebSocketMessageDispatcher;
   private playerStateManager: PlayerStateManager;
+  private blockPlacementValidator: BlockPlacementValidator;
 
   gameId: string | undefined;
+
+  exhaustedSlots: Set<SlotIdx> = new Set();
 
   private playerIdx: PlayerIdx;
   board: BoardMatrix = $state([]);
@@ -89,6 +98,12 @@ export class GameManager_Legacy {
       case "MOVE":
         this.applyMove(message);
         break;
+      case "SKIP_TURN":
+        this.handleSkipTurnMessage(message);
+        break;
+      case "EXHAUSTED":
+        this.handleExhaustedMessage(message);
+        break;
       case "START":
         this.handleStartMessage(message);
         break;
@@ -99,6 +114,12 @@ export class GameManager_Legacy {
         break;
       case "ERROR":
         break;
+      case "SCORE_CONFIRM":
+        this.handleScoreConfirmationMessage();
+        break;
+      case "GAME_END":
+        this.handleGameEnd();
+        break;
       default:
         modalStore.open(Alert, {
           title: "received unknown message",
@@ -106,6 +127,42 @@ export class GameManager_Legacy {
         });
         break;
     }
+  }
+
+  handleSkipTurnMessage(message: OutboundSkipTurnMessage) {
+    if (!this.gameId) {
+      throw new Error('gameId is not set');
+    }
+    const { timeout, exhausted, slotIdx, turn, playerIdx } = message;
+    // [MARK] state updater
+    if (exhausted) {
+      this.moves.push({
+        gameId: this.gameId,
+        playerIdx,
+        slotIdx,
+        turn,
+        createdAt: new Date(),
+        exhausted: true,
+        timeout: false,
+      });
+    } else if (timeout) {
+      this.moves.push({
+        gameId: this.gameId,
+        playerIdx,
+        slotIdx,
+        turn,
+        createdAt: new Date(),
+        exhausted: false,
+        timeout: true,
+      });
+    }
+    this.initiateNextTurn();
+    return;
+  }
+
+  handleExhaustedMessage(message: InboundExhaustedMessage) {
+    const { slotIdx } = message;
+    this.exhaustedSlots.add(slotIdx);
   }
 
   addUser(message: OutboundConnectedMessage) {
@@ -142,6 +199,19 @@ export class GameManager_Legacy {
     this.playerStateManager.updateReadyState({ playerIdx, ready: type === 'READY' });
   }
 
+  handleScoreConfirmationMessage() {
+    const score = Score.fromBoard(this.board);
+    const scoreConfirmMessage: InboundScoreConfirmationMessage = {
+      type: 'SCORE_CONFIRM',
+      score: score.toString(),
+    };
+    this.messageDispatcher.dispatch(scoreConfirmMessage);
+  }
+
+  handleGameEnd() {
+    // init game state & wait for next game
+  }
+
   handleError(message: OutboundErrorMessage) {
     // 
   }
@@ -168,6 +238,17 @@ export class GameManager_Legacy {
   }
 
   async processMyTurn(leftTime?: number) {
+    const slotIdx: SlotIdx = this.turn % 4 as SlotIdx;
+    if (this.exhaustedSlots.has(slotIdx)) {
+      const exhaustedSkipMessage: InboundSkipTurnMessage = {
+        type: 'SKIP_TURN',
+        exhausted: true,
+        slotIdx,
+        timeout: false,
+        turn: this.turn,
+      };
+      this.messageDispatcher.dispatch(exhaustedSkipMessage);
+    }
     modalStore.open(Alert, {
       title: 'your turn',
       message: 'please make your move',
@@ -178,11 +259,12 @@ export class GameManager_Legacy {
         title: `time's up`,
         message: '',
       });
-      const timeoutMessage: InboundMoveMessage = {
-        type: 'MOVE',
+      const timeoutMessage: InboundSkipTurnMessage = {
+        type: 'SKIP_TURN',
         timeout: true,
-        slotIdx: this.turn % 4 as SlotIdx,
+        slotIdx,
         turn: this.turn,
+        exhausted: false,
       };
       this.messageDispatcher.dispatch(timeoutMessage);
       this.turnPromiseRejecter?.('timeout');
@@ -192,9 +274,18 @@ export class GameManager_Legacy {
     while (!isSubmitted) {
       // 3. resolve move
       const move = await this.waitMoveResolution().catch(() => null);
-      if (!move) {
+      if (move === null) {
         // if the move is empty, maybe that means the turnPromise was rejected
-        break;
+        /**
+         * @description sometimes move is passed with value 'null', so added this condition statement urgently.
+         * if turnPromise is already rejected, turnPromise and res/rej must be initialized to null,
+         * so I expect this 'continue' will work.
+         * BTW it'll be replaced by branch refactor/separate-god-class-GameManager
+         */
+        if (this.turnPromise === null) {
+          break;
+        }
+        continue;
       }
       // 4. validation
       const reason = putBlockOnBoard({
@@ -229,7 +320,6 @@ export class GameManager_Legacy {
               playerIdx: this.playerIdx,
               slotIdx: move.slotIdx,
               position: move.position,
-              timeout: false,
               turn: move.turn,
             };
             this.messageDispatcher.dispatch(moveMessage);
@@ -269,22 +359,9 @@ export class GameManager_Legacy {
   private turnPromiseResolver: ((dto: MoveDTO) => void) | null = null;
   private turnPromiseRejecter: ((reason: string) => void) | null = null;
 
-  applyMove(message: OutboundMoveMessage) {
+  async applyMove(message: OutboundMoveMessage) {
     if (!this.gameId) {
       throw new Error('gameId is not set');
-    }
-    const { timeout } = message;
-    if (timeout) {
-      this.moves.push({
-        gameId: this.gameId,
-        playerIdx: message.playerIdx,
-        slotIdx: message.slotIdx,
-        turn: message.turn,
-        createdAt: new Date(),
-        timeout: true,
-      })
-      this.initiateNextTurn();
-      return;
     }
     const { blockInfo, playerIdx, position, turn, slotIdx } = message;
     const reason = putBlockOnBoard({
@@ -296,14 +373,7 @@ export class GameManager_Legacy {
       slotIdx,
     });
     if (!reason) {
-      gameStore.update((store) => {
-        const slots = [...store.availableBlocksBySlots];
-        slots[slotIdx].delete(blockInfo.type);
-        return {
-          ...store,
-          availableBlocksBySlots: slots,
-        };
-      });
+      blockStore.updateBlockPlacementStatus({ slotIdx, blockType: blockInfo.type });
       this.moves.push({
         gameId: this.gameId,
         blockInfo,
@@ -313,8 +383,37 @@ export class GameManager_Legacy {
         turn,
         createdAt: new Date(),
         timeout: false,
+        exhausted: false,
       })
       this.initiateNextTurn();
+      const res = await this.blockPlacementValidator.searchPlaceableBlocks({
+        board: this.board,
+        blocks: blockStore.getUnusedBlocks(),
+      }, {
+        // [TODO] find proper magic number
+        earlyReturn: turn < 20,
+      });
+      if (res === true || res === undefined) {
+        return;
+      }
+      if (res === false) {
+        console.log('...retire');
+        return;
+      }
+      const slots = get(gameStore).mySlots;
+      const unavailableSlots = slots.filter(slotIdx =>
+        !res.available.some(block => block.slotIdx === slotIdx)
+      );
+      unavailableSlots.forEach((slotIdx) => {
+        if (!this.exhaustedSlots.has(slotIdx)) {
+          const exhaustedMessage: InboundExhaustedMessage = {
+            type: 'EXHAUSTED',
+            slotIdx,
+          };
+          this.messageDispatcher.dispatch(exhaustedMessage);
+        }
+      });
+      blockStore.updateUnavailableBlocks(res.unavailable);
       return;
     }
     return reason;
@@ -347,6 +446,10 @@ export class GameManager_Legacy {
       return;
     }
 
+    if (slotIdx !== this.turn % 4) {
+      this.turnPromiseRejecter?.('invalid slot');
+    }
+
     this.turnPromiseResolver({
       blockInfo, playerIdx: this.playerIdx, slotIdx, position, turn: this.turn,
     });
@@ -366,15 +469,16 @@ export class GameManager_Legacy {
   initiateGameStatus(gameId: string) {
     this.gameId = gameId;
     this.board = createNewBoard();
+    const slots = getPlayersSlot({
+      players: this.users,
+      playerIdx: this.playerIdx,
+    });
     gameStore.update((gameInfo) => ({
       ...gameInfo,
       isStarted: true,
-      mySlots: getPlayersSlot({
-        players: this.playerStateManager.getPlayers(),
-        playerIdx: this.playerIdx,
-      }),
-      availableBlocksBySlots: Array(4).fill(null).map(() => new Map(Object.entries(preset) as [BlockType, BlockMatrix][])),
+      mySlots: slots,
     }));
+    blockStore.initialize(slots);
     this.initiateNextTurn();
   }
 
@@ -393,25 +497,24 @@ export class GameManager_Legacy {
   }
 
   restoreGameState(moves: Move[]) {
-    gameStore.update((store) => {
-      this.moves = moves.sort((a, b) => a.turn - b.turn);
-      const availableBlocks = Array(4).fill(null).map(() => new Map(Object.entries(preset) as [BlockType, BlockMatrix][]));
-      moves.forEach((move) => {
-        if (!move.timeout) {
-          availableBlocks[move.slotIdx].delete(move.blockInfo.type);
-          putBlockOnBoard({
-            board: this.board,
-            blockInfo: move.blockInfo,
-            playerIdx: move.playerIdx,
-            position: move.position,
-            slotIdx: move.slotIdx,
-            turn: move.turn,
-          });
-        }
-      });
-      return {
-        ...store, availableBlocksBySlots: availableBlocks,
-      };
+    this.moves = moves.sort((a, b) => a.turn - b.turn);
+    blockStore.initialize(get(gameStore).mySlots);
+    this.moves.forEach((move) => {
+      if (!move.timeout && !move.exhausted) {
+        blockStore.updateBlockPlacementStatus({ blockType: move.blockInfo.type, slotIdx: move.slotIdx });
+        putBlockOnBoard({
+          board: this.board,
+          blockInfo: move.blockInfo,
+          playerIdx: move.playerIdx,
+          position: move.position,
+          slotIdx: move.slotIdx,
+          turn: move.turn,
+        });
+      }
+    });
+    this.blockPlacementValidator.searchPlaceableBlocks({
+      board: this.board,
+      blocks: blockStore.getUnusedBlocks(),
     });
 
     const leftTime = moves[moves.length - 1].createdAt.valueOf() - Date.now();
@@ -419,11 +522,12 @@ export class GameManager_Legacy {
       return;
     }
     if (this.isMyTurn() && leftTime < 0) {
-      const timeoutMessage: InboundMoveMessage = {
-        type: 'MOVE',
+      const timeoutMessage: InboundSkipTurnMessage = {
+        type: 'SKIP_TURN',
         slotIdx: this.turn % 4 as SlotIdx,
         turn: this.turn,
         timeout: true,
+        exhausted: false,
       };
       this.messageDispatcher.dispatch(timeoutMessage);
       return;
@@ -439,33 +543,43 @@ export class BlockPlacementValidator {
 
   private worker: Worker;
 
-  async searchPlaceableBlocks({ board, slotIdx, unusedBlocks }: {
+  async searchPlaceableBlocks({ board, blocks }: {
     board: BoardMatrix,
-    slotIdx: SlotIdx,
-    unusedBlocks: BlockType[],
-  }, options: {
+    blocks: {
+      slotIdx: SlotIdx,
+      blockType: BlockType
+    }[],
+  }, options?: {
     earlyReturn?: boolean,
   }) {
-    const availableBlocks: BlockType[] = [];
+    /**
+     * @description Creates a deep copy of the board to prevent "DOMException: Proxy object could not be cloned"
+     * errors when sending to worker. This error occurs because:
+     * 1. Web Workers use structured clone algorithm for message passing
+     * 2. Our original board is a Proxy object (from $state)
+     * 3. Proxy objects cannot be cloned by the structured clone algorithm
+     */
+    const copiedProxyBoard = board.map(e => [...e]);
+    if (options?.earlyReturn === true) {
+      return new Promise<boolean>((res, rej) => {
+        this.worker.onmessage = (e: MessageEvent<boolean>) => {
+          res(e.data);
+        };
+        this.worker.postMessage({ board: copiedProxyBoard, blocks });
+      });
+    }
+
     try {
-      for (const blockType of unusedBlocks.reverse()) {
-        const result = await new Promise<boolean>((res, rej) => {
-          this.worker.onmessage = (e: MessageEvent<{ result: boolean }>) => {
-            res(e.data.result);
-          };
-          setTimeout(() => {
-            rej('timeout');
-          }, 3000);
-          this.worker.postMessage({ board, slotIdx, blockType });
-        });
-        if (result && options.earlyReturn) {
-          return true;
-        }
-        if (result) {
-          availableBlocks.push(blockType);
-        }
-      }
-      return availableBlocks;
+      return new Promise<{ available: { blockType: BlockType, slotIdx: SlotIdx }[], unavailable: { blockType: BlockType, slotIdx: SlotIdx }[] }>((res, rej) => {
+        this.worker.onmessage = (e: MessageEvent<{ available: { blockType: BlockType, slotIdx: SlotIdx }[], unavailable: { blockType: BlockType, slotIdx: SlotIdx }[] }>) => {
+          if (typeof e.data === 'boolean') {
+            rej('unexpected boolean value returned from a non-early-return worker procedure');
+            return;
+          }
+          res(e.data);
+        };
+        this.worker.postMessage({ board: copiedProxyBoard, blocks });
+      });
     } catch (e) {
       console.error(e);
     }

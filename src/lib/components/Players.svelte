@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { ParticipantInf } from "$types";
-  import { userStore } from "../../Store";
+  import { userStore } from "$lib/store";
 
   let {
     players,

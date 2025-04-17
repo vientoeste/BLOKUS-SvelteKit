@@ -9,7 +9,7 @@
     RoomPreviewInf,
   } from "$types";
   import { onMount } from "svelte";
-  import { modalStore } from "../../Store";
+  import { modalStore } from "$lib/store";
   import { clearLocalStorageAuthStatus, parseJson } from "$lib/utils";
   import { page } from "$app/stores";
 

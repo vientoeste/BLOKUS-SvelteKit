@@ -1,19 +1,15 @@
 <script lang="ts">
-  import type { BlockMatrix, BlockType } from "$types";
-  import { gameStore } from "../../Store";
+  import type { BlockType, SlotIdx } from "$types";
+  import { blockStore } from "$lib/store";
   import DraggableBlock from "./DraggableBlock.svelte";
 
-  let { slotIdx }: { slotIdx: number } = $props();
+  let { slotIdx }: { slotIdx: SlotIdx } = $props();
 
   /**
    * by update key, force re-rendering of blocks container
    */
   let key = $state(0);
-  gameStore.subscribe(() => {
-    key += 1;
-  });
 
-  let blocks = $state($gameStore.availableBlocksBySlots[slotIdx]);
   // [TODO] refactor to display blocks based on blockState
   let blockState: Map<BlockType, { rotation: number; flip: boolean }> = $state(
     new Map(),
@@ -214,18 +210,17 @@
   };
 </script>
 
-{#key key}
-  <div id="blocks-container">
-    {#each blocks as block}
-      <DraggableBlock
-        block={preset[block[0]]}
-        type={block[0]}
-        {blockState}
-        {slotIdx}
-      />
-    {/each}
-  </div>
-{/key}
+<div id="blocks-container">
+  {#each blockStore.getUnusedBlocksBySlot(slotIdx) as block}
+    <DraggableBlock
+      block={preset[block.blockType]}
+      type={block.blockType}
+      {blockState}
+      {slotIdx}
+      isAvailable={block.placeable}
+    />
+  {/each}
+</div>
 
 <style>
   #blocks-container {

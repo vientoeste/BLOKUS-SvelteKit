@@ -1,19 +1,30 @@
 <script lang="ts">
-  import type { BlockType, Rotation } from "$types";
-  import { dragPositionOffsetStore, moveStore } from "../../Store";
+  import type { BlockType, Rotation, SlotIdx } from "$types";
+  import { dragPositionOffsetStore, modalStore, moveStore } from "$lib/store";
   import Block from "./Block.svelte";
+  import Alert from "./Alert.svelte";
+  import { onMount } from "svelte";
 
   let {
     type,
     block,
     blockState,
     slotIdx,
+    isAvailable,
   }: {
     type: BlockType;
     block: ({ u: boolean; r: boolean; b: boolean; l: boolean } | null)[][];
     blockState: Map<BlockType, { rotation: number; flip: boolean }>;
-    slotIdx: number;
+    slotIdx: SlotIdx;
+    isAvailable: boolean;
   } = $props();
+
+  onMount(() => {
+    if (isAvailable === false && container) {
+      container.style.cursor = "not-allowed";
+      container.style.opacity = "0.4";
+    }
+  });
 
   let blockMatrix: ({
     u: boolean;
@@ -22,8 +33,24 @@
     l: boolean;
   } | null)[][] = $state(block);
 
+  let container: HTMLElement | undefined = $state();
+
   function handleDragStart(event: DragEvent) {
-    if (!event.dataTransfer) return;
+    if (!isAvailable) {
+      modalStore.open(Alert, {
+        title: "chosen block is not available",
+        content: "",
+      });
+      event.stopPropagation();
+      return;
+    }
+    if (!event.dataTransfer) {
+      console.error(
+        "Uncaught exception: handleDragStart's event.dataTransfer is null",
+      );
+      event.stopPropagation();
+      return;
+    }
     const state = blockState.get(type);
 
     moveStore.set({
@@ -186,6 +213,7 @@
   ondragstart={handleDragStart}
   ondragend={handleDragEnd}
   aria-label="draggable"
+  bind:this={container}
 >
   <Block block={blockMatrix} {slotIdx}></Block>
 

@@ -6,15 +6,16 @@
   import Login from "$lib/components/Login.svelte";
   import Modal from "$lib/components/Modal.svelte";
   import UserInfo from "$lib/components/UserInfo.svelte";
+  import BlocksContainer from "$lib/components/BlocksContainer.svelte";
+  import DebugPanel from "$lib/components/DebugPanel.svelte";
 
   import { getUserInfoFromLocalStorage } from "$lib/utils";
-  import { gameStore, userStore } from "../Store";
+  import { blockStore, gameStore, userStore } from "$lib/store";
   import "../app.css";
-  import BlocksContainer from "$lib/components/BlocksContainer.svelte";
 
   let rerenderer = $state(0);
-  gameStore.subscribe((store) => {
-    if (store.mySlots.length !== 0) {
+  blockStore.subscribe(() => {
+    if ($gameStore.isStarted) {
       rerenderer += 1;
     }
   });
@@ -39,6 +40,9 @@
 <Modal />
 <main class="row-layout">
   <article>
+    {#if process.env.NODE_ENV === "development"}
+      <DebugPanel />
+    {/if}
     {@render children()}
   </article>
   <aside>

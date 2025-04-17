@@ -1,8 +1,8 @@
 import { CustomError } from "$lib/error";
-import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf, UserInfo, CreateRoomCacheDTO, RawParticipantInf } from "$types";
-import { parseJson } from "$lib/utils";
+import type { CreateRoomDTO, UpdateRoomDTO, RoomDocumentInf, RoomId, RoomCacheInf, RoomPreviewInf, UserInfo, CreateRoomCacheDTO, SlotIdx, PlayerIdx, GameId } from "$types";
 import { handleMongoError, Rooms } from "./mongo";
-import { redis } from "./redis";
+import { gameEndSequenceRepository, roomCacheRepository } from "./redis";
+import type { Score } from "$lib/domain/score";
 
 export const getRooms = async ({
   limit, lastDocId,
@@ -60,6 +60,22 @@ export const updateRoomInfo = async (
   return result.value;
 };
 
+export const updateRoomStartedState = async ({ isStarted, roomId }: { roomId: RoomId, isStarted: boolean }): Promise<void> => {
+  const result = await Rooms.findOneAndUpdate({
+    _id: roomId,
+    isDeleted: false,
+  }, {
+    $set: {
+      isStarted,
+      updatedAt: new Date(),
+    },
+  }).catch(handleMongoError);
+
+  if (!result.value) {
+    throw new CustomError('not found', 404);
+  }
+};
+
 export const deleteRoomInfo = async (roomId: string): Promise<void> => {
   const result = await Rooms.findOneAndUpdate({
     id: roomId,
@@ -106,88 +122,196 @@ export const insertRoomCache = async (
   createRoomCacheDTO: CreateRoomCacheDTO,
 ) => {
   const { name, user } = createRoomCacheDTO;
-  const result = await redis.hSet(`room:${roomId}`, {
-    id: roomId,
+  const result = await roomCacheRepository.save(roomId, {
     name,
     turn: -1,
-    lastMove: '',
-    started: 0,
-    p0: JSON.stringify({ id: user.id, username: user.username, ready: 0 }),
-    p1: '',
-    p2: '',
-    p3: '',
+    started: false,
+    p0_id: user.id,
+    p0_username: user.username,
+    p0_ready: false,
+    slot0_exhausted: false,
+    slot1_exhausted: false,
+    slot2_exhausted: false,
+    slot3_exhausted: false,
   });
-  if (result === 0) {
-    // [TODO] flush?
-    throw new Error('room already existing');
+  if (result.name === undefined) {
+    throw new Error('insert room cache failed');
   }
 };
 
 export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
-  const room = await redis.hGetAll(`room:${roomId}`);
+  const room = await roomCacheRepository.fetch(roomId);
   if (!room || Object.keys(room).length === 0) {
     throw new CustomError('room cache not found', 404);
   }
-  const { id, name, turn, lastMove, started, gameId } = room;
-  const { p0, p1, p2, p3 } = room;
-  const p0_ = parseJson<{ id: string, username: string, ready: boolean }>(p0);
-  const p1_ = p1 ? parseJson<{ id: string, username: string, ready: boolean }>(p1) : undefined;
-  const p2_ = p2 ? parseJson<{ id: string, username: string, ready: boolean }>(p2) : undefined;
-  const p3_ = p3 ? parseJson<{ id: string, username: string, ready: boolean }>(p3) : undefined;
+
+  const {
+    name, turn, started, gameId,
+    slot0_exhausted, slot1_exhausted, slot2_exhausted, slot3_exhausted,
+    p0_id, p0_ready, p0_username,
+    p1_id, p1_ready, p1_username,
+    p2_id, p2_ready, p2_username,
+    p3_id, p3_ready, p3_username,
+  } = room;
   if (
-    typeof p0_ === 'string' ||
-    typeof p1_ === 'string' ||
-    typeof p2_ === 'string' ||
-    typeof p3_ === 'string'
+    !name || started === undefined || turn === undefined || p0_id === undefined || p0_ready === undefined || p0_username === undefined
+    || slot0_exhausted === undefined || slot1_exhausted === undefined || slot2_exhausted === undefined || slot3_exhausted === undefined
   ) {
-    // [CHECK] invalidate cache & DB?
-    throw new CustomError('failed to parse players');
+    throw new Error('invalid room cache type');
   }
+  if (p1_id !== undefined && (p1_ready === undefined || p1_username === undefined)) {
+    throw new Error('invalid p1 info at room cache')
+  }
+  if (p2_id !== undefined && (p2_ready === undefined || p2_username === undefined)) {
+    throw new Error('invalid p2 info at room cache')
+  }
+  if (p3_id !== undefined && (p3_ready === undefined || p3_username === undefined)) {
+    throw new Error('invalid p3 info at room cache')
+  }
+
   return {
-    id,
+    id: roomId,
     name,
-    gameId: gameId ?? undefined,
-    turn: parseInt(turn),
-    lastMove: lastMove,
-    started: started !== '0',
-    p0: p0_,
-    p1: p1_,
-    p2: p2_,
-    p3: p3_,
+    gameId: gameId,
+    // [TODO] currently lastMove is not used
+    lastMove: '',
+    turn,
+    started,
+    exhausted: [slot0_exhausted, slot1_exhausted, slot2_exhausted, slot3_exhausted],
+    p0: {
+      id: p0_id,
+      ready: p0_ready,
+      username: p0_username,
+    },
+    p1: p1_id !== undefined ? {
+      id: p1_id,
+      ready: p1_ready as boolean,
+      username: p1_username as string,
+    } : undefined,
+    p2: p2_id !== undefined ? {
+      id: p2_id,
+      ready: p2_ready as boolean,
+      username: p2_username as string,
+    } : undefined,
+    p3: p3_id !== undefined ? {
+      id: p3_id,
+      ready: p3_ready as boolean,
+      username: p3_username as string,
+    } : undefined,
   };
 };
 
 export const addUserToRoomCache = async ({ roomId, userInfo: { id, username } }: { userInfo: UserInfo, roomId: RoomId }) => {
-  const room = await getRoomCache(roomId);
-  const { p0, p1, p2, p3 } = room;
+  const room = await roomCacheRepository.fetch(roomId);
+  const { p0_id, p1_id, p2_id, p3_id } = room;
 
-  if (p0 && p0.id === id) {
+  if (p0_id === id) {
     return 0;
   }
-  if (p1 && p1.id === id) {
+  if (p1_id === id) {
     return 1;
   }
-  if (p2 && p2.id === id) {
+  if (p2_id === id) {
     return 2;
   }
-  if (p3 && p3.id === id) {
+  if (p3_id === id) {
     return 3;
   }
 
-  const participant: RawParticipantInf = {
-    id, username, ready: 0,
-  };
-  if (p1 === undefined) {
-    await redis.hSet(`room:${roomId}`, 'p1', JSON.stringify(participant));
+  if (p1_id === undefined) {
+    await roomCacheRepository.save(roomId, {
+      ...room,
+      p1_id: id,
+      p1_username: username,
+      p1_ready: false,
+    });
     return 1;
   }
-  if (p2 === undefined) {
-    await redis.hSet(`room:${roomId}`, 'p2', JSON.stringify(participant));
+  if (p2_id === undefined) {
+    await roomCacheRepository.save(roomId, {
+      ...room,
+      p2_id: id,
+      p2_username: username,
+      p2_ready: false,
+    });
     return 2;
   }
-  if (p3 === undefined) {
-    await redis.hSet(`room:${roomId}`, 'p3', JSON.stringify(participant));
+  if (p3_id === undefined) {
+    await roomCacheRepository.save(roomId, {
+      ...room,
+      p3_id: id,
+      p3_username: username,
+      p3_ready: false,
+    });
     return 3;
   }
   throw new CustomError('room is full');
+};
+
+export const updatePlayerReadyState = async ({ roomId, playerIdx, ready }: { roomId: RoomId, playerIdx: PlayerIdx, ready: boolean }) => {
+  const room = await roomCacheRepository.fetch(roomId);
+  const { p0_ready, p1_ready, p2_ready, p3_ready } = room;
+  const playerReadyState = {
+    0: { p0_ready: ready, p1_ready, p2_ready, p3_ready },
+    1: { p1_ready: ready, p0_ready, p2_ready, p3_ready },
+    2: { p2_ready: ready, p0_ready, p1_ready, p3_ready },
+    3: { p3_ready: ready, p0_ready, p1_ready, p2_ready },
+  }[playerIdx];
+  await roomCacheRepository.save(roomId, {
+    ...room,
+    ...playerReadyState
+  });
+};
+
+export const markPlayerAsExhausted = async ({ roomId, slotIdx }: { roomId: RoomId, slotIdx: SlotIdx }) => {
+  const room = await roomCacheRepository.fetch(roomId);
+  const {
+    slot0_exhausted: slot0_exhausted_,
+    slot1_exhausted: slot1_exhausted_,
+    slot2_exhausted: slot2_exhausted_,
+    slot3_exhausted: slot3_exhausted_,
+  } = room;
+  const exhaustedSlot = {
+    0: { slot0_exhausted: true, slot1_exhausted: slot1_exhausted_, slot2_exhausted: slot2_exhausted_, slot3_exhausted: slot3_exhausted_ },
+    1: { slot1_exhausted: true, slot0_exhausted: slot0_exhausted_, slot2_exhausted: slot2_exhausted_, slot3_exhausted: slot3_exhausted_ },
+    2: { slot2_exhausted: true, slot0_exhausted: slot0_exhausted_, slot1_exhausted: slot1_exhausted_, slot3_exhausted: slot3_exhausted_ },
+    3: { slot3_exhausted: true, slot0_exhausted: slot0_exhausted_, slot1_exhausted: slot1_exhausted_, slot2_exhausted: slot2_exhausted_ },
+  }[slotIdx];
+  const {
+    slot0_exhausted,
+    slot1_exhausted,
+    slot2_exhausted,
+    slot3_exhausted,
+  } = await roomCacheRepository.save(roomId, {
+    ...room,
+    ...exhaustedSlot,
+  });
+  if (slot0_exhausted && slot1_exhausted && slot2_exhausted && slot3_exhausted) {
+    return { isGameEnd: true };
+  }
+  return { isGameEnd: false };
+};
+
+export const updateRoomCacheStartedState = async ({ roomId, isStarted, gameId }: { roomId: RoomId, isStarted: boolean, gameId: RoomId }) => {
+  const room = await roomCacheRepository.fetch(roomId);
+  await roomCacheRepository.save(roomId, {
+    ...room,
+    gameId,
+    started: isStarted,
+    turn: 0,
+  });
+};
+
+export const createScoreValidationSequence = async ({ roomId, gameId, playerIdx, score }: {
+  roomId: RoomId;
+  gameId: GameId;
+  score: Score;
+  playerIdx: PlayerIdx,
+}) => {
+  await gameEndSequenceRepository.save(roomId, {
+    gameId,
+    initiatedAt: new Date(),
+    initiatedBy: playerIdx,
+    refScore: score.toString(),
+  });
 };
