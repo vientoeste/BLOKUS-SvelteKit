@@ -388,18 +388,8 @@ export class GameManager_Legacy {
         exhausted: false,
       })
       this.initiateNextTurn();
-      const res = await this.blockPlacementValidator.searchPlaceableBlocks({
-        board: this.board,
-        blocks: blockStore.getUnusedBlocks(),
-      }, {
-        // [TODO] find proper magic number
-        earlyReturn: turn < 20,
-      });
-      if (res === true || res === undefined) {
-        return;
-      }
-      if (res === false) {
-        console.log('...retire');
+      const res = await this.updateBlockPlaceability();
+      if (res === null) {
         return;
       }
       const slots = get(gameStore).mySlots;
@@ -415,7 +405,6 @@ export class GameManager_Legacy {
           this.messageDispatcher.dispatch(exhaustedMessage);
         }
       });
-      blockStore.updateUnavailableBlocks(res.unavailable);
       return;
     }
     return reason;
@@ -498,6 +487,19 @@ export class GameManager_Legacy {
     this.messageDispatcher.dispatch(startMessage);
   }
 
+  async updateBlockPlaceability() {
+    const res = await this.blockPlacementValidator.searchPlaceableBlocks({
+      board: this.board,
+      blocks: blockStore.getUnusedBlocks(),
+    });
+
+    if (typeof res !== 'boolean' && res !== undefined) {
+      blockStore.updateUnavailableBlocks(res.unavailable);
+      return res;
+    }
+    return null;
+  }
+
   restoreGameState(moves: Move[]) {
     this.moves = moves.sort((a, b) => a.turn - b.turn);
     blockStore.initialize(get(gameStore).mySlots);
@@ -514,10 +516,7 @@ export class GameManager_Legacy {
         });
       }
     });
-    this.blockPlacementValidator.searchPlaceableBlocks({
-      board: this.board,
-      blocks: blockStore.getUnusedBlocks(),
-    });
+    await this.updateBlockPlaceability();
 
     const leftTime = moves[moves.length - 1].createdAt.valueOf() - Date.now();
     if (!this.isMyTurn()) {
