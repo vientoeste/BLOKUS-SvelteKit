@@ -23,7 +23,7 @@ export class BoardStateManager {
     // re-render
   }
 
-  applyNonTimeoutMove({
+  applyRegularMove({
     blockInfo, playerIdx, position, turn, slotIdx
   }: {
     blockInfo: Block,
