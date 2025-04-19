@@ -498,7 +498,7 @@ export class GameManager_Legacy {
     this.messageDispatcher.dispatch(startMessage);
   }
 
-  restoreGameState(moves: Move[]) {
+  async restoreGameState(moves: Move[]) {
     this.moves = moves.sort((a, b) => a.turn - b.turn);
     blockStore.initialize(get(gameStore).mySlots);
     this.moves.forEach((move) => {
