@@ -202,6 +202,10 @@ export class GameManager_Legacy {
   }
 
   handleScoreConfirmationMessage() {
+    gameStore.update((store) => ({
+      ...store,
+      isEnded: true,
+    }))
     const score = Score.fromBoard(this.board);
     const scoreConfirmMessage: InboundScoreConfirmationMessage = {
       type: 'SCORE_CONFIRM',
@@ -230,6 +234,10 @@ export class GameManager_Legacy {
   }
 
   initiateNextTurn(): Promise<void> | void {
+    const store = get(gameStore);
+    if (store.isEnded) {
+      return;
+    }
     gameStore.update(({ turn, ...rest }) => ({
       ...rest,
       turn: turn + 1,
