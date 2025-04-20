@@ -55,7 +55,9 @@ export const gameStore = writable<{
   players: ({ id: string, username: string, ready: boolean } | undefined)[],
   isStarted: boolean,
   mySlots: SlotIdx[],
+  isEnded: boolean,
 }>({
+  isEnded: false,
   turn: -1,
   playerIdx: 0,
   players: [],
