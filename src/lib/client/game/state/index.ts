@@ -2,7 +2,7 @@ import type { BoardStateManager } from "./board";
 import type { MoveStateManager } from "./move";
 import type { PlayerStateManager } from "./player";
 
-export class GameStateManager {
+export class GameStateLayer {
   constructor({ playerStateManager, boardStateManager, moveStateManager }: {
     playerStateManager: PlayerStateManager;
     boardStateManager: BoardStateManager;
