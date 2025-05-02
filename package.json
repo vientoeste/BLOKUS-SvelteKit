@@ -51,6 +51,7 @@
 		"redis-om": "^0.4.7",
 		"ts-jest": "^29.2.5",
 		"uuidv7": "^1.0.2",
+		"vite-plugin-node-polyfills": "^0.23.0",
 		"winston": "^3.17.0",
 		"ws": "^8.18.0"
 	}
