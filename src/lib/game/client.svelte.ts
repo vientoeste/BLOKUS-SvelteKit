@@ -396,34 +396,11 @@ export class GameManager_Legacy {
         exhausted: false,
       })
       this.initiateNextTurn();
-      const res = await this.blockPlacementValidator.searchPlaceableBlocks({
-        board: this.board,
-        blocks: blockStore.getUnusedBlocks(),
-      }, {
-        // [TODO] find proper magic number
-        earlyReturn: turn < 20,
-      });
-      if (res === true || res === undefined) {
+      const res = await this.updateBlockPlaceability();
+      if (res === null) {
         return;
       }
-      if (res === false) {
-        console.log('...retire');
-        return;
-      }
-      const slots = get(gameStore).mySlots;
-      const unavailableSlots = slots.filter(slotIdx =>
-        !res.available.some(block => block.slotIdx === slotIdx)
-      );
-      unavailableSlots.forEach((slotIdx) => {
-        if (!this.exhaustedSlots.has(slotIdx)) {
-          const exhaustedMessage: InboundExhaustedMessage = {
-            type: 'EXHAUSTED',
-            slotIdx,
-          };
-          this.messageDispatcher.dispatch(exhaustedMessage);
-        }
-      });
-      blockStore.updateUnavailableBlocks(res.unavailable);
+      this.updateAvailableSlots({ available: res.available });
       return;
     }
     return reason;
@@ -551,10 +528,10 @@ export class GameManager_Legacy {
         });
       }
     });
-    this.blockPlacementValidator.searchPlaceableBlocks({
-      board: this.board,
-      blocks: blockStore.getUnusedBlocks(),
-    });
+    const result = await this.updateBlockPlaceability();
+    if (result === null) {
+      return;
+    }
 
     const leftTime = moves[moves.length - 1].createdAt.valueOf() - Date.now();
     if (!this.isMyTurn()) {
