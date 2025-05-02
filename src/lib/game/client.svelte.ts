@@ -506,6 +506,35 @@ export class GameManager_Legacy {
     this.messageDispatcher.dispatch(startMessage);
   }
 
+  async updateBlockPlaceability() {
+    const res = await this.blockPlacementValidator.searchPlaceableBlocks({
+      board: this.board,
+      blocks: blockStore.getUnusedBlocks(),
+    });
+
+    if (typeof res !== 'boolean' && res !== undefined) {
+      blockStore.updateUnavailableBlocks(res.unavailable);
+      return res;
+    }
+    return null;
+  }
+
+  async updateAvailableSlots({ available }: { available: { blockType: BlockType, slotIdx: SlotIdx }[] }) {
+    const slots = get(gameStore).mySlots;
+    const unavailableSlots = slots.filter(slotIdx =>
+      !available.some(block => block.slotIdx === slotIdx)
+    );
+    unavailableSlots.forEach((slotIdx) => {
+      if (!this.exhaustedSlots.has(slotIdx)) {
+        const exhaustedMessage: InboundExhaustedMessage = {
+          type: 'EXHAUSTED',
+          slotIdx,
+        };
+        this.messageDispatcher.dispatch(exhaustedMessage);
+      }
+    });
+  }
+
   async restoreGameState(moves: Move[]) {
     this.moves = moves.sort((a, b) => a.turn - b.turn);
     blockStore.initialize(get(gameStore).mySlots);
