@@ -54,6 +54,7 @@
       playerIdx: 0,
       players: [],
       turn: -1,
+      isEnded: false,
     });
     blockStore.set([]);
     socket?.close();

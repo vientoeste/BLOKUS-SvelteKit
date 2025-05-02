@@ -200,6 +200,10 @@ export class GameManager_Legacy {
   }
 
   handleScoreConfirmationMessage() {
+    gameStore.update((store) => ({
+      ...store,
+      isEnded: true,
+    }))
     const score = Score.fromBoard(this.board);
     const scoreConfirmMessage: InboundScoreConfirmationMessage = {
       type: 'SCORE_CONFIRM',
@@ -228,6 +232,10 @@ export class GameManager_Legacy {
   }
 
   initiateNextTurn(): Promise<void> | void {
+    const store = get(gameStore);
+    if (store.isEnded) {
+      return;
+    }
     gameStore.update(({ turn, ...rest }) => ({
       ...rest,
       turn: turn + 1,
@@ -386,34 +394,11 @@ export class GameManager_Legacy {
         exhausted: false,
       })
       this.initiateNextTurn();
-      const res = await this.blockPlacementValidator.searchPlaceableBlocks({
-        board: this.board,
-        blocks: blockStore.getUnusedBlocks(),
-      }, {
-        // [TODO] find proper magic number
-        earlyReturn: turn < 20,
-      });
-      if (res === true || res === undefined) {
+      const res = await this.updateBlockPlaceability();
+      if (res === null) {
         return;
       }
-      if (res === false) {
-        console.log('...retire');
-        return;
-      }
-      const slots = get(gameStore).mySlots;
-      const unavailableSlots = slots.filter(slotIdx =>
-        !res.available.some(block => block.slotIdx === slotIdx)
-      );
-      unavailableSlots.forEach((slotIdx) => {
-        if (!this.exhaustedSlots.has(slotIdx)) {
-          const exhaustedMessage: InboundExhaustedMessage = {
-            type: 'EXHAUSTED',
-            slotIdx,
-          };
-          this.messageDispatcher.dispatch(exhaustedMessage);
-        }
-      });
-      blockStore.updateUnavailableBlocks(res.unavailable);
+      this.updateAvailableSlots({ available: res.available });
       return;
     }
     return reason;
@@ -496,7 +481,36 @@ export class GameManager_Legacy {
     this.messageDispatcher.dispatch(startMessage);
   }
 
-  restoreGameState(moves: Move[]) {
+  async updateBlockPlaceability() {
+    const res = await this.blockPlacementValidator.searchPlaceableBlocks({
+      board: this.board,
+      blocks: blockStore.getUnusedBlocks(),
+    });
+
+    if (typeof res !== 'boolean' && res !== undefined) {
+      blockStore.updateUnavailableBlocks(res.unavailable);
+      return res;
+    }
+    return null;
+  }
+
+  async updateAvailableSlots({ available }: { available: { blockType: BlockType, slotIdx: SlotIdx }[] }) {
+    const slots = get(gameStore).mySlots;
+    const unavailableSlots = slots.filter(slotIdx =>
+      !available.some(block => block.slotIdx === slotIdx)
+    );
+    unavailableSlots.forEach((slotIdx) => {
+      if (!this.exhaustedSlots.has(slotIdx)) {
+        const exhaustedMessage: InboundExhaustedMessage = {
+          type: 'EXHAUSTED',
+          slotIdx,
+        };
+        this.messageDispatcher.dispatch(exhaustedMessage);
+      }
+    });
+  }
+
+  async restoreGameState(moves: Move[]) {
     this.moves = moves.sort((a, b) => a.turn - b.turn);
     blockStore.initialize(get(gameStore).mySlots);
     this.moves.forEach((move) => {
@@ -512,10 +526,10 @@ export class GameManager_Legacy {
         });
       }
     });
-    this.blockPlacementValidator.searchPlaceableBlocks({
-      board: this.board,
-      blocks: blockStore.getUnusedBlocks(),
-    });
+    const result = await this.updateBlockPlaceability();
+    if (result === null) {
+      return;
+    }
 
     const leftTime = moves[moves.length - 1].createdAt.valueOf() - Date.now();
     if (!this.isMyTurn()) {
