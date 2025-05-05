@@ -455,7 +455,7 @@ export class GameManager_Legacy {
     this.gameId = gameId;
     this.board = createNewBoard();
     const slots = getPlayersSlot({
-      players: this.users,
+      players: this.playerStateManager.getPlayers(),
       playerIdx: this.playerIdx,
     });
     gameStore.update((gameInfo) => ({
