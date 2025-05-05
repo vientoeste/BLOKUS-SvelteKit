@@ -77,8 +77,6 @@ export class GameManager_Legacy {
   board: BoardMatrix = $state([]);
   private turn: number;
 
-  users: (ParticipantInf | undefined)[] = $state([undefined, undefined, undefined, undefined]);
-
   moves: Move[] = [];
 
   handleIncomingMessage(message: OutboundWebSocketMessage) {
