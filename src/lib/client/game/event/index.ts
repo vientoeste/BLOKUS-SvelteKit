@@ -1,16 +1,9 @@
-import type { EventType } from '$types/event';
+import type { EventType, GameEvent } from '$types';
 import { EventEmitter } from 'events';
 
 // [TODO] define event types
 export const EVENT: Record<string, EventType> = {
 
-}
-
-// [TODO] define payload
-interface GameEvent {
-  type: EventType;
-  payload: unknown;
-  timestamp: number;
 }
 
 export class EventBus {
