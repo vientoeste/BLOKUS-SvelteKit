@@ -1,24 +1,32 @@
 import { parseJson } from "$lib/utils";
 import type { OutboundWebSocketMessage } from "$types";
-import type { EventBus } from "../event";
+import type { EventBus } from "../event/eventBus";
 
 export interface MessageReceiver {
-  handle: (message: string) => void;
+  listen: () => void;
 }
 
 export class WebSocketMessageReceiver implements MessageReceiver {
-  constructor(eventBus: EventBus) {
+  constructor({ eventBus, webSocket }: { eventBus: EventBus, webSocket: WebSocket }) {
     this.eventBus = eventBus;
+    this.webSocket = webSocket;
   }
 
   private eventBus: EventBus;
+  private webSocket: WebSocket;
 
-  handle = (rawMessage: string) => {
-    const message = parseJson<OutboundWebSocketMessage>(rawMessage);
-    if (typeof message === 'string') {
-      throw new Error('unknown message received: '.concat(message));
+  public listen = () => {
+    this.webSocket.onmessage = (event) => {
+      console.log(typeof event);
+      if (typeof event.data !== 'string') {
+        return;
+      }
+      const incomingMessage = parseJson<OutboundWebSocketMessage>(event.data);
+      if (typeof incomingMessage === 'string') {
+        throw new Error('received unknown message');
+      }
+      const { type, ...payload } = incomingMessage;
+      this.eventBus.publish(`MESSAGE_RECEIVED_${type}`, payload);
     }
-    const { type, ...rest } = message;
-    this.eventBus.publish(`MESSAGE_RECEIVED:${type}`, rest);
   }
 }
