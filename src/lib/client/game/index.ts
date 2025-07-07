@@ -7,26 +7,26 @@ import type { UILayer } from "./ui";
 export class GameManager {
   constructor({
     eventBus,
-    UILayer,
+    uiLayer,
     sequenceLayer,
     networkLayer,
     stateLayer,
   }: {
     eventBus: EventBus;
-    UILayer: UILayer;
+    uiLayer: UILayer;
     sequenceLayer: GameSequenceLayer;
     networkLayer: NetworkLayer;
     stateLayer: GameStateLayer;
   }) {
     this.eventBus = eventBus;
-    this.UILayer = UILayer;
+    this.uiLayer = uiLayer;
     this.sequenceLayer = sequenceLayer;
     this.networkLayer = networkLayer;
     this.stateLayer = stateLayer;
   }
 
   private eventBus: EventBus;
-  private UILayer: UILayer;
+  private uiLayer: UILayer;
   private sequenceLayer: GameSequenceLayer;
   private networkLayer: NetworkLayer;
   private stateLayer: GameStateLayer;
