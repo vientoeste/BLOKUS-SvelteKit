@@ -1,5 +1,5 @@
 import { preset } from '$lib/game/core';
-import type { BlockType, PlayerIdx, Rotation, SlotIdx, UserInfo } from '$types';
+import { type ParticipantInf, type BlockType, type PlayerIdx, type Rotation, type SlotIdx, type UserInfo } from '$types';
 import type { Undefinedable } from '$lib/utils';
 import { get, writable } from 'svelte/store';
 
@@ -127,3 +127,5 @@ export const blockStore = (() => {
     initialize, getBlocksBySlot, getUnusedBlocks, getUnusedBlocksBySlot, getAvailableBlocks, getAvailableBlocksBySlot, updateUnavailableBlocks, updateBlockPlacementStatus,
   };
 })();
+
+export const participantStore = writable<ParticipantInf[]>([]);
