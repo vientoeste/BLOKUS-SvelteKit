@@ -160,12 +160,19 @@ export const participantStore = (() => {
     ready: boolean,
   }) => {
     update((players) => {
-      // [CHECK] it is for proper re-render, but is it really necessary?
-      const newPlayersArr = [...players];
-      if (newPlayersArr[playerIdx] === undefined) return players;
-      newPlayersArr[playerIdx].ready = ready;
-      return newPlayersArr;
-    })
+      /**
+       * @description when I update parameter and return the original arr it the component updated without re-rendering but idk why it does work.
+       * If it doesn't work just recover with comments under here
+       */
+      if (players[playerIdx] !== undefined) players[playerIdx].ready = ready;
+      return players;
+      // const newPlayersArr = [...players];
+      // if (newPlayersArr[playerIdx] === undefined) {
+      //   return players;
+      // }
+      // newPlayersArr[playerIdx].ready = ready;
+      // return newPlayersArr;
+    });
   };
   return {
     subscribe,
