@@ -1,6 +1,5 @@
 import type { GameEvent } from '$types';
 import { EventEmitter } from 'events';
-import { EVENT } from '.';
 
 export class EventBus {
   private emitter: EventEmitter;
@@ -24,7 +23,6 @@ export class EventBus {
 
   publish(eventType: string, payload: unknown): void {
     const event: GameEvent = {
-      type: EVENT[eventType],
       payload,
       timestamp: Date.now()
     };

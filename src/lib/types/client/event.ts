@@ -20,7 +20,6 @@ export type EventType = typeof Event;
 
 // [TODO] define payload
 export interface GameEvent {
-  type: EventType;
   payload: unknown;
   timestamp: number;
 }
