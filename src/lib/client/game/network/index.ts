@@ -28,7 +28,7 @@ export class WebsocketNetworkLayer implements NetworkLayer {
     // [TODO] add events: connection open/close/error/...
     this.receiver.listen();
 
-    this.eventBus.subscribe('MESSAGE_DISPATCH', (event: GameEvent) => {
+    this.eventBus.subscribe('DispatchMessage', (event: GameEvent) => {
       const message = event.payload;
       // [TODO] check type of message(that is InboundWebSocketMessage)
       this.dispatcher.dispatch(message as InboundWebSocketMessage);
