@@ -30,7 +30,6 @@ import { blockStore, gameStore, modalStore, movePreviewStore } from "$lib/store"
 import { createNewBoard, putBlockOnBoard, rollbackMove } from "./core";
 import type {
   WebSocketMessageDispatcher,
-  WebSocketMessageReceiver,
 } from "$lib/websocket/client";
 import Alert from "$lib/components/Alert.svelte";
 import Confirm from "$lib/components/Confirm.svelte";
@@ -38,6 +37,7 @@ import { getPlayersSlot, isRightTurn } from "$lib/utils";
 import { get } from "svelte/store";
 import type { PlayerStateManager } from "$lib/client/game/state/player";
 import { Score } from "$lib/domain/score";
+import type { WebSocketMessageReceiver } from "$lib/client/game/network/receiver";
 
 export class GameManager_Legacy {
   constructor({
