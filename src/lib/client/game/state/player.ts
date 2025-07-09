@@ -23,7 +23,7 @@ export class PlayerStateManager {
     };
   }
 
-  removePlayer(playerIdx: PlayerIdx) {
+  removePlayerByIdx(playerIdx: PlayerIdx) {
     this.players[playerIdx] = undefined;
   }
 

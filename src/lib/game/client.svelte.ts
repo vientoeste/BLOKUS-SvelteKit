@@ -175,7 +175,7 @@ export class GameManager_Legacy {
 
   removeUser(message: OutboundLeaveMessage) {
     const { playerIdx } = message;
-    this.playerStateManager.removePlayer(playerIdx);
+    this.playerStateManager.removePlayerByIdx(playerIdx);
   }
 
   ready() {
