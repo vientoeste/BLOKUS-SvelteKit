@@ -1,4 +1,4 @@
-import type { GameEvent } from '$types';
+import type { EventType, GameEvent } from '$types';
 import { EventEmitter } from 'events';
 
 export class EventBus {
@@ -8,7 +8,7 @@ export class EventBus {
     this.emitter = new EventEmitter();
   }
 
-  subscribe(eventType: string, callback: (event: GameEvent) => void): { unsubscribe: () => void } {
+  subscribe(eventType: keyof EventType, callback: (event: GameEvent) => void): { unsubscribe: () => void } {
     this.emitter.on(eventType, callback);
     return {
       unsubscribe: () => {
