@@ -9,11 +9,13 @@
     BlockPlacementValidator,
     GameManager_Legacy,
   } from "$lib/game/client.svelte";
+  import { WebSocketMessageDispatcher } from "$lib/websocket/client";
   import {
-    WebSocketMessageDispatcher,
-    WebSocketMessageReceiver,
-  } from "$lib/websocket/client";
-  import { blockStore, gameStore, modalStore } from "$lib/store";
+    blockStore,
+    gameStore,
+    modalStore,
+    participantStore,
+  } from "$lib/store";
   import type {
     BoardMatrix,
     ParticipantInf,
@@ -25,6 +27,7 @@
   import { getPlayersSlot } from "$lib/utils";
   import { PlayerStateManager } from "$lib/client/game/state/player";
   import { EventBus } from "$lib/client/game/event";
+  import { WebSocketMessageReceiver } from "$lib/client/game/network/receiver";
 
   const { data }: { data: PageData } = $props();
   const { room, playerIdx, roomCache, moves } = data;
@@ -44,8 +47,6 @@
   let blockPlacementValidator: BlockPlacementValidator;
   let playerStateManager: PlayerStateManager;
   let eventBus = new EventBus();
-
-  let players: (ParticipantInf | undefined)[] = $state([]);
 
   onDestroy(() => {
     gameStore.set({
@@ -74,12 +75,6 @@
       goto("/rooms");
     }
     $gameStore.playerIdx = playerIdx as PlayerIdx;
-    $gameStore.players = [
-      roomCache.p0,
-      roomCache.p1,
-      roomCache.p2,
-      roomCache.p3,
-    ];
     $gameStore.isStarted = room.isStarted;
     $gameStore.turn = roomCache.turn;
 
@@ -99,12 +94,14 @@
     );
     worker = new workerModule.default();
 
-    messageReceiver = new WebSocketMessageReceiver(socket);
+    messageReceiver = new WebSocketMessageReceiver({
+      eventBus,
+      webSocket: socket,
+    });
     messageDispatcher = new WebSocketMessageDispatcher(socket);
     blockPlacementValidator = new BlockPlacementValidator(worker);
-    players = [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3];
     playerStateManager = new PlayerStateManager({
-      players,
+      players: [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3],
       eventBus,
     });
     gameManager = new GameManager_Legacy({
@@ -121,7 +118,7 @@
     if (roomCache.started) {
       $gameStore.mySlots = getPlayersSlot({
         playerIdx: $gameStore.playerIdx,
-        players: $gameStore.players,
+        players: $participantStore,
       });
       gameManager?.restoreGameState(moves);
     }
@@ -133,7 +130,6 @@
 </script>
 
 <Players
-  {players}
   ready={() => {
     gameManager?.ready();
   }}
