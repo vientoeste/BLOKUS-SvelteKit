@@ -128,4 +128,47 @@ export const blockStore = (() => {
   };
 })();
 
-export const participantStore = writable<ParticipantInf[]>([]);
+export const participantStore = (() => {
+  const { set, subscribe, update } = writable<(ParticipantInf | undefined)[]>([]);
+  const initialize = (players: (ParticipantInf | undefined)[]) => {
+    set(players);
+  };
+  const addPlayer = ({
+    id,
+    ready,
+    username,
+    playerIdx,
+  }: ParticipantInf & { playerIdx: PlayerIdx }) => {
+    update((players) => {
+      players[playerIdx] = {
+        id, ready, username,
+      };
+      return players;
+    });
+  };
+  const removePlayerByIdx = (playerIdx: PlayerIdx) => {
+    update((players) => {
+      players[playerIdx] = undefined;
+      return players;
+    })
+  };
+  const setPlayerReadyState = ({
+    playerIdx,
+    ready,
+  }: {
+    playerIdx: PlayerIdx,
+    ready: boolean,
+  }) => {
+    update((players) => {
+      // [CHECK] it is for proper re-render, but is it really necessary?
+      const newPlayersArr = [...players];
+      if (newPlayersArr[playerIdx] === undefined) return players;
+      newPlayersArr[playerIdx].ready = ready;
+      return newPlayersArr;
+    })
+  };
+  return {
+    subscribe,
+    initialize, addPlayer, removePlayerByIdx, setPlayerReadyState,
+  };
+})();
