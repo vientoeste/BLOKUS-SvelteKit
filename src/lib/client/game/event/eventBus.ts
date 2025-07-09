@@ -6,6 +6,11 @@ export class EventBus {
 
   constructor() {
     this.emitter = new EventEmitter();
+    if (process.env.NODE_ENV === 'development') {
+      this.emitter.on('*', (event) => {
+        // Debug here
+      });
+    }
   }
 
   subscribe(eventType: keyof EventType, callback: (event: GameEvent) => void): { unsubscribe: () => void } {
@@ -17,11 +22,11 @@ export class EventBus {
     };
   }
 
-  once(eventType: string, callback: (event: GameEvent) => void): void {
+  once(eventType: keyof EventType, callback: (event: GameEvent) => void): void {
     this.emitter.once(eventType, callback);
   }
 
-  publish(eventType: string, payload: unknown): void {
+  publish(eventType: keyof EventType, payload: unknown): void {
     const event: GameEvent = {
       payload,
       timestamp: Date.now()
@@ -31,11 +36,11 @@ export class EventBus {
 
     // for debugging / logging
     if (eventType !== '*') {
-      this.emitter.emit('*', event);
+      this.emitter.emit('*', { type: eventType, ...event });
     }
   }
 
-  removeAllListeners(eventType?: string): void {
+  removeAllListeners(eventType?: keyof EventType): void {
     this.emitter.removeAllListeners(eventType);
   }
 }

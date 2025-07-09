@@ -14,6 +14,8 @@ export const Event = {
   MessageReceived_GameEnd: 'MessageReceived_GameEnd',
 
   DispatchMessage: 'DispatchMessage',
+
+  '*': '*',
 } as const;
 
 export type EventType = typeof Event;
