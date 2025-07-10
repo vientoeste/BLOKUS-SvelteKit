@@ -66,14 +66,14 @@ export class GameManager_Legacy {
 
     this.messageReceiver.listen();
 
-    eventBus.subscribe('MessageReceived_Leave', (event) => {
-      const message = event.payload as OutboundLeaveMessage;
-      this.removeUser(message);
-    });
-    eventBus.subscribe('MessageReceived_Connected', (event) => {
-      const message = event.payload as OutboundConnectedMessage;
-      this.addUser(message);
-    });
+    // eventBus.subscribe('MessageReceived_Leave', (event) => {
+    //   const message = event.payload as OutboundLeaveMessage;
+    //   this.removeUser(message);
+    // });
+    // eventBus.subscribe('MessageReceived_Connected', (event) => {
+    //   const message = event.payload as OutboundConnectedMessage;
+    //   this.addUser(message);
+    // });
     // eventBus.subscribe('MessageReceived_Ready', (event) => {
     //   const message = event.payload as OutboundReadyMessage;
     //   this.updateReadyState(message);
