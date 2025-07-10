@@ -61,8 +61,6 @@ export class GameManager_Legacy {
     this.messageReceiver = messageReceiver;
     this.playerStateManager = playerStateManager;
     this.blockPlacementValidator = blockPlacementValidator;
-
-    this.messageReceiver.onMessage((m) => { this.handleIncomingMessage(m) });
   }
   private messageReceiver: WebSocketMessageReceiver;
   private messageDispatcher: WebSocketMessageDispatcher;
