@@ -38,7 +38,6 @@ export class WebSocketMessageReceiver implements MessageReceiver {
 
   public listen = () => {
     this.webSocket.onmessage = (event) => {
-      console.log(typeof event);
       if (typeof event.data !== 'string') {
         return;
       }
