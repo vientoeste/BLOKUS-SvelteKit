@@ -63,6 +63,51 @@ export class GameManager_Legacy {
     this.messageReceiver = messageReceiver;
     this.playerStateManager = playerStateManager;
     this.blockPlacementValidator = blockPlacementValidator;
+
+    this.messageReceiver.listen();
+
+    eventBus.subscribe('MessageReceived_Leave', (event) => {
+      const message = event.payload as OutboundLeaveMessage;
+      this.removeUser(message);
+    });
+    eventBus.subscribe('MessageReceived_Connected', (event) => {
+      const message = event.payload as OutboundConnectedMessage;
+      this.addUser(message);
+    });
+    // eventBus.subscribe('MessageReceived_Ready', (event) => {
+    //   const message = event.payload as OutboundReadyMessage;
+    //   this.updateReadyState(message);
+    // });
+    // eventBus.subscribe('MessageReceived_CancelReady', (event) => {
+    //   const message = event.payload as OutboundCancelReadyMessage;
+    //   this.updateReadyState(message);
+    // });
+    eventBus.subscribe('MessageReceived_Move', (event) => {
+      const message = event.payload as OutboundMoveMessage;
+      this.applyMove(message);
+    });
+    eventBus.subscribe('MessageReceived_SkipTurn', (event) => {
+      const message = event.payload as OutboundSkipTurnMessage;
+      this.handleSkipTurnMessage(message);
+    });
+    eventBus.subscribe('MessageReceived_Exhausted', (event) => {
+      const message = event.payload as InboundExhaustedMessage;
+      this.handleExhaustedMessage(message);
+    });
+    eventBus.subscribe('MessageReceived_Start', (event) => {
+      const message = event.payload as OutboundStartMessage;
+      this.handleStartMessage(message);
+    });
+    eventBus.subscribe('MessageReceived_BadReq', (event) => {
+      const message = event.payload as OutboundBadReqMessage;
+      this.handleBadRequestException(message);
+    });
+    eventBus.subscribe('MessageReceived_ScoreConfirmation', () => {
+      this.handleScoreConfirmationMessage();
+    });
+    eventBus.subscribe('MessageReceived_GameEnd', () => {
+      this.handleGameEnd();
+    });
   }
   private messageReceiver: WebSocketMessageReceiver;
   private messageDispatcher: WebSocketMessageDispatcher;
