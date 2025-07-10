@@ -163,6 +163,8 @@ export const participantStore = (() => {
       /**
        * @description when I update parameter and return the original arr it the component updated without re-rendering but idk why it does work.
        * If it doesn't work just recover with comments under here
+       * 2025-07-09 worked on Ubuntu 24.04, Node.js v22.12.0
+       * 2025-07-10 worked on Windows 10 WSL2 Ubuntu 24.04, Node.js v.20.15.1
        */
       if (players[playerIdx] !== undefined) players[playerIdx].ready = ready;
       return players;
