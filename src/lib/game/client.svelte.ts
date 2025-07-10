@@ -38,10 +38,11 @@ import { get } from "svelte/store";
 import type { PlayerStateManager } from "$lib/client/game/state/player";
 import { Score } from "$lib/domain/score";
 import type { WebSocketMessageReceiver } from "$lib/client/game/network/receiver";
+import type { EventBus } from "$lib/client/game/event";
 
 export class GameManager_Legacy {
   constructor({
-    board, playerIdx, turn, gameId, messageDispatcher, messageReceiver, playerStateManager, blockPlacementValidator,
+    board, playerIdx, turn, gameId, messageDispatcher, messageReceiver, playerStateManager, blockPlacementValidator, eventBus
   }: {
     board: BoardMatrix, playerIdx: PlayerIdx, turn?: number,
     gameId?: string,
@@ -49,6 +50,7 @@ export class GameManager_Legacy {
     messageReceiver: WebSocketMessageReceiver,
     playerStateManager: PlayerStateManager,
     blockPlacementValidator: BlockPlacementValidator,
+    eventBus: EventBus,
   }) {
     this.board = board;
     this.turn = turn ?? -1;

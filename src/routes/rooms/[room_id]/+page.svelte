@@ -113,6 +113,7 @@
       messageDispatcher,
       playerStateManager,
       blockPlacementValidator,
+      eventBus,
     });
 
     if (roomCache.started) {
