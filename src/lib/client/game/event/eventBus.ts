@@ -26,7 +26,7 @@ export class EventBus {
     this.emitter.once(eventType, callback);
   }
 
-  publish(eventType: keyof EventType, payload: unknown): void {
+  publish(eventType: keyof EventType, payload?: unknown): void {
     const event: GameEvent = {
       payload,
       timestamp: Date.now()
