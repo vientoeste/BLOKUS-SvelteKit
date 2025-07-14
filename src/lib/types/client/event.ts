@@ -15,6 +15,9 @@ export const Event = {
 
   DispatchMessage: 'DispatchMessage',
 
+  GameStateInitialized: 'GameStateInitialized',
+  GameStateReset: 'GameStateReset',
+
   '*': '*',
 } as const;
 
