@@ -16,6 +16,31 @@ export class GameStateManager {
     this.isEnded = false;
     this.exhaustedSlots = [];
     this.eventBus = eventBus;
+
+    this.eventBus.subscribe('MessageReceived_Start', (event) => {
+      const { gameId } = event.payload as { gameId: GameId };
+      this.handleGameStart(gameId);
+    });
+    this.eventBus.subscribe('MessageReceived_GameEnd', (event) => {
+      this.handleGameEnd();
+    });
+  }
+
+  handleGameStart(gameId: GameId) {
+    this.turn = 0;
+    this.gameId = gameId;
+    this.isStarted = true;
+    this.isEnded = false;
+    this.exhaustedSlots = [];
+    this.eventBus.publish('GameStateInitialized');
+  }
+
+  handleGameEnd() {
+    this.turn = -1;
+    this.gameId = null;
+    this.isStarted = false;
+    this.isEnded = true;
+    this.eventBus.publish('GameStateReset');
   }
 
   restoreGameState({
