@@ -1,4 +1,5 @@
 import type { GameId, SlotIdx } from "$types";
+import type { EventBus } from "../event";
 
 export class GameStateManager {
   public turn: number;
@@ -6,13 +7,15 @@ export class GameStateManager {
   private isStarted: boolean;
   private isEnded: boolean;
   private exhaustedSlots: SlotIdx[];
+  private eventBus: EventBus;
 
-  constructor() {
+  constructor({ eventBus }: { eventBus: EventBus }) {
     this.turn = -1;
     this.gameId = null;
     this.isStarted = false;
     this.isEnded = false;
     this.exhaustedSlots = [];
+    this.eventBus = eventBus;
   }
 
   restoreGameState({
