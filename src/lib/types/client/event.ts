@@ -17,6 +17,9 @@ export const Event = {
 
   GameStateInitialized: 'GameStateInitialized',
   GameStateReset: 'GameStateReset',
+  InvalidTurn: 'InvalidTurn',
+  InvalidGameId: 'InvalidGameId',
+  MoveContextVerified: 'MoveContextVerified',
 
   '*': '*',
 } as const;
