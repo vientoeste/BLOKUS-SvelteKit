@@ -1,4 +1,4 @@
-import type { GameId, SlotIdx } from "$types";
+import type { GameId, OutboundMoveMessage, SlotIdx } from "$types";
 import type { EventBus } from "../event";
 
 export class GameStateManager {
@@ -41,6 +41,15 @@ export class GameStateManager {
     this.isStarted = false;
     this.isEnded = true;
     this.eventBus.publish('GameStateReset');
+  }
+
+  verifyMoveContext(moveMessage: OutboundMoveMessage) {
+    const { turn } = moveMessage;
+    if (turn !== this.turn + 1) {
+      this.eventBus.publish('InvalidTurn');
+      return;
+    }
+    this.eventBus.publish('MoveContextVerified', moveMessage);
   }
 
   restoreGameState({
