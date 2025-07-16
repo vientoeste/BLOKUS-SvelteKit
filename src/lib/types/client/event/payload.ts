@@ -12,4 +12,4 @@ export type MoveAppliedPayload = {
   createdAt: Date;
 }
 
-export type MoveContextVerifiedPayload = Omit<OutboundMoveMessage, 'type'> & { gameId: GameId };
+export type MoveContextVerifiedPayload = Omit<OutboundMoveMessage, 'type'>;
