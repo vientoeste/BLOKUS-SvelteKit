@@ -1,14 +1,18 @@
 import { putBlockOnBoard, rollbackMove } from "$lib/game/core";
 import type { Block, BoardMatrix, PlayerIdx, SlotIdx } from "$types";
+import type { EventBus } from "../event";
 
 export class BoardStateManager {
-  constructor({ board }: {
+  constructor({ board, eventBus }: {
     board?: BoardMatrix;
+    eventBus: EventBus;
   }) {
     this.board = board;
+    this.eventBus = eventBus;
   }
 
   private board?: BoardMatrix;
+  private eventBus: EventBus;
 
   initializeBoard(board?: BoardMatrix) {
     if (!board) {
