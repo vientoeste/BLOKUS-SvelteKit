@@ -49,7 +49,11 @@ export class GameStateManager {
       this.eventBus.publish('InvalidTurn', undefined);
       return;
     }
-    this.eventBus.publish('MoveContextVerified', moveMessage);
+    if (!this.gameId) {
+      this.eventBus.publish('InvalidGameId', undefined);
+      return;
+    }
+    this.eventBus.publish('MoveContextVerified', { ...moveMessage, gameId: this.gameId });
   }
 
   restoreGameState({
