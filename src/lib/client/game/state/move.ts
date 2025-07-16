@@ -7,6 +7,10 @@ export class MoveStateManager {
     if (moves !== undefined) {
       this.moveHistory.push(...moves);
     }
+
+    this.eventBus.subscribe('MoveApplied', (event) => {
+      this.moveHistory.push({ ...event.payload, exhausted: false, timeout: false });
+    });
   }
 
   private eventBus: EventBus;
