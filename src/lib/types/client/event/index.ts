@@ -23,6 +23,7 @@ export interface EventPayloadMap {
   'GameStateReset': void,
   'InvalidTurn': void,
   'InvalidGameId': void,
+  'InvalidGameInitializedState': void,
   'MoveContextVerified': MoveContextVerifiedPayload,
 
   'BoardNotInitialized': void,

@@ -45,6 +45,10 @@ export class GameStateManager {
 
   verifyMoveContext(moveMessage: OutboundMoveMessage) {
     const { turn } = moveMessage;
+    if (this.isEnded || !this.isStarted) {
+      this.eventBus.publish('InvalidGameInitializedState', undefined)
+      return;
+    }
     if (turn !== this.turn + 1) {
       this.eventBus.publish('InvalidTurn', undefined);
       return;
