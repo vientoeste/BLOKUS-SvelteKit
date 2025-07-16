@@ -9,6 +9,25 @@ export class BoardStateManager {
   }) {
     this.board = board;
     this.eventBus = eventBus;
+
+    this.eventBus.subscribe('MoveContextVerified', ({ payload, timestamp }) => {
+      if (this.board === undefined) {
+        this.eventBus.publish('BoardNotInitialized', undefined);
+        return;
+      }
+      const { blockInfo, playerIdx, position, slotIdx, turn, gameId } = payload;
+      this.applyRegularMove({ blockInfo, playerIdx, position, slotIdx, turn });
+      this.eventBus.publish('MoveApplied', {
+        blockInfo,
+        // [TODO] use timestamp sent by server
+        createdAt: new Date(timestamp),
+        gameId,
+        playerIdx,
+        position,
+        slotIdx,
+        turn,
+      });
+    });
   }
 
   private board?: BoardMatrix;
