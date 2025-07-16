@@ -1,33 +1,45 @@
-export const Event = {
-  MessageReceived_CancelReady: 'MessageReceived_CancelReady',
-  MessageReceived_Connected: 'MessageReceived_Connected',
-  MessageReceived_Leave: 'MessageReceived_Leave',
-  MessageReceived_Move: 'MessageReceived_Move',
-  MessageReceived_Ready: 'MessageReceived_Ready',
-  MessageReceived_Mediate: 'MessageReceived_Mediate',
-  MessageReceived_Error: 'MessageReceived_Error',
-  MessageReceived_Start: 'MessageReceived_Start',
-  MessageReceived_BadReq: 'MessageReceived_BadReq',
-  MessageReceived_Exhausted: 'MessageReceived_Exhausted',
-  MessageReceived_SkipTurn: 'MessageReceived_SkipTurn',
-  MessageReceived_ScoreConfirmation: 'MessageReceived_ScoreConfirmation',
-  MessageReceived_GameEnd: 'MessageReceived_GameEnd',
+import type { InboundWebSocketMessage, OutboundBadReqMessage, OutboundCancelReadyMessage, OutboundConnectedMessage, OutboundErrorMessage, OutboundExhaustedMessage, OutboundGameEndMessage, OutboundLeaveMessage, OutboundMediateMessage, OutboundMoveMessage, OutboundReadyMessage, OutboundScoreConfirmationMessage, OutboundSkipTurnMessage, OutboundStartMessage } from "$types/websocket";
 
-  DispatchMessage: 'DispatchMessage',
+export interface EventPayloadMap {
+  'MessageReceived_CancelReady': OutboundCancelReadyMessage,
+  'MessageReceived_Connected': OutboundConnectedMessage,
+  'MessageReceived_Leave': OutboundLeaveMessage,
+  'MessageReceived_Move': OutboundMoveMessage,
+  'MessageReceived_Ready': OutboundReadyMessage,
+  'MessageReceived_Mediate': OutboundMediateMessage,
+  'MessageReceived_Error': OutboundErrorMessage,
+  'MessageReceived_Start': OutboundStartMessage,
+  'MessageReceived_BadReq': OutboundBadReqMessage,
+  'MessageReceived_Exhausted': OutboundExhaustedMessage,
+  'MessageReceived_SkipTurn': OutboundSkipTurnMessage,
+  'MessageReceived_ScoreConfirmation': OutboundScoreConfirmationMessage,
+  'MessageReceived_GameEnd': OutboundGameEndMessage,
 
-  GameStateInitialized: 'GameStateInitialized',
-  GameStateReset: 'GameStateReset',
-  InvalidTurn: 'InvalidTurn',
-  InvalidGameId: 'InvalidGameId',
-  MoveContextVerified: 'MoveContextVerified',
+  // [TODO] separate?
+  'DispatchMessage': InboundWebSocketMessage,
 
-  '*': '*',
-} as const;
+  'GameStateInitialized': void,
+  'GameStateReset': void,
+  'InvalidTurn': void,
+  'InvalidGameId': void,
+  'MoveContextVerified': OutboundMoveMessage,
 
-export type EventType = typeof Event;
+  '*': { type: string, payload: unknown },
+}
 
-// [TODO] define payload
-export interface GameEvent {
-  payload: unknown;
+export type AppEvent = keyof EventPayloadMap;
+
+export interface GameEvent<T extends AppEvent> {
+  payload: EventPayloadMap[T];
   timestamp: number;
+}
+/**
+ * @description Define EventEmitter's type explicitly to AppEvent's type be infered properly
+ */
+export interface TypedEventEmitter {
+  on<T extends AppEvent>(event: T, listener: (payload: GameEvent<T>) => void): this;
+  once<T extends AppEvent>(event: T, listener: (payload: GameEvent<T>) => void): this;
+  off<T extends AppEvent>(event: T, listener: (payload: GameEvent<T>) => void): this;
+  emit<T extends AppEvent>(event: T, payload: GameEvent<T>): boolean;
+  removeAllListeners(event?: AppEvent): this;
 }

@@ -1,5 +1,5 @@
 import { parseJson } from "$lib/utils";
-import { Event, type EventType, type OutboundWebSocketMessage } from "$types";
+import type { OutboundWebSocketMessage } from "$types";
 import type { EventBus } from "../event/eventBus";
 
 export interface MessageReceiver {
@@ -15,23 +15,23 @@ export class WebSocketMessageReceiver implements MessageReceiver {
   private eventBus: EventBus;
   private webSocket: WebSocket;
 
-  private toSafeEventType(messageType: OutboundWebSocketMessage['type']): keyof EventType | null {
-    switch (messageType) {
-      case 'MOVE': return Event.MessageReceived_Move;
-      case 'START': return Event.MessageReceived_Start;
-      case 'LEAVE': return Event.MessageReceived_Leave;
-      case 'READY': return Event.MessageReceived_Ready;
-      case 'CANCEL_READY': return Event.MessageReceived_CancelReady;
-      case 'CONNECTED': return Event.MessageReceived_Connected;
-      case 'MEDIATE': return Event.MessageReceived_Mediate;
-      case 'ERROR': return Event.MessageReceived_Error;
-      case 'BAD_REQ': return Event.MessageReceived_BadReq;
-      case 'EXHAUSTED': return Event.MessageReceived_Exhausted;
-      case 'SKIP_TURN': return Event.MessageReceived_SkipTurn;
-      case 'SCORE_CONFIRM': return Event.MessageReceived_ScoreConfirmation;
-      case 'GAME_END': return Event.MessageReceived_GameEnd;
+  private toSafeEventType(type: OutboundWebSocketMessage['type']) {
+    switch (type) {
+      case 'MOVE': return 'MessageReceived_Move';
+      case 'START': return 'MessageReceived_Start';
+      case 'LEAVE': return 'MessageReceived_Leave';
+      case 'READY': return 'MessageReceived_Ready';
+      case 'CANCEL_READY': return 'MessageReceived_CancelReady';
+      case 'CONNECTED': return 'MessageReceived_Connected';
+      case 'MEDIATE': return 'MessageReceived_Mediate';
+      case 'ERROR': return 'MessageReceived_Error';
+      case 'BAD_REQ': return 'MessageReceived_BadReq';
+      case 'EXHAUSTED': return 'MessageReceived_Exhausted';
+      case 'SKIP_TURN': return 'MessageReceived_SkipTurn';
+      case 'SCORE_CONFIRM': return 'MessageReceived_ScoreConfirmation';
+      case 'GAME_END': return 'MessageReceived_GameEnd';
       default:
-        console.warn(`Unknown message type received: ${messageType}`);
+        console.warn(`Unknown message type received: ${type}`);
         return null;
     }
   }
@@ -48,7 +48,14 @@ export class WebSocketMessageReceiver implements MessageReceiver {
       const { type, ...payload } = incomingMessage;
       const messageType = this.toSafeEventType(type);
       if (messageType !== null) {
-        this.eventBus.publish(messageType, payload);
+        /**
+         * @description
+         * Parameters under here are typed as `any` because its concrete structure is dynamically
+         * determined by the `eventType` and `payload` at the event bus level(by `EventPayloadMap`).
+         * Therefore an additional mapper or parser would be redundant and only add performance overhead.
+         */
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this.eventBus.publish(messageType as any, payload as any);
       }
     }
   }

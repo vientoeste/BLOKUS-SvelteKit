@@ -32,7 +32,7 @@ export class GameStateManager {
     this.isStarted = true;
     this.isEnded = false;
     this.exhaustedSlots = [];
-    this.eventBus.publish('GameStateInitialized');
+    this.eventBus.publish('GameStateInitialized', undefined);
   }
 
   handleGameEnd() {
@@ -40,13 +40,13 @@ export class GameStateManager {
     this.gameId = null;
     this.isStarted = false;
     this.isEnded = true;
-    this.eventBus.publish('GameStateReset');
+    this.eventBus.publish('GameStateReset', undefined);
   }
 
   verifyMoveContext(moveMessage: OutboundMoveMessage) {
     const { turn } = moveMessage;
     if (turn !== this.turn + 1) {
-      this.eventBus.publish('InvalidTurn');
+      this.eventBus.publish('InvalidTurn', undefined);
       return;
     }
     this.eventBus.publish('MoveContextVerified', moveMessage);

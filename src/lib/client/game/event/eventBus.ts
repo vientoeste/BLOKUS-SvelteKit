@@ -1,8 +1,8 @@
-import type { EventType, GameEvent } from '$types';
+import type { AppEvent, EventPayloadMap, GameEvent, TypedEventEmitter } from '$types';
 import { EventEmitter } from 'events';
 
 export class EventBus {
-  private emitter: EventEmitter;
+  private emitter: TypedEventEmitter;
 
   constructor() {
     this.emitter = new EventEmitter();
@@ -13,7 +13,10 @@ export class EventBus {
     }
   }
 
-  subscribe(eventType: keyof EventType, callback: (event: GameEvent) => void): { unsubscribe: () => void } {
+  subscribe<T extends AppEvent>(
+    eventType: T,
+    callback: (event: GameEvent<T>) => void,
+  ): { unsubscribe: () => void } {
     this.emitter.on(eventType, callback);
     return {
       unsubscribe: () => {
@@ -22,12 +25,18 @@ export class EventBus {
     };
   }
 
-  once(eventType: keyof EventType, callback: (event: GameEvent) => void): void {
+  once<T extends AppEvent>(
+    eventType: T,
+    callback: (event: GameEvent<T>) => void,
+  ): void {
     this.emitter.once(eventType, callback);
   }
 
-  publish(eventType: keyof EventType, payload?: unknown): void {
-    const event: GameEvent = {
+  publish<T extends AppEvent>(
+    eventType: T,
+    payload: EventPayloadMap[T],
+  ): void {
+    const event: GameEvent<T> = {
       payload,
       timestamp: Date.now()
     };
@@ -36,11 +45,11 @@ export class EventBus {
 
     // for debugging / logging
     if (eventType !== '*') {
-      this.emitter.emit('*', { type: eventType, ...event });
+      this.emitter.emit('*', { payload: { type: eventType, payload: event.payload }, timestamp: event.timestamp });
     }
   }
 
-  removeAllListeners(eventType?: keyof EventType): void {
+  removeAllListeners(eventType?: AppEvent): void {
     this.emitter.removeAllListeners(eventType);
   }
 }
