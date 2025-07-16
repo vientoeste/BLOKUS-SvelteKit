@@ -1,5 +1,5 @@
-import { putBlockOnBoard, rollbackMove } from "$lib/game/core";
-import type { Block, BoardMatrix, PlayerIdx, SlotIdx } from "$types";
+import { getBlockMatrix, isBlockPlaceableAt } from "$lib/game/core";
+import type { Block, BoardMatrix, SlotIdx } from "$types";
 import type { EventBus } from "../event";
 
 export class BoardStateManager {
@@ -16,17 +16,21 @@ export class BoardStateManager {
         return;
       }
       const { blockInfo, playerIdx, position, slotIdx, turn, gameId } = payload;
-      this.applyRegularMove({ blockInfo, playerIdx, position, slotIdx, turn });
-      this.eventBus.publish('MoveApplied', {
-        blockInfo,
-        // [TODO] use timestamp sent by server
-        createdAt: new Date(timestamp),
-        gameId,
-        playerIdx,
-        position,
-        slotIdx,
-        turn,
-      });
+      const { result, reason } = this.applyRegularMove({ blockInfo, position, slotIdx, turn });
+      if (result === true) {
+        this.eventBus.publish('MoveApplied', {
+          blockInfo,
+          // [TODO] use timestamp sent by server
+          createdAt: new Date(timestamp),
+          gameId,
+          playerIdx,
+          position,
+          slotIdx,
+          turn,
+        });
+        return;
+      }
+      // [TODO] add events for mediate / error report / ... using `reason`
     });
   }
 
@@ -47,34 +51,21 @@ export class BoardStateManager {
   }
 
   applyRegularMove({
-    blockInfo, playerIdx, position, turn, slotIdx
+    blockInfo, position, turn, slotIdx
   }: {
     blockInfo: Block,
-    playerIdx: PlayerIdx,
     position: [number, number],
     turn: number,
     slotIdx: SlotIdx,
   }) {
-    if (!this.board) return;
-    const reason = putBlockOnBoard({
-      blockInfo,
-      board: this.board,
-      playerIdx,
+    if (!this.board) return { result: false, reason: 'Board Is Not Initialized' };
+    const { result, reason } = isBlockPlaceableAt({
+      block: getBlockMatrix(blockInfo),
       position,
+      board: this.board,
       slotIdx,
       turn,
     });
-    if (reason) {
-      // emit event
-      rollbackMove({
-        blockInfo,
-        board: this.board,
-        position,
-        slotIdx,
-      });
-      return;
-    }
-    // emit event
-    // re-render here
+    return { result, reason };
   }
 }
