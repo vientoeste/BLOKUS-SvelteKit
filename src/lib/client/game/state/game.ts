@@ -18,7 +18,7 @@ export class GameStateManager {
     this.eventBus = eventBus;
 
     this.eventBus.subscribe('MessageReceived_Start', (event) => {
-      const { gameId } = event.payload as { gameId: GameId };
+      const { gameId } = event.payload;
       this.handleGameStart(gameId);
     });
     this.eventBus.subscribe('MessageReceived_GameEnd', (event) => {
