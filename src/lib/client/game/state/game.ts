@@ -24,6 +24,9 @@ export class GameStateManager {
     this.eventBus.subscribe('MessageReceived_GameEnd', (event) => {
       this.handleGameEnd();
     });
+    this.eventBus.subscribe('MessageReceived_Move', (event) => {
+      this.verifyMoveContext(event.payload);
+    });
   }
 
   handleGameStart(gameId: GameId) {
