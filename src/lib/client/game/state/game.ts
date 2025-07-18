@@ -7,6 +7,7 @@ export class GameStateManager {
   private isStarted: boolean;
   private isEnded: boolean;
   private exhaustedSlots: SlotIdx[];
+  private activePlayerCount: 2 | 3 | 4 | undefined;
   private eventBus: EventBus;
 
   constructor({ eventBus }: { eventBus: EventBus }) {
@@ -18,8 +19,8 @@ export class GameStateManager {
     this.eventBus = eventBus;
 
     this.eventBus.subscribe('MessageReceived_Start', (event) => {
-      const { gameId } = event.payload;
-      this.handleGameStart(gameId);
+      const { gameId, activePlayerCount } = event.payload;
+      this.handleGameStart({ gameId, activePlayerCount });
     });
     this.eventBus.subscribe('MessageReceived_GameEnd', (event) => {
       this.handleGameEnd();
@@ -29,11 +30,12 @@ export class GameStateManager {
     });
   }
 
-  handleGameStart(gameId: GameId) {
+  handleGameStart({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
     this.turn = 0;
     this.gameId = gameId;
     this.isStarted = true;
     this.isEnded = false;
+    this.activePlayerCount = activePlayerCount;
     this.exhaustedSlots = [];
     this.eventBus.publish('GameStateInitialized', undefined);
   }
