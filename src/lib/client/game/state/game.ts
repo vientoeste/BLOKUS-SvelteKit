@@ -84,4 +84,12 @@ export class GameStateManager {
     this.isEnded = isEnded;
     this.exhaustedSlots.push(...exhaustedSlots);
   }
+
+  advanceTurn() {
+    if (this.isEnded) {
+      return -1;
+    }
+    this.turn += 1;
+    return this.turn;
+  }
 }
