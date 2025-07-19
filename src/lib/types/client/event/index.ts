@@ -1,5 +1,5 @@
 import type { InboundWebSocketMessage, OutboundBadReqMessage, OutboundCancelReadyMessage, OutboundConnectedMessage, OutboundErrorMessage, OutboundExhaustedMessage, OutboundGameEndMessage, OutboundLeaveMessage, OutboundMediateMessage, OutboundMoveMessage, OutboundReadyMessage, OutboundScoreConfirmationMessage, OutboundSkipTurnMessage, OutboundStartMessage } from "$types/websocket";
-import type { MoveAppliedPayload, MoveContextVerifiedPayload } from "./payload";
+import type { MoveAppliedPayload, MoveContextVerifiedPayload, TurnAdvancedPayload } from "./payload";
 
 export interface EventPayloadMap {
   'MessageReceived_CancelReady': OutboundCancelReadyMessage,
@@ -25,6 +25,7 @@ export interface EventPayloadMap {
   'InvalidGameId': void,
   'InvalidGameInitializedState': void,
   'MoveContextVerified': MoveContextVerifiedPayload,
+  'TurnAdvanced': TurnAdvancedPayload,
 
   'BoardNotInitialized': void,
   'MoveApplied': MoveAppliedPayload,
