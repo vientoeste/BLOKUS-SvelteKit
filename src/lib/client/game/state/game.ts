@@ -28,6 +28,16 @@ export class GameStateManager {
     this.eventBus.subscribe('MessageReceived_Move', (event) => {
       this.verifyMoveContext(event.payload);
     });
+    this.eventBus.subscribe('MoveApplied', (event) => {
+      const nextTurn = this.advanceTurn();
+      if (nextTurn === -1) {
+        return;
+      }
+      if (this.activePlayerCount === undefined) {
+        return;
+      }
+      this.eventBus.publish('TurnAdvanced', { turn: nextTurn, activePlayerCount: this.activePlayerCount });
+    });
   }
 
   handleGameStart({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
