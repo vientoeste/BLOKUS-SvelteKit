@@ -1,3 +1,4 @@
+import type { PlayerIdx } from "$types";
 import type { EventBus } from "../event";
 
 export class TurnSequencer {
@@ -6,6 +7,24 @@ export class TurnSequencer {
   }
 
   private eventBus: EventBus;
+
+  initiateNextTurn({
+    turn,
+    activePlayerCount,
+    playerIdx,
+  }: {
+    turn: number;
+    activePlayerCount: 2 | 3 | 4;
+    playerIdx: PlayerIdx;
+  }) {
+    const nextPlayerIdx = this.calculatePlayerIdx({
+      turn,
+      activePlayerCount,
+    });
+    if (playerIdx === nextPlayerIdx) {
+      this.eventBus.publish('PlayerTurnStarted', undefined);
+    }
+  }
 
   private calculatePlayerIdx({
     turn,
