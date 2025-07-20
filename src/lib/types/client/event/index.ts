@@ -30,6 +30,8 @@ export interface EventPayloadMap {
   'BoardNotInitialized': void,
   'MoveApplied': MoveAppliedPayload,
 
+  'PlayerTurnStarted': void,
+
   '*': { type: string, payload: unknown },
 }
 
