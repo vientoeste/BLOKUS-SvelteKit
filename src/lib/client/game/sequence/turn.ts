@@ -4,6 +4,10 @@ import type { EventBus } from "../event";
 export class TurnSequencer {
   constructor({ eventBus }: { eventBus: EventBus }) {
     this.eventBus = eventBus;
+
+    this.eventBus.subscribe('TurnAdvanced', (event) => {
+      this.initiateNextTurn(event.payload);
+    });
   }
 
   private eventBus: EventBus;
