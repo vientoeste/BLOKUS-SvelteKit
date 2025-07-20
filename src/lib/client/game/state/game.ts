@@ -36,7 +36,11 @@ export class GameStateManager {
       if (this.activePlayerCount === undefined) {
         return;
       }
-      this.eventBus.publish('TurnAdvanced', { turn: nextTurn, activePlayerCount: this.activePlayerCount });
+      this.eventBus.publish('TurnAdvanced', {
+        turn: nextTurn,
+        activePlayerCount: this.activePlayerCount,
+        playerIdx: event.payload.playerIdx,
+      });
     });
   }
 

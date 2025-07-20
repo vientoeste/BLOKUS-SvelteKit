@@ -17,4 +17,5 @@ export type MoveContextVerifiedPayload = Omit<OutboundMoveMessage, 'type'> & { g
 export type TurnAdvancedPayload = {
   turn: number;
   activePlayerCount: 2 | 3 | 4;
+  playerIdx: PlayerIdx;
 }
