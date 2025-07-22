@@ -37,6 +37,10 @@ export class BoardStateManager {
   private board?: BoardMatrix;
   private eventBus: EventBus;
 
+  getBoard(): BoardMatrix | undefined {
+    return this.board?.map(e => [...e]);
+  }
+
   initializeBoard(board?: BoardMatrix) {
     if (!board) {
       this.board = Array(20).fill(null).map(() => Array(20).fill(false));
