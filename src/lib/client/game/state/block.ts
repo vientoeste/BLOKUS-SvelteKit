@@ -17,4 +17,11 @@ export class BlockStateManager {
   removeBlockFromStore({ blockType, slotIdx }: { blockType: BlockType, slotIdx: SlotIdx }) {
     blockStore.updateBlockPlacementStatus({ blockType, slotIdx });
   }
+
+  /**
+   * @description update block placeability by list of **unavailable** blocks
+   */
+  updateAvailability(unavailableBlocks: { slotIdx: SlotIdx, blockType: BlockType }[]) {
+    blockStore.updateUnavailableBlocks(unavailableBlocks);
+  }
 }
