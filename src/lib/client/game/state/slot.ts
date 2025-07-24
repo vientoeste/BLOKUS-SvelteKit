@@ -14,4 +14,63 @@ export class SlotStateManager {
     this.slots = [];
     this.eventBus = eventBus;
   }
+
+  /**
+   * @description initialize slot states based on number of participants, especially at a game started
+   * @param count number of participants
+   */
+  initialize(count: number) {
+    switch (count) {
+      case 2:
+        this.slots = [{
+          owners: [0],
+          exhausted: false,
+        }, {
+          owners: [1],
+          exhausted: false,
+        }, {
+          owners: [0],
+          exhausted: false,
+        }, {
+          owners: [1],
+          exhausted: false,
+        }];
+        break;
+
+      case 3:
+        this.slots = [{
+          owners: [0],
+          exhausted: false,
+        }, {
+          owners: [1],
+          exhausted: false,
+        }, {
+          owners: [2],
+          exhausted: false,
+        }, {
+          owners: [0, 1, 2],
+          exhausted: false,
+        }]
+        break;
+
+      case 4:
+        this.slots = [{
+          owners: [0],
+          exhausted: false,
+        }, {
+          owners: [1],
+          exhausted: false,
+        }, {
+          owners: [2],
+          exhausted: false,
+        }, {
+          owners: [3],
+          exhausted: false,
+        }];
+        break;
+
+      default:
+        throw new Error('wrong participant count passed');
+    }
+  }
 }
