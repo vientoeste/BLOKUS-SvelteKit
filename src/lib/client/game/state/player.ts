@@ -1,11 +1,28 @@
 import { participantStore } from "$lib/store";
-import type { ParticipantInf, PlayerId, PlayerIdx } from "$types";
+import type { ParticipantInf, PlayerId, PlayerIdx, SlotIdx } from "$types";
 import { get } from "svelte/store";
 import type { EventBus } from "../event";
+import { getPlayersSlot } from "$lib/utils";
 
 export class PlayerStateManager {
-  constructor({ players, eventBus }: { players: (ParticipantInf | undefined)[], eventBus: EventBus }) {
+  private eventBus: EventBus;
+  private clientPlayerIdx: PlayerIdx;
+  private clientSlotIndices: SlotIdx[];
+
+  constructor({
+    players,
+    playerIdx,
+    slotIdx,
+    eventBus,
+  }: {
+    players: (ParticipantInf | undefined)[],
+    playerIdx: PlayerIdx;
+    slotIdx: SlotIdx[];
+    eventBus: EventBus,
+  }) {
     this.eventBus = eventBus;
+    this.clientPlayerIdx = playerIdx;
+    this.clientSlotIndices = slotIdx;
     participantStore.initialize(players);
 
     this.eventBus.subscribe('MessageReceived_CancelReady', (event) => {
@@ -53,8 +70,6 @@ export class PlayerStateManager {
     });
   }
 
-  private eventBus: EventBus;
-
   getPlayers() {
     return get(participantStore);
   }
@@ -80,5 +95,17 @@ export class PlayerStateManager {
     const players = this.getPlayers();
     if (players === undefined) return 0;
     return players.filter(e => e !== undefined).length;
+  }
+
+  initializeClientSlots() {
+    const players = this.getPlayers();
+    const clientSlots = getPlayersSlot({
+      players, playerIdx: this.clientPlayerIdx,
+    });
+    this.clientSlotIndices = clientSlots;
+  }
+
+  getClientSlots(): SlotIdx[] {
+    return [...this.clientSlotIndices];
   }
 }
