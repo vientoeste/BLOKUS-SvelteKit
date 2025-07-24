@@ -1,27 +1,22 @@
-import type { BlockType, SlotIdx } from "$types";
-import type { BoardStateManager } from "../state/board";
+import type { BlockType, BoardMatrix, SlotIdx } from "$types";
 
 export class BlockPlaceabilityCalculator {
   private webWorker: Worker;
-  private boardStateManager: BoardStateManager;
 
-  constructor({
-    webWorker,
-    boardStateManager,
-  }: {
-    webWorker: Worker;
-    boardStateManager: BoardStateManager;
-  }) {
+  constructor({ webWorker }: { webWorker: Worker }) {
     this.webWorker = webWorker;
-    this.boardStateManager = boardStateManager;
   }
 
   async calculate(
-    unusedBlocks: { blockType: BlockType, slotIdx: SlotIdx }[],
+    {
+      board,
+      unusedBlocks,
+    }: {
+      unusedBlocks: { blockType: BlockType, slotIdx: SlotIdx }[];
+      board: BoardMatrix
+    },
     options?: { earlyReturn?: boolean, },
   ) {
-    const board = this.boardStateManager.getBoard();
-    if (board === undefined) throw new Error('Board is Empty');
     if (options?.earlyReturn === true) {
       return new Promise<boolean>((res) => {
         this.webWorker.onmessage = (e: MessageEvent<boolean>) => {
