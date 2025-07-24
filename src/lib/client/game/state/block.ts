@@ -24,4 +24,8 @@ export class BlockStateManager {
   updateAvailability(unavailableBlocks: { slotIdx: SlotIdx, blockType: BlockType }[]) {
     blockStore.updateUnavailableBlocks(unavailableBlocks);
   }
+
+  getUnusedBlocks() {
+    return blockStore.getUnusedBlocks();
+  }
 }
