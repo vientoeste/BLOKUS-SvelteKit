@@ -1,4 +1,4 @@
-import type { PlayerIdx } from "$types";
+import type { PlayerIdx, SlotIdx } from "$types";
 import type { EventBus } from "../event";
 
 type SlotState = {
@@ -72,5 +72,18 @@ export class SlotStateManager {
       default:
         throw new Error('wrong participant count passed');
     }
+  }
+
+  setExhausted(slotIdx: SlotIdx) {
+    const slotState = this.slots[slotIdx];
+    if (slotState === undefined) return;
+    if (slotState.exhausted === false) {
+      this.eventBus.publish('SlotExhausted', { slotIdx });
+    }
+    slotState.exhausted = true;
+  }
+
+  getExhaustedSlots() {
+    return this.slots.filter(slot => slot.exhausted === true).map((_, idx) => idx);
   }
 }
