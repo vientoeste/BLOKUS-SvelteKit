@@ -3,7 +3,6 @@ import type { ParticipantInf, PlayerId, PlayerIdx } from "$types";
 import { get } from "svelte/store";
 import type { EventBus } from "../event";
 
-// [TODO] refactor to use event bus
 export class PlayerStateManager {
   constructor({ players, eventBus }: { players: (ParticipantInf | undefined)[], eventBus: EventBus }) {
     this.eventBus = eventBus;
