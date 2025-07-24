@@ -19,3 +19,7 @@ export type TurnAdvancedPayload = {
   activePlayerCount: 2 | 3 | 4;
   playerIdx: PlayerIdx;
 }
+
+export type SlotExhaustedPayload = {
+  slotIdx: SlotIdx;
+}
