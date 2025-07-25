@@ -48,7 +48,7 @@ export const applyMove = async ({
   const roomCache = await roomCacheRepository.fetch(roomId);
   if (!isRightTurn({
     turn: turn,
-    activePlayerCount: extractPlayerCountFromCache(roomCache),
+    activePlayerCount: extractPlayerCountFromCache(roomCache) as 2 | 3 | 4,
     playerIdx,
   }) || turn !== roomCache.turn) {
     return {
@@ -109,7 +109,7 @@ export const applySkipTurn = async ({
   const roomCache = await roomCacheRepository.fetch(roomId);
   if (!isRightTurn({
     turn,
-    activePlayerCount: extractPlayerCountFromCache(roomCache),
+    activePlayerCount: extractPlayerCountFromCache(roomCache) as 2 | 3 | 4,
     playerIdx,
   }) || turn !== roomCache.turn) {
     return {

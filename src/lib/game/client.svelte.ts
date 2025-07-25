@@ -401,7 +401,7 @@ export class GameManager_Legacy {
   isMyTurn() {
     return isRightTurn({
       turn: this.turn,
-      activePlayerCount: this.playerStateManager.getPlayers().filter(e => e !== undefined).length,
+      activePlayerCount: this.playerStateManager.getPlayers().filter(e => e !== undefined).length as 2 | 3 | 4,
       playerIdx: this.playerIdx,
     });
   }
