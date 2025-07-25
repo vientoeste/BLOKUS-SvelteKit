@@ -108,4 +108,8 @@ export class PlayerStateManager {
   getClientSlots(): SlotIdx[] {
     return [...this.clientSlotIndices];
   }
+
+  getClientPlayerIdx() {
+    return this.clientPlayerIdx;
+  }
 }
