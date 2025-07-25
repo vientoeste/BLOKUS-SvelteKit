@@ -94,7 +94,7 @@ export class PlayerStateManager {
   getActivePlayerCount() {
     const players = this.getPlayers();
     if (players === undefined) return 0;
-    return players.filter(e => e !== undefined).length;
+    return players.filter(e => e !== undefined).length as 2 | 3 | 4;
   }
 
   initializeClientSlots() {
