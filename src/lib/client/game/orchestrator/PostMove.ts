@@ -4,7 +4,7 @@ import type { EventBus } from "../event";
 import type { BlockStateManager } from "../state/block";
 import type { BoardStateManager } from "../state/board";
 import type { PlayerStateManager } from "../state/player";
-import { SlotStateManager } from "../state/slot";
+import type { SlotStateManager } from "../state/slot";
 
 export class PostMoveOrchestrator {
   private eventBus: EventBus;
