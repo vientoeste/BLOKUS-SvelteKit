@@ -34,6 +34,8 @@ export interface EventPayloadMap {
 
   'SlotExhausted': SlotExhaustedPayload,
 
+  'TimeoutOccured': void,
+
   '*': { type: string, payload: unknown },
 }
 
