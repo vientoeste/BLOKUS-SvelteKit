@@ -2,7 +2,7 @@ import type { GameId, OutboundMoveMessage, SlotIdx } from "$types";
 import type { EventBus } from "../event";
 
 export class GameStateManager {
-  public turn: number;
+  private turn: number;
   private gameId: GameId | null;
   private isStarted: boolean;
   private isEnded: boolean;
@@ -104,6 +104,10 @@ export class GameStateManager {
       return -1;
     }
     this.turn += 1;
+    return this.turn;
+  }
+
+  getCurrentTurn() {
     return this.turn;
   }
 }
