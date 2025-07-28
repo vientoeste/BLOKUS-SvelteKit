@@ -250,7 +250,7 @@ export const hasPlayerMadeFirstMove = ({
   return cornerCell === slotIdx;
 };
 
-export const isBlockPlaceableAt = ({ block, position, board, slotIdx, turn }: PlaceBlockDTO): { result: boolean, reason?: string } => {
+export const isBlockPlaceableAt = ({ block, position, board, slotIdx, turn }: PlaceBlockDTO): { result: true, reason?: undefined } | { result: false, reason: string } => {
   if (!isWithinBoardBounds({ block, position, board, slotIdx, turn })) {
     return { result: false, reason: 'bound' };
   }
