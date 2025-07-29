@@ -23,3 +23,17 @@ export type TurnAdvancedPayload = {
 export type SlotExhaustedPayload = {
   slotIdx: SlotIdx;
 }
+
+export type TimeoutOccuredPayload = {
+  slotIdx: SlotIdx;
+}
+
+export type BlockNotPlaceablePayload = {
+  reason: string;
+}
+
+export type PlayerMoveSubmittedPayload = {
+  position: [number, number];
+  blockInfo: Block;
+  slotIdx: SlotIdx;
+}
