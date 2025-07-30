@@ -60,7 +60,7 @@
     }
   }
 
-  function getPosition({ x, y }: { x: number; y: number }) {
+  function getPosition({ x, y }: { x: number; y: number }): [number, number] {
     const { left: boardLeft, top: boardTop } =
       boardElement.getBoundingClientRect();
     return [
