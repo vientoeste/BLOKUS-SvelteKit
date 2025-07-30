@@ -96,12 +96,12 @@
         throw new Error("missing blockInfo");
       }
 
-      const capturedImage = await capturePartialBoard(
+      const capturedImageURL = await capturePartialBoard(
         getBlockMatrix({ type, rotation, flip }),
         position as [number, number],
         slotIdx,
       );
-      $movePreviewStore = capturedImage;
+      $movePreviewStore = capturedImageURL;
       relayMove({
         position,
         blockInfo: { type, rotation, flip },
