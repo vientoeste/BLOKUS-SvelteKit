@@ -1,44 +1,21 @@
-import type { PlayerIdx } from "$types";
-import type { EventBus } from "../event";
+import type { PlayerIdx, SlotIdx } from "$types";
 
 export class TurnSequencer {
-  constructor({ eventBus }: { eventBus: EventBus }) {
-    this.eventBus = eventBus;
-
-    this.eventBus.subscribe('TurnAdvanced', (event) => {
-      this.initiateNextTurn(event.payload);
-    });
-  }
-
-  private eventBus: EventBus;
-
-  initiateNextTurn({
-    turn,
-    activePlayerCount,
-    playerIdx,
-  }: {
-    turn: number;
-    activePlayerCount: 2 | 3 | 4;
-    playerIdx: PlayerIdx;
-  }) {
-    const nextPlayerIdx = this.calculatePlayerIdx({
-      turn,
-      activePlayerCount,
-    });
-    if (playerIdx === nextPlayerIdx) {
-      this.eventBus.publish('PlayerTurnStarted', undefined);
-    }
-  }
-
-  private calculatePlayerIdx({
+  calculatePlayerAndSlotIdx({
     turn,
     activePlayerCount,
   }: {
     turn: number;
     activePlayerCount: 2 | 3 | 4;
-  }) {
+  }): {
+    nextPlayerIdx: PlayerIdx;
+    nextSlotIdx: SlotIdx;
+  } {
     if (activePlayerCount === 2) {
-      return turn % 2;
+      return {
+        nextPlayerIdx: turn % 2 as PlayerIdx,
+        nextSlotIdx: turn % 4 as SlotIdx,
+      };
     }
     /**
      * @description tmp variable to reduce duplicated calculation
@@ -46,11 +23,17 @@ export class TurnSequencer {
     const turnModular4 = turn % 4;
     if (activePlayerCount === 3) {
       return turnModular4 === 3 ?
-        (turn % 12 - 3) / 4 :
-        turnModular4;
+        {
+          nextPlayerIdx: (turn % 12 - 3) / 4 as PlayerIdx,
+          nextSlotIdx: 3 as SlotIdx,
+        } : {
+          nextPlayerIdx: turnModular4 as PlayerIdx,
+          nextSlotIdx: turnModular4 as SlotIdx,
+        };
     }
-    if (activePlayerCount === 4) {
-      return turnModular4;
-    }
+    return {
+      nextPlayerIdx: turnModular4 as PlayerIdx,
+      nextSlotIdx: turnModular4 as SlotIdx,
+    };
   }
 }
