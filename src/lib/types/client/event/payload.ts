@@ -33,7 +33,7 @@ export type BlockNotPlaceablePayload = {
 }
 
 export type PlayerMoveSubmittedPayload = {
-  preview: string;
+  previewUrl: string;
   position: [number, number];
   blockInfo: Block;
   slotIdx: SlotIdx;
