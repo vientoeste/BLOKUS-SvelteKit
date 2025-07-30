@@ -38,3 +38,8 @@ export type PlayerMoveSubmittedPayload = {
   blockInfo: Block;
   slotIdx: SlotIdx;
 }
+
+export type PlayerTurnStartedPayload = {
+  slotIdx: SlotIdx;
+  playerIdx: PlayerIdx;
+}
