@@ -1,5 +1,5 @@
 import { getBlockMatrix, isBlockPlaceableAt } from "$lib/game/core";
-import type { InboundMoveMessage, SubmitMoveDTO } from "$types";
+import type { InboundMoveMessage, InboundSkipTurnMessage, SubmitMoveDTO } from "$types";
 import type { EventBus } from "../event";
 import type { PlayerTurnTimer } from "../sequence/timer";
 import type { BoardStateManager } from "../state/board";
@@ -53,6 +53,35 @@ export class PlayerTurnOrchestrator {
       const { slotIdx } = event.payload;
       this.setState('PLAYER_TURN');
       this.playerTurnTimer.setTurnTimeout({ slotIdx });
+    });
+
+    this.eventBus.subscribe('TimeoutOccured', (event) => {
+      switch (this.turnState) {
+        case 'PLAYER_TURN': {
+          this.setState('TURN_ENDED');
+          const turn = this.gameStateManager.getCurrentTurn();
+          const { slotIdx } = event.payload;
+          const timeoutMessage: InboundSkipTurnMessage = {
+            type: 'SKIP_TURN',
+            exhausted: false,
+            slotIdx,
+            timeout: true,
+            turn,
+          };
+          this.eventBus.once('MessageReceived_SkipTurn', () => {
+            this.setState('NOT_PLAYER_TURN');
+          });
+          this.eventBus.publish('DispatchMessage', timeoutMessage);
+          break;
+        }
+        case 'MOVE_PROCESSING': {
+          // [TODO] just dispatch treating move if move is valid
+          break;
+        }
+        case 'NOT_PLAYER_TURN':
+        case 'TURN_ENDED':
+          break;
+      }
     });
 
     this.eventBus.subscribe('PlayerMoveSubmitted', (event) => {
