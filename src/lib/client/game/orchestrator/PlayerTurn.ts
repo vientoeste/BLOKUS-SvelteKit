@@ -1,4 +1,5 @@
-import type { SubmitMoveDTO } from "$types";
+import { getBlockMatrix, isBlockPlaceableAt } from "$lib/game/core";
+import type { InboundMoveMessage, SubmitMoveDTO } from "$types";
 import type { EventBus } from "../event";
 import type { PlayerTurnTimer } from "../sequence/timer";
 import type { BoardStateManager } from "../state/board";
@@ -47,6 +48,51 @@ export class PlayerTurnOrchestrator {
     this.playerStateManager = playerStateManager;
     this.gameStateManager = gameStateManager;
     this.boardStateManager = boardStateManager;
+
+    this.eventBus.subscribe('PlayerMoveSubmitted', (event) => {
+      if (this.turnState === 'MOVE_PROCESSING' || this.turnState === 'TURN_ENDED') {
+        console.warn('move is duplicated or delayed');
+        return;
+      }
+      const { blockInfo, position, slotIdx } = event.payload;
+      const playerIdx = this.playerStateManager.getClientPlayerIdx();
+      const turn = this.gameStateManager.getCurrentTurn();
+      const board = this.boardStateManager.getBoard();
+      const block = getBlockMatrix(blockInfo);
+      if (board === undefined) {
+        this.eventBus.publish('BoardNotInitialized', undefined);
+        return;
+      }
+
+      const { result, reason } = isBlockPlaceableAt({
+        block, board, position, slotIdx, turn,
+      });
+      if (!result) {
+        this.eventBus.publish('BlockNotPlaceable', { reason });
+      }
+
+      switch (this.turnState) {
+        case 'NOT_PLAYER_TURN': {
+          // [TODO] reserve move here
+          break;
+        }
+        case 'PLAYER_TURN': {
+          const moveMessage: InboundMoveMessage = {
+            type: 'MOVE',
+            blockInfo,
+            playerIdx,
+            position,
+            slotIdx,
+            turn,
+          };
+          this.eventBus.once('MessageReceived_Move', () => {
+            this.setState('NOT_PLAYER_TURN');
+          });
+          this.eventBus.publish('DispatchMessage', moveMessage);
+          break;
+        }
+      }
+    });
   }
 
   setState(turnState: TurnState) {
