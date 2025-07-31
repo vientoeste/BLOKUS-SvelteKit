@@ -1,4 +1,4 @@
-import type { Block, SlotIdx } from "$types";
+import type { Block, InboundCancelReadyMessage, InboundReadyMessage, SlotIdx } from "$types";
 import type { EventBus } from "../../event";
 
 export class PlayerActionHandler {
@@ -22,5 +22,19 @@ export class PlayerActionHandler {
     this.eventBus.publish('PlayerMoveSubmitted', {
       previewUrl, position, blockInfo, slotIdx,
     });
+  }
+
+  submitReady() {
+    const readyMessage: InboundReadyMessage = {
+      type: 'READY',
+    };
+    this.eventBus.publish('DispatchMessage', readyMessage);
+  }
+
+  submitCancelReady() {
+    const cancelReadyMessage: InboundCancelReadyMessage = {
+      type: 'CANCEL_READY',
+    };
+    this.eventBus.publish('DispatchMessage', cancelReadyMessage);
   }
 }
