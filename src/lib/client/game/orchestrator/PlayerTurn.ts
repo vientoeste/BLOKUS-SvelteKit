@@ -49,6 +49,12 @@ export class PlayerTurnOrchestrator {
     this.gameStateManager = gameStateManager;
     this.boardStateManager = boardStateManager;
 
+    this.eventBus.subscribe('PlayerTurnStarted', (event) => {
+      const { slotIdx } = event.payload;
+      this.setState('PLAYER_TURN');
+      this.playerTurnTimer.setTurnTimeout({ slotIdx });
+    });
+
     this.eventBus.subscribe('PlayerMoveSubmitted', (event) => {
       if (this.turnState === 'MOVE_PROCESSING' || this.turnState === 'TURN_ENDED') {
         console.warn('move is duplicated or delayed');
