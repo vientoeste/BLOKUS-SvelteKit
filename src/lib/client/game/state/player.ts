@@ -1,5 +1,5 @@
 import { participantStore } from "$lib/store";
-import type { ParticipantInf, PlayerId, PlayerIdx, SlotIdx } from "$types";
+import type { ParticipantInf, PlayerIdx, SlotIdx } from "$types";
 import { get } from "svelte/store";
 import type { EventBus } from "../event";
 import { getPlayersSlot } from "$lib/utils";
