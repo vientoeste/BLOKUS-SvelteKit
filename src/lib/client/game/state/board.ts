@@ -16,7 +16,12 @@ export class BoardStateManager {
         return;
       }
       const { blockInfo, playerIdx, position, slotIdx, turn, gameId } = payload;
-      const { result, reason } = this.applyRegularMove({ blockInfo, position, slotIdx, turn });
+      const { result, reason } = this.checkBlockPleaceability({
+        blockInfo,
+        position,
+        slotIdx,
+        turn,
+      });
       if (result === true) {
         this.eventBus.publish('MoveApplied', {
           blockInfo,
@@ -54,7 +59,7 @@ export class BoardStateManager {
     // re-render
   }
 
-  applyRegularMove({
+  checkBlockPleaceability({
     blockInfo, position, turn, slotIdx
   }: {
     blockInfo: Block,
@@ -63,13 +68,12 @@ export class BoardStateManager {
     slotIdx: SlotIdx,
   }) {
     if (!this.board) return { result: false, reason: 'Board Is Not Initialized' };
-    const { result, reason } = isBlockPlaceableAt({
+    return isBlockPlaceableAt({
       block: getBlockMatrix(blockInfo),
       position,
       board: this.board,
       slotIdx,
       turn,
     });
-    return { result, reason };
   }
 }
