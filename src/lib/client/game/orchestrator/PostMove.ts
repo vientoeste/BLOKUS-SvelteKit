@@ -1,8 +1,9 @@
-import type { BlockType, SlotIdx } from "$types";
+import type { BlockType, PlayerIdx, SlotIdx } from "$types";
 import type { BlockPlaceabilityCalculator } from "../domain/blockPlaceabilityCalculator";
 import type { EventBus } from "../event";
 import type { BlockStateManager } from "../state/block";
 import type { BoardStateManager } from "../state/board";
+import type { GameStateManager } from "../state/game";
 import type { PlayerStateManager } from "../state/player";
 import type { SlotStateManager } from "../state/slot";
 
@@ -13,6 +14,7 @@ export class PostMoveOrchestrator {
   private blockPlaceabilityCalculator: BlockPlaceabilityCalculator;
   private playerStateManager: PlayerStateManager;
   private slotStateManager: SlotStateManager;
+  private gameStateManager: GameStateManager;
 
   constructor({
     eventBus,
@@ -21,6 +23,7 @@ export class PostMoveOrchestrator {
     blockPlaceabilityCalculator,
     playerStateManager,
     slotStateManager,
+    gameStateManager,
   }: {
     eventBus: EventBus;
     boardStateManager: BoardStateManager;
@@ -28,6 +31,7 @@ export class PostMoveOrchestrator {
     blockPlaceabilityCalculator: BlockPlaceabilityCalculator;
     playerStateManager: PlayerStateManager;
     slotStateManager: SlotStateManager;
+    gameStateManager: GameStateManager;
   }) {
     this.eventBus = eventBus;
     this.boardStateManager = boardStateManager;
@@ -35,16 +39,25 @@ export class PostMoveOrchestrator {
     this.blockPlaceabilityCalculator = blockPlaceabilityCalculator;
     this.playerStateManager = playerStateManager;
     this.slotStateManager = slotStateManager;
+    this.gameStateManager = gameStateManager;
 
     this.eventBus.subscribe('MoveApplied', async (event) => {
-      const { slotIdx, blockInfo: { type } } = event.payload;
-      await this.handleMoveApplied({ slotIdx, blockType: type });
+      const { slotIdx, blockInfo: { type }, playerIdx } = event.payload;
+      await this.handleMoveApplied({ slotIdx, blockType: type, playerIdx });
     });
   }
 
-  private async handleMoveApplied({ slotIdx, blockType }: { slotIdx: SlotIdx, blockType: BlockType }) {
-    // 1. remove the block
+  private async handleMoveApplied({ slotIdx, blockType, playerIdx }: { slotIdx: SlotIdx, blockType: BlockType, playerIdx: PlayerIdx }) {
+    // 1. advance turn and remove block
     this.blockStateManager.removeBlockFromStore({ blockType, slotIdx });
+    const nextTurn = this.gameStateManager.advanceTurn();
+    if (nextTurn !== -1) {
+      this.eventBus.publish('TurnAdvanced', {
+        turn: nextTurn,
+        activePlayerCount: this.gameStateManager.getActivePlayerCount(),
+        playerIdx,
+      });
+    }
 
     // 2. calculate placeability of remaining blocks
     const unusedBlocks = this.blockStateManager.getUnusedBlocks();

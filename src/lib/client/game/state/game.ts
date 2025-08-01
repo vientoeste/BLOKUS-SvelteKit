@@ -28,20 +28,6 @@ export class GameStateManager {
     this.eventBus.subscribe('MessageReceived_Move', (event) => {
       this.verifyMoveContext(event.payload);
     });
-    this.eventBus.subscribe('MoveApplied', (event) => {
-      const nextTurn = this.advanceTurn();
-      if (nextTurn === -1) {
-        return;
-      }
-      if (this.activePlayerCount === undefined) {
-        return;
-      }
-      this.eventBus.publish('TurnAdvanced', {
-        turn: nextTurn,
-        activePlayerCount: this.activePlayerCount,
-        playerIdx: event.payload.playerIdx,
-      });
-    });
   }
 
   handleGameStart({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
@@ -109,5 +95,13 @@ export class GameStateManager {
 
   getCurrentTurn() {
     return this.turn;
+  }
+
+  getActivePlayerCount() {
+    if (this.activePlayerCount === undefined) {
+      // [TODO] request to server for missing infos again
+      throw new Error('GameStateManager.activePlayerCount is missing');
+    }
+    return this.activePlayerCount;
   }
 }
