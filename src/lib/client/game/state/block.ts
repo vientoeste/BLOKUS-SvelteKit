@@ -5,11 +5,6 @@ import type { EventBus } from "../event";
 export class BlockStateManager {
   constructor({ eventBus }: { eventBus: EventBus }) {
     this.eventBus = eventBus;
-
-    this.eventBus.subscribe('MoveApplied', (event) => {
-      const { slotIdx, blockInfo: { type } } = event.payload;
-      this.removeBlockFromStore({ blockType: type, slotIdx });
-    });
   }
 
   private eventBus: EventBus;
