@@ -35,12 +35,7 @@ export class PlayerStateManager {
       });
     });
     this.eventBus.subscribe('MessageReceived_Connected', (event) => {
-      // [TODO] add payload type and replace 'as' statement
-      const { id, username, playerIdx } = event.payload as {
-        id: PlayerId,
-        username: string,
-        playerIdx: PlayerIdx,
-      };
+      const { id, username, playerIdx } = event.payload;
       if (!playerIdx) return;
       this.addPlayer({
         id,
