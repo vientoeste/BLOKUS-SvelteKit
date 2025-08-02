@@ -1,4 +1,4 @@
-import type { PlayerIdx, SlotIdx } from "$types";
+import type { InboundExhaustedMessage, PlayerIdx, SlotIdx } from "$types";
 import type { EventBus } from "../event";
 
 type SlotState = {
@@ -78,7 +78,13 @@ export class SlotStateManager {
     const slotState = this.slots[slotIdx];
     if (slotState === undefined) return;
     if (slotState.exhausted === false) {
-      this.eventBus.publish('SlotExhausted', { slotIdx });
+      // [TODO] if needed, publish SlotExhausted too, or separate DispatchMessage to another direction
+      // this.eventBus.publish('SlotExhausted', { slotIdx });
+      const exhaustedMessage: InboundExhaustedMessage = {
+        type: 'EXHAUSTED',
+        slotIdx,
+      };
+      this.eventBus.publish('DispatchMessage', exhaustedMessage);
     }
     slotState.exhausted = true;
   }
