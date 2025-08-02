@@ -1,4 +1,4 @@
-import type { GameId, OutboundMoveMessage, SlotIdx } from "$types";
+import type { GameId, OutboundMoveMessage } from "$types";
 import type { EventBus } from "../event";
 
 export class GameStateManager {
@@ -6,7 +6,6 @@ export class GameStateManager {
   private gameId: GameId | null;
   private isStarted: boolean;
   private isEnded: boolean;
-  private exhaustedSlots: SlotIdx[];
   private activePlayerCount: 2 | 3 | 4 | undefined;
   private eventBus: EventBus;
 
@@ -15,7 +14,6 @@ export class GameStateManager {
     this.gameId = null;
     this.isStarted = false;
     this.isEnded = false;
-    this.exhaustedSlots = [];
     this.eventBus = eventBus;
 
     this.eventBus.subscribe('MessageReceived_Start', (event) => {
@@ -36,7 +34,6 @@ export class GameStateManager {
     this.isStarted = true;
     this.isEnded = false;
     this.activePlayerCount = activePlayerCount;
-    this.exhaustedSlots = [];
     this.eventBus.publish('GameStateInitialized', undefined);
   }
 
@@ -70,19 +67,16 @@ export class GameStateManager {
     gameId,
     isStarted,
     isEnded,
-    exhaustedSlots,
   }: {
     turn: number,
     gameId: GameId,
     isStarted: boolean,
     isEnded: boolean,
-    exhaustedSlots: SlotIdx[],
   }) {
     this.turn = turn;
     this.gameId = gameId;
     this.isStarted = isStarted;
     this.isEnded = isEnded;
-    this.exhaustedSlots.push(...exhaustedSlots);
   }
 
   advanceTurn() {
