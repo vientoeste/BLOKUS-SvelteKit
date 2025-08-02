@@ -8,7 +8,7 @@ import type { MoveStateManager } from "../state/move";
 import type { PlayerStateManager } from "../state/player";
 import type { SlotStateManager } from "../state/slot";
 
-export class PostMoveOrchestrator {
+export class TurnLifecycleOrchestrator {
   private eventBus: EventBus;
   private boardStateManager: BoardStateManager;
   private blockStateManager: BlockStateManager;
