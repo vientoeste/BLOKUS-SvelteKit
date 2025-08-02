@@ -79,10 +79,17 @@ export class SlotStateManager {
     }
   }
 
+  /**
+   * @description set slot state to exhausted directically
+   * @param slotState slot state object, not index of slot to avoid dup null-check
+   */
   private _setExhausted(slotState: SlotState) {
     slotState.exhausted = true;
   }
 
+  /**
+   * @description mark one of my slot as exhausted and **dispatch** it to other clients
+   */
   markAsExhausted(slotIdx: SlotIdx) {
     const slotState = this.slots[slotIdx];
     if (slotState === undefined) return;
@@ -98,6 +105,9 @@ export class SlotStateManager {
     this._setExhausted(slotState);
   }
 
+  /**
+   * @description mark a slot as exhausted and **don't dispatch** it
+   */
   applyExhaustedState(slotIdx: SlotIdx) {
     const slotState = this.slots[slotIdx];
     if (slotState === undefined) return;
