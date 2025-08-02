@@ -85,7 +85,7 @@ export class PostMoveOrchestrator {
         !result.available.some(block => block.slotIdx === sIdx)
       );
       unavailableSlots.forEach((slotIdx) => {
-        this.slotStateManager.setExhausted(slotIdx);
+        this.slotStateManager.markAsExhausted(slotIdx);
       });
     }
   }
