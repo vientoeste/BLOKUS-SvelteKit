@@ -74,7 +74,11 @@ export class SlotStateManager {
     }
   }
 
-  setExhausted(slotIdx: SlotIdx) {
+  private _setExhausted(slotState: SlotState) {
+    slotState.exhausted = true;
+  }
+
+  markAsExhausted(slotIdx: SlotIdx) {
     const slotState = this.slots[slotIdx];
     if (slotState === undefined) return;
     if (slotState.exhausted === false) {
@@ -86,7 +90,13 @@ export class SlotStateManager {
       };
       this.eventBus.publish('DispatchMessage', exhaustedMessage);
     }
-    slotState.exhausted = true;
+    this._setExhausted(slotState);
+  }
+
+  applyExhaustedState(slotIdx: SlotIdx) {
+    const slotState = this.slots[slotIdx];
+    if (slotState === undefined) return;
+    this._setExhausted(slotState);
   }
 
   getExhaustedSlots() {
