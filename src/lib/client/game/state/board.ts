@@ -23,6 +23,7 @@ export class BoardStateManager {
         turn,
       });
       if (result === true) {
+        this.placeBlock({ blockInfo, position, slotIdx });
         this.eventBus.publish('MoveApplied', {
           blockInfo,
           // [TODO] use timestamp sent by server
@@ -74,6 +75,29 @@ export class BoardStateManager {
       board: this.board,
       slotIdx,
       turn,
+    });
+  }
+
+  placeBlock({ blockInfo, position, slotIdx }: {
+    blockInfo: Block;
+    position: [number, number];
+    slotIdx: SlotIdx;
+  }) {
+    const [row, col] = position;
+    const block = getBlockMatrix(blockInfo);
+    /**
+     * @description stable reference of board to avoid dup null-check
+     */
+    const board = this.board;
+    if (!board || board === undefined) {
+      throw new Error('Board Is Not Initialized');
+    }
+    block.forEach((blockLine, rowIdx) => {
+      blockLine.forEach((blockCell, colIdx) => {
+        if (blockCell) {
+          board[row + rowIdx][col + colIdx] = slotIdx;
+        }
+      });
     });
   }
 }
