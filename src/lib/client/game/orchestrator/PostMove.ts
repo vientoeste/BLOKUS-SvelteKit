@@ -4,6 +4,7 @@ import type { EventBus } from "../event";
 import type { BlockStateManager } from "../state/block";
 import type { BoardStateManager } from "../state/board";
 import type { GameStateManager } from "../state/game";
+import type { MoveStateManager } from "../state/move";
 import type { PlayerStateManager } from "../state/player";
 import type { SlotStateManager } from "../state/slot";
 
@@ -15,6 +16,7 @@ export class PostMoveOrchestrator {
   private playerStateManager: PlayerStateManager;
   private slotStateManager: SlotStateManager;
   private gameStateManager: GameStateManager;
+  private moveStateManager: MoveStateManager;
 
   constructor({
     eventBus,
@@ -24,6 +26,7 @@ export class PostMoveOrchestrator {
     playerStateManager,
     slotStateManager,
     gameStateManager,
+    moveStateManager,
   }: {
     eventBus: EventBus;
     boardStateManager: BoardStateManager;
@@ -32,6 +35,7 @@ export class PostMoveOrchestrator {
     playerStateManager: PlayerStateManager;
     slotStateManager: SlotStateManager;
     gameStateManager: GameStateManager;
+    moveStateManager: MoveStateManager;
   }) {
     this.eventBus = eventBus;
     this.boardStateManager = boardStateManager;
@@ -40,8 +44,10 @@ export class PostMoveOrchestrator {
     this.playerStateManager = playerStateManager;
     this.slotStateManager = slotStateManager;
     this.gameStateManager = gameStateManager;
+    this.moveStateManager = moveStateManager;
 
     this.eventBus.subscribe('MoveApplied', async (event) => {
+      this.moveStateManager.addMoveToHistory({ ...event.payload, exhausted: false, timeout: false });
       const { slotIdx, blockInfo: { type }, playerIdx } = event.payload;
       await this.handleMoveApplied({ slotIdx, blockType: type, playerIdx });
     });

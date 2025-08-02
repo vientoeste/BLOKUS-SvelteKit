@@ -10,10 +10,6 @@ export class MoveStateManager {
     if (moves !== undefined) {
       this.moveHistory.push(...moves);
     }
-
-    this.eventBus.subscribe('MoveApplied', (event) => {
-      this.addMoveToHistory({ ...event.payload, exhausted: false, timeout: false });
-    });
   }
 
   addMoveToHistory(move: Move) {
