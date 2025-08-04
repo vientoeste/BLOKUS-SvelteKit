@@ -1,4 +1,4 @@
-import type { BlockType, OutboundMoveMessage, PlayerIdx, SlotIdx } from "$types";
+import type { BlockType, OutboundMoveMessage, OutboundSkipTurnMessage, PlayerIdx, SlotIdx } from "$types";
 import type { BlockPlaceabilityCalculator } from "../domain/blockPlaceabilityCalculator";
 import type { EventBus } from "../event";
 import type { BlockStateManager } from "../state/block";
@@ -85,6 +85,15 @@ export class TurnLifecycleOrchestrator {
     }
     // [TODO] createdAt should be replaced as server-sent timestamp
     this.moveStateManager.addMoveToHistory({ ...move, gameId, createdAt: new Date(), timeout: false, exhausted: false });
+  }
+
+  private handleSkipMessage(skipMove: OutboundSkipTurnMessage) {
+    const gameId = this.verifyMoveContext(skipMove);
+    if (!gameId) {
+      return;
+    }
+    // [TODO] createdAt should be replaced as server-sent timestamp
+    this.moveStateManager.addMoveToHistory({ ...skipMove, gameId, createdAt: new Date() });
   }
 
   private async handleMoveApplied({ slotIdx, blockType, playerIdx }: { slotIdx: SlotIdx, blockType: BlockType, playerIdx: PlayerIdx }) {
