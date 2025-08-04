@@ -46,11 +46,6 @@ export class TurnLifecycleOrchestrator {
     this.gameStateManager = gameStateManager;
     this.moveStateManager = moveStateManager;
 
-    this.eventBus.subscribe('MoveApplied', async (event) => {
-      this.moveStateManager.addMoveToHistory({ ...event.payload, exhausted: false, timeout: false });
-      await this.finalizeTurn(event.payload);
-    });
-
     this.eventBus.subscribe('MessageReceived_Move', (event) => {
       this.handleRegularMoveMessage(event.payload);
       this.finalizeTurn(event.payload);
