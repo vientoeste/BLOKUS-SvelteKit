@@ -53,6 +53,26 @@ export class TurnLifecycleOrchestrator {
     });
   }
 
+  private verifyMoveContext({ turn }: { turn: number }) {
+    const result = this.gameStateManager.verifyMoveContext({ turn });
+    if (!result.isValid) {
+      switch (result.reason) {
+        case 'game is not started':
+          this.eventBus.publish('InvalidGameInitializedState', undefined)
+          return;
+        case 'invalid turn':
+          this.eventBus.publish('InvalidTurn', undefined);
+          return;
+        case 'gameId is missing':
+          this.eventBus.publish('InvalidGameId', undefined);
+          return;
+        default:
+          return;
+      }
+    }
+    return result.gameId;
+  }
+
   private async handleMoveApplied({ slotIdx, blockType, playerIdx }: { slotIdx: SlotIdx, blockType: BlockType, playerIdx: PlayerIdx }) {
     // 1. advance turn and remove block
     this.blockStateManager.removeBlockFromStore({ blockType, slotIdx });
