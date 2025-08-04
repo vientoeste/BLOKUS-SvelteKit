@@ -1,5 +1,8 @@
 import type { EventBus } from "../event";
+import type { BlockStateManager } from "../state/block";
+import type { BoardStateManager } from "../state/board";
 import type { GameStateManager } from "../state/game";
+import type { PlayerStateManager } from "../state/player";
 
 /**
  * Orchestrates the setup and teardown phases of a game session.
@@ -12,16 +15,28 @@ import type { GameStateManager } from "../state/game";
 export class GameSetupTeardownOrchestrator {
   private eventBus: EventBus;
   private gameStateManager: GameStateManager;
+  private blockStateManager: BlockStateManager;
+  private playerStateManager: PlayerStateManager;
+  private boardStateManager: BoardStateManager;
 
   constructor({
     eventBus,
     gameStateManager,
+    blockStateManager,
+    playerStateManager,
+    boardStateManager,
   }: {
     eventBus: EventBus;
     gameStateManager: GameStateManager;
+    blockStateManager: BlockStateManager;
+    playerStateManager: PlayerStateManager;
+    boardStateManager: BoardStateManager;
   }) {
     this.eventBus = eventBus;
     this.gameStateManager = gameStateManager;
+    this.blockStateManager = blockStateManager;
+    this.playerStateManager = playerStateManager;
+    this.boardStateManager = boardStateManager;
 
     this.eventBus.subscribe('MessageReceived_Start', (event) => {
       const { activePlayerCount, gameId } = event.payload;
