@@ -1,5 +1,13 @@
-import type { GameId, MoveDTO } from "$types";
+import type { GameId } from "$types";
 import type { EventBus } from "../event";
+
+type MoveContextVerificationResult = {
+  isValid: true;
+  gameId: GameId;
+} | {
+  isValid: false;
+  reason: string;
+};
 
 export class GameStateManager {
   private turn: number;
@@ -24,7 +32,24 @@ export class GameStateManager {
       this.handleGameEnd();
     });
     this.eventBus.subscribe('MessageReceived_Move', (event) => {
-      this.verifyMoveContext(event.payload);
+      const result = this.verifyMoveContext(event.payload);
+      if (!result.isValid) {
+        switch (result.reason) {
+          case 'game is not started':
+            this.eventBus.publish('InvalidGameInitializedState', undefined)
+            return;
+          case 'invalid turn':
+            this.eventBus.publish('InvalidTurn', undefined);
+            return;
+          case 'gameId is missing':
+            this.eventBus.publish('InvalidGameId', undefined);
+            return;
+          default:
+            return;
+        }
+      }
+      const { gameId } = result;
+      this.eventBus.publish('MoveContextVerified', { ...event.payload, gameId });
     });
   }
 
@@ -45,21 +70,34 @@ export class GameStateManager {
     this.eventBus.publish('GameStateReset', undefined);
   }
 
-  verifyMoveContext(move: MoveDTO) {
-    const { turn } = move;
+  /**
+   * Verifies the contextual validity of a Move.
+   *
+   * This method checks if the game has started, if it's the correct turn sequence,
+   * and if the `gameId` is valid.
+   * 
+   * It returns a result object indicating success or failure.
+   *
+   * @returns {MoveContextVerificationResult} An object representing the validation result.
+   * 
+   * On success: `{ isValid: true, gameId: GameId }`,
+   * 
+   * On failure: `{ isValid: false, reason: string }`.
+   */
+  verifyMoveContext({ turn }: { turn: number }): MoveContextVerificationResult {
     if (this.isEnded || !this.isStarted) {
       this.eventBus.publish('InvalidGameInitializedState', undefined)
-      return;
+      return { isValid: false, reason: 'game is not started' };
     }
     if (turn !== this.turn + 1) {
       this.eventBus.publish('InvalidTurn', undefined);
-      return;
+      return { isValid: false, reason: 'invalid turn' };
     }
     if (!this.gameId) {
       this.eventBus.publish('InvalidGameId', undefined);
-      return;
+      return { isValid: false, reason: 'gameId is missing' };
     }
-    this.eventBus.publish('MoveContextVerified', { ...move, gameId: this.gameId });
+    return { isValid: true, gameId: this.gameId };
   }
 
   restoreGameState({
