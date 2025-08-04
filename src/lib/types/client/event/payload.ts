@@ -4,6 +4,7 @@ import type { PlayerIdx } from "$types/room";
 export type TurnAdvancedPayload = {
   turn: number;
   activePlayerCount: 2 | 3 | 4;
+  // [CHECK] remove?
   playerIdx: PlayerIdx;
 }
 
