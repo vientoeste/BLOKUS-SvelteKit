@@ -22,5 +22,14 @@ export class GameSetupTeardownOrchestrator {
   }) {
     this.eventBus = eventBus;
     this.gameStateManager = gameStateManager;
+
+    this.eventBus.subscribe('MessageReceived_Start', (event) => {
+      const { activePlayerCount, gameId } = event.payload;
+      this.gameStateManager.initialize({ activePlayerCount, gameId });
+    });
+
+    this.eventBus.subscribe('MessageReceived_GameEnd', () => {
+      this.gameStateManager.reset();
+    });
   }
 }

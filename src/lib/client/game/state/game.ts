@@ -23,15 +23,6 @@ export class GameStateManager {
     this.isStarted = false;
     this.isEnded = false;
     this.eventBus = eventBus;
-
-    this.eventBus.subscribe('MessageReceived_Start', (event) => {
-      const { gameId, activePlayerCount } = event.payload;
-      this.initialize({ gameId, activePlayerCount });
-    });
-
-    this.eventBus.subscribe('MessageReceived_GameEnd', (event) => {
-      this.reset();
-    });
   }
 
   initialize({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
