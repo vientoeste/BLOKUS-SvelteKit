@@ -32,26 +32,6 @@ export class GameStateManager {
     this.eventBus.subscribe('MessageReceived_GameEnd', (event) => {
       this.handleGameEnd();
     });
-    this.eventBus.subscribe('MessageReceived_Move', (event) => {
-      const result = this.verifyMoveContext(event.payload);
-      if (!result.isValid) {
-        switch (result.reason) {
-          case 'game is not started':
-            this.eventBus.publish('InvalidGameInitializedState', undefined)
-            return;
-          case 'invalid turn':
-            this.eventBus.publish('InvalidTurn', undefined);
-            return;
-          case 'gameId is missing':
-            this.eventBus.publish('InvalidGameId', undefined);
-            return;
-          default:
-            return;
-        }
-      }
-      const { gameId } = result;
-      this.eventBus.publish('MoveContextVerified', { ...event.payload, gameId });
-    });
   }
 
   handleGameStart({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {

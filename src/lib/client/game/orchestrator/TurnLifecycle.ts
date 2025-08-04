@@ -51,6 +51,10 @@ export class TurnLifecycleOrchestrator {
       const { slotIdx, blockInfo: { type }, playerIdx } = event.payload;
       await this.handleMoveApplied({ slotIdx, blockType: type, playerIdx });
     });
+
+    this.eventBus.subscribe('MessageReceived_Move', (event) => {
+      this.handleRegularMoveMessage(event.payload);
+    });
   }
 
   private verifyMoveContext({ turn }: { turn: number }) {
