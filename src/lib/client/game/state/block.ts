@@ -9,6 +9,10 @@ export class BlockStateManager {
 
   private eventBus: EventBus;
 
+  initialize(slots: SlotIdx[]) {
+    blockStore.initialize(slots);
+  }
+
   removeBlockFromStore({ blockType, slotIdx }: { blockType: BlockType, slotIdx: SlotIdx }) {
     blockStore.updateBlockPlacementStatus({ blockType, slotIdx });
   }
