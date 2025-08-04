@@ -1,4 +1,4 @@
-import type { BlockType, PlayerIdx, SlotIdx } from "$types";
+import type { BlockType, OutboundMoveMessage, PlayerIdx, SlotIdx } from "$types";
 import type { BlockPlaceabilityCalculator } from "../domain/blockPlaceabilityCalculator";
 import type { EventBus } from "../event";
 import type { BlockStateManager } from "../state/block";
@@ -71,6 +71,20 @@ export class TurnLifecycleOrchestrator {
       }
     }
     return result.gameId;
+  }
+
+  private handleRegularMoveMessage(move: OutboundMoveMessage) {
+    const gameId = this.verifyMoveContext(move);
+    if (!gameId) {
+      return;
+    }
+    const { result, reason } = this.boardStateManager.checkBlockPleaceability(move);
+    if (!result) {
+      this.eventBus.publish('BlockNotPlaceable', { reason });
+      return;
+    }
+    // [TODO] createdAt should be replaced as server-sent timestamp
+    this.moveStateManager.addMoveToHistory({ ...move, gameId, createdAt: new Date(), timeout: false, exhausted: false });
   }
 
   private async handleMoveApplied({ slotIdx, blockType, playerIdx }: { slotIdx: SlotIdx, blockType: BlockType, playerIdx: PlayerIdx }) {
