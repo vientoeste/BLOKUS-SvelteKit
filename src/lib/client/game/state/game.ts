@@ -31,7 +31,6 @@ export class GameStateManager {
     this.isStarted = true;
     this.isEnded = false;
     this.activePlayerCount = activePlayerCount;
-    this.eventBus.publish('GameStateInitialized', undefined);
   }
 
   reset() {
@@ -39,7 +38,6 @@ export class GameStateManager {
     this.gameId = null;
     this.isStarted = false;
     this.isEnded = true;
-    this.eventBus.publish('GameStateReset', undefined);
   }
 
   /**
