@@ -53,6 +53,12 @@ export class TurnLifecycleOrchestrator {
 
     this.eventBus.subscribe('MessageReceived_Move', (event) => {
       this.handleRegularMoveMessage(event.payload);
+      this.finalizeTurn(event.payload);
+    });
+
+    this.eventBus.subscribe('MessageReceived_SkipTurn', (event) => {
+      this.handleSkipMessage(event.payload);
+      this.finalizeTurn(event.payload);
     });
   }
 
