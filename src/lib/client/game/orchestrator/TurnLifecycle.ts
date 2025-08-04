@@ -46,6 +46,16 @@ export class TurnLifecycleOrchestrator {
     this.gameStateManager = gameStateManager;
     this.moveStateManager = moveStateManager;
 
+    this.eventBus.subscribe('GameStateInitialized', () => {
+      if (this.gameStateManager.getCurrentTurn() === 0) {
+        this.eventBus.publish('TurnAdvanced', {
+          turn: 0,
+          activePlayerCount: this.gameStateManager.getActivePlayerCount(),
+          playerIdx: this.playerStateManager.getClientPlayerIdx(),
+        });
+      }
+    });
+
     this.eventBus.subscribe('MessageReceived_Move', (event) => {
       this.handleRegularMoveMessage(event.payload);
       this.finalizeTurn(event.payload);
