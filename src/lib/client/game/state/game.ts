@@ -67,15 +67,12 @@ export class GameStateManager {
    */
   verifyMoveContext({ turn }: { turn: number }): MoveContextVerificationResult {
     if (this.isEnded || !this.isStarted) {
-      this.eventBus.publish('InvalidGameInitializedState', undefined)
       return { isValid: false, reason: 'game is not started' };
     }
     if (turn !== this.turn + 1) {
-      this.eventBus.publish('InvalidTurn', undefined);
       return { isValid: false, reason: 'invalid turn' };
     }
     if (!this.gameId) {
-      this.eventBus.publish('InvalidGameId', undefined);
       return { isValid: false, reason: 'gameId is missing' };
     }
     return { isValid: true, gameId: this.gameId };
