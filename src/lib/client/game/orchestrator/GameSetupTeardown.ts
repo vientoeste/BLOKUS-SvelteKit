@@ -11,13 +11,16 @@ import type { GameStateManager } from "../state/game";
  */
 export class GameSetupTeardownOrchestrator {
   private eventBus: EventBus;
+  private gameStateManager: GameStateManager;
 
   constructor({
     eventBus,
+    gameStateManager,
   }: {
     eventBus: EventBus;
     gameStateManager: GameStateManager;
   }) {
     this.eventBus = eventBus;
+    this.gameStateManager = gameStateManager;
   }
 }
