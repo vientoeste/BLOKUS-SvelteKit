@@ -48,8 +48,7 @@ export class TurnLifecycleOrchestrator {
 
     this.eventBus.subscribe('MoveApplied', async (event) => {
       this.moveStateManager.addMoveToHistory({ ...event.payload, exhausted: false, timeout: false });
-      const { slotIdx, blockInfo: { type }, playerIdx } = event.payload;
-      await this.handleMoveApplied({ slotIdx, blockType: type, playerIdx });
+      await this.finalizeTurn(event.payload);
     });
 
     this.eventBus.subscribe('MessageReceived_Move', (event) => {
@@ -90,6 +89,7 @@ export class TurnLifecycleOrchestrator {
     this.boardStateManager.placeBlock(move);
     // [TODO] createdAt should be replaced as server-sent timestamp
     this.moveStateManager.addMoveToHistory({ ...move, gameId, createdAt: new Date(), timeout: false, exhausted: false });
+    this.blockStateManager.removeBlockFromStore({ blockType: move.blockInfo.type, slotIdx: move.slotIdx });
   }
 
   private handleSkipMessage(skipMove: OutboundSkipTurnMessage) {
@@ -101,9 +101,8 @@ export class TurnLifecycleOrchestrator {
     this.moveStateManager.addMoveToHistory({ ...skipMove, gameId, createdAt: new Date() });
   }
 
-  private async handleMoveApplied({ slotIdx, blockType, playerIdx }: { slotIdx: SlotIdx, blockType: BlockType, playerIdx: PlayerIdx }) {
-    // 1. advance turn and remove block
-    this.blockStateManager.removeBlockFromStore({ blockType, slotIdx });
+  private async finalizeTurn({ playerIdx }: { playerIdx: PlayerIdx }) {
+    // 1. advance turn
     const nextTurn = this.gameStateManager.advanceTurn();
     if (nextTurn !== -1) {
       this.eventBus.publish('TurnAdvanced', {
