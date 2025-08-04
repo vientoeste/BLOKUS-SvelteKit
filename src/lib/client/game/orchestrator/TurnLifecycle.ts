@@ -87,6 +87,7 @@ export class TurnLifecycleOrchestrator {
       this.eventBus.publish('BlockNotPlaceable', { reason });
       return;
     }
+    this.boardStateManager.placeBlock(move);
     // [TODO] createdAt should be replaced as server-sent timestamp
     this.moveStateManager.addMoveToHistory({ ...move, gameId, createdAt: new Date(), timeout: false, exhausted: false });
   }
