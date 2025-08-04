@@ -28,6 +28,7 @@ export class GameStateManager {
       const { gameId, activePlayerCount } = event.payload;
       this.handleGameStart({ gameId, activePlayerCount });
     });
+
     this.eventBus.subscribe('MessageReceived_GameEnd', (event) => {
       this.handleGameEnd();
     });
