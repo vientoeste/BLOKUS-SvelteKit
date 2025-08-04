@@ -41,10 +41,14 @@ export class GameSetupTeardownOrchestrator {
     this.eventBus.subscribe('MessageReceived_Start', (event) => {
       const { activePlayerCount, gameId } = event.payload;
       this.gameStateManager.initialize({ activePlayerCount, gameId });
+      this.playerStateManager.initializeClientSlots();
+      this.blockStateManager.initialize(this.playerStateManager.getClientSlots());
+      this.boardStateManager.initializeBoard();
       this.eventBus.publish('GameStateInitialized', undefined);
     });
 
     this.eventBus.subscribe('MessageReceived_GameEnd', () => {
+      // [TODO] teardown board, block, ...
       this.gameStateManager.reset();
       this.eventBus.publish('GameStateReset', undefined);
     });
