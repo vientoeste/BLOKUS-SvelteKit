@@ -26,15 +26,15 @@ export class GameStateManager {
 
     this.eventBus.subscribe('MessageReceived_Start', (event) => {
       const { gameId, activePlayerCount } = event.payload;
-      this.handleGameStart({ gameId, activePlayerCount });
+      this.initialize({ gameId, activePlayerCount });
     });
 
     this.eventBus.subscribe('MessageReceived_GameEnd', (event) => {
-      this.handleGameEnd();
+      this.reset();
     });
   }
 
-  handleGameStart({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
+  initialize({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
     this.turn = 0;
     this.gameId = gameId;
     this.isStarted = true;
@@ -43,7 +43,7 @@ export class GameStateManager {
     this.eventBus.publish('GameStateInitialized', undefined);
   }
 
-  handleGameEnd() {
+  reset() {
     this.turn = -1;
     this.gameId = null;
     this.isStarted = false;
