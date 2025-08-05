@@ -65,6 +65,15 @@ export class TurnLifecycleOrchestrator {
       this.handleSkipMessage(event.payload);
       this.finalizeTurn(event.payload);
     });
+
+    /**
+     * Since searching for exhausted slots is initiated by turn,
+     * here is the best location of handling exhausted messages at this moment.
+     */
+    this.eventBus.subscribe('MessageReceived_Exhausted', (event) => {
+      const { slotIdx } = event.payload;
+      this.slotStateManager.applyExhaustedState(slotIdx);
+    });
   }
 
   private verifyMoveContext({ turn }: { turn: number }) {

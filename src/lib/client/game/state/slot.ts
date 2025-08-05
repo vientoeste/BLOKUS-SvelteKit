@@ -13,11 +13,6 @@ export class SlotStateManager {
   constructor({ eventBus }: { eventBus: EventBus }) {
     this.slots = [];
     this.eventBus = eventBus;
-
-    this.eventBus.subscribe('MessageReceived_Exhausted', (event) => {
-      const { slotIdx } = event.payload;
-      this.applyExhaustedState(slotIdx);
-    });
   }
 
   /**
