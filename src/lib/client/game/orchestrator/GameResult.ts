@@ -22,10 +22,28 @@ export class GameResultOrchestrator {
     this.gameStateManager = gameStateManager;
     this.boardStateManager = boardStateManager
 
-    this.eventBus.subscribe('MessageReceived_ScoreConfirmation', (event) => {
-      // [TODO] mark game as ended
-      // [TODO] calculate score
-      // [TODO] dispatch score confirm
+    this.eventBus.subscribe('MessageReceived_ScoreConfirmation', () => {
+      this.initiateScoreConfirmation();
+      const score = this.calculateScore();
+      const confirmMessage: InboundScoreConfirmationMessage = {
+        type: 'SCORE_CONFIRM',
+        score: score.toString(),
+      };
+      this.eventBus.publish('DispatchMessage', confirmMessage);
     });
+  }
+
+  initiateScoreConfirmation() {
+    this.gameStateManager.initiateScoreConfirmation();
+  }
+
+  calculateScore(): Score {
+    const board = this.boardStateManager.getBoard();
+    if (!board) {
+      // [TODO] dispatch some event but it won't happen as well
+      throw new Error('board is unavailable');
+    }
+    const score = Score.fromBoard(board);
+    return score;
   }
 }
