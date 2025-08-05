@@ -20,4 +20,8 @@ export class BlockStateManager {
   getUnusedBlocks() {
     return blockStore.getUnusedBlocks();
   }
+
+  reset() {
+    blockStore.set([]);
+  }
 }
