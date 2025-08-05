@@ -1,18 +1,14 @@
 import { getBlockMatrix, isBlockPlaceableAt } from "$lib/game/core";
 import type { Block, BoardMatrix, SlotIdx } from "$types";
-import type { EventBus } from "../event";
 
 export class BoardStateManager {
-  constructor({ board, eventBus }: {
+  constructor({ board }: {
     board?: BoardMatrix;
-    eventBus: EventBus;
   }) {
     this.board = board;
-    this.eventBus = eventBus;
   }
 
   private board?: BoardMatrix;
-  private eventBus: EventBus;
 
   getBoard(): BoardMatrix | undefined {
     return this.board?.map(e => [...e]);
