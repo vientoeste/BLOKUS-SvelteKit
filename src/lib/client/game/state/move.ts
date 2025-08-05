@@ -12,4 +12,8 @@ export class MoveStateManager {
   addMoveToHistory(move: Move) {
     this.moveHistory.push(move);
   }
+
+  clearHistory() {
+    this.moveHistory.length = 0;
+  }
 }
