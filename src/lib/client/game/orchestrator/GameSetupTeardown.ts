@@ -53,8 +53,10 @@ export class GameSetupTeardownOrchestrator {
     });
 
     this.eventBus.subscribe('MessageReceived_GameEnd', () => {
-      // [TODO] teardown board, block, ...
       this.gameStateManager.reset();
+      this.boardStateManager.initializeBoard();
+      this.blockStateManager.reset();
+      this.slotStateManager.reset();
       this.eventBus.publish('GameStateReset', undefined);
     });
   }
