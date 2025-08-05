@@ -1,12 +1,9 @@
 import type { Move } from "$types";
-import type { EventBus } from "../event";
 
 export class MoveStateManager {
-  private eventBus: EventBus;
   private moveHistory: Move[] = [];
 
-  constructor({ eventBus, moves }: { eventBus: EventBus, moves?: Move[] }) {
-    this.eventBus = eventBus;
+  constructor({ moves }: { moves?: Move[] }) {
     if (moves !== undefined) {
       this.moveHistory.push(...moves);
     }
