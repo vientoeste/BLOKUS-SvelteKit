@@ -24,45 +24,6 @@ export class PlayerStateManager {
     this.clientPlayerIdx = playerIdx;
     this.clientSlotIndices = slotIdx;
     participantStore.initialize(players);
-
-    this.eventBus.subscribe('MessageReceived_CancelReady', (event) => {
-      // [TODO] add payload type and replace 'as' statement
-      const { playerIdx } = event.payload as { playerIdx: PlayerIdx };
-      if (playerIdx === undefined) return;
-      this.updateReadyState({
-        playerIdx,
-        ready: false,
-      });
-    });
-    this.eventBus.subscribe('MessageReceived_Connected', (event) => {
-      const { id, username, playerIdx } = event.payload;
-      if (!playerIdx) return;
-      this.addPlayer({
-        id,
-        username,
-        playerIdx,
-        ready: false,
-      });
-    });
-    this.eventBus.subscribe('MessageReceived_Ready', (event) => {
-      // [TODO] add payload type and replace 'as' statement
-      const { playerIdx } = event.payload as {
-        playerIdx: PlayerIdx,
-      };
-      if (playerIdx === undefined) return;
-      this.updateReadyState({
-        playerIdx,
-        ready: true,
-      });
-    });
-    this.eventBus.subscribe('MessageReceived_Leave', (event) => {
-      // [TODO] add payload type and replace 'as' statement
-      const { playerIdx } = event.payload as {
-        playerIdx: PlayerIdx,
-      };
-      if (!playerIdx) return;
-      this.removePlayerByIdx(playerIdx);
-    });
   }
 
   getPlayers() {

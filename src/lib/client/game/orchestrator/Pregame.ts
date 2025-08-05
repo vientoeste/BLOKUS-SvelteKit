@@ -17,5 +17,36 @@ export class PregameOrchestrator {
   }) {
     this.eventBus = eventBus;
     this.playerStateManager = playerStateManager;
+
+    this.eventBus.subscribe('MessageReceived_CancelReady', (event) => {
+      const { playerIdx } = event.payload;
+      this.playerStateManager.updateReadyState({
+        playerIdx,
+        ready: false,
+      });
+    });
+
+    this.eventBus.subscribe('MessageReceived_Connected', (event) => {
+      const { id, username, playerIdx } = event.payload;
+      this.playerStateManager.addPlayer({
+        id,
+        username,
+        playerIdx,
+        ready: false,
+      });
+    });
+
+    this.eventBus.subscribe('MessageReceived_Ready', (event) => {
+      const { playerIdx } = event.payload;
+      this.playerStateManager.updateReadyState({
+        playerIdx,
+        ready: true,
+      });
+    });
+
+    this.eventBus.subscribe('MessageReceived_Leave', (event) => {
+      const { playerIdx } = event.payload;
+      this.playerStateManager.removePlayerByIdx(playerIdx);
+    });
   }
 }
