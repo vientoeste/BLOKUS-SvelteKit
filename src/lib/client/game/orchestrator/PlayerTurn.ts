@@ -12,7 +12,7 @@ import type { PlayerStateManager } from "../state/player";
  * and TurnState becomes TURN_ENDED when player confirms the move.
  * After the move message that player submitted be received, TurnState goes NOT_PLAYER_TURN.
  * |     when...     |  Move Event Occured  |              Timeout Event Occured              |
- * |-----------------|----------------------|-------------------------------------------------|
+ * |:---------------:|:--------------------:|:-----------------------------------------------:|
  * | NOT_PLAYER_TURN |   reserve the move   | already move submitted, timeout isn't cancelled |
  * |    TURN_ENDED   | event dup or delayed |             equal to NOT_PLAYER_TURN            |
  * | MOVE_PROCESSING | event dup or delayed |    just submit the move (waiting for confirm)   |
