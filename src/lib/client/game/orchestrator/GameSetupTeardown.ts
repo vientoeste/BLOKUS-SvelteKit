@@ -3,6 +3,7 @@ import type { BlockStateManager } from "../state/block";
 import type { BoardStateManager } from "../state/board";
 import type { GameStateManager } from "../state/game";
 import type { PlayerStateManager } from "../state/player";
+import type { SlotStateManager } from "../state/slot";
 
 /**
  * Orchestrates the setup and teardown phases of a game session.
@@ -18,6 +19,7 @@ export class GameSetupTeardownOrchestrator {
   private blockStateManager: BlockStateManager;
   private playerStateManager: PlayerStateManager;
   private boardStateManager: BoardStateManager;
+  private slotStateManager: SlotStateManager;
 
   constructor({
     eventBus,
@@ -25,18 +27,21 @@ export class GameSetupTeardownOrchestrator {
     blockStateManager,
     playerStateManager,
     boardStateManager,
+    slotStateManager,
   }: {
     eventBus: EventBus;
     gameStateManager: GameStateManager;
     blockStateManager: BlockStateManager;
     playerStateManager: PlayerStateManager;
     boardStateManager: BoardStateManager;
+    slotStateManager: SlotStateManager;
   }) {
     this.eventBus = eventBus;
     this.gameStateManager = gameStateManager;
     this.blockStateManager = blockStateManager;
     this.playerStateManager = playerStateManager;
     this.boardStateManager = boardStateManager;
+    this.slotStateManager = slotStateManager;
 
     this.eventBus.subscribe('MessageReceived_Start', (event) => {
       const { activePlayerCount, gameId } = event.payload;
