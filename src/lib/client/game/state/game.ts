@@ -1,5 +1,4 @@
 import type { GameId } from "$types";
-import type { EventBus } from "../event";
 
 type MoveContextVerificationResult = {
   isValid: true;
@@ -15,14 +14,12 @@ export class GameStateManager {
   private isStarted: boolean;
   private isEnded: boolean;
   private activePlayerCount: 2 | 3 | 4 | undefined;
-  private eventBus: EventBus;
 
-  constructor({ eventBus }: { eventBus: EventBus }) {
+  constructor() {
     this.turn = -1;
     this.gameId = null;
     this.isStarted = false;
     this.isEnded = false;
-    this.eventBus = eventBus;
   }
 
   initialize({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
