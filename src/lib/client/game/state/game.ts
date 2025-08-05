@@ -8,33 +8,35 @@ type MoveContextVerificationResult = {
   reason: string;
 };
 
+type Phase = 'NOT_STARTED' | 'IN_PROGRESS' | 'CONFIRMING_SCORE';
+
 export class GameStateManager {
   private turn: number;
   private gameId: GameId | null;
-  private isStarted: boolean;
-  private isEnded: boolean;
+  private phase: Phase;
   private activePlayerCount: 2 | 3 | 4 | undefined;
 
   constructor() {
     this.turn = -1;
     this.gameId = null;
-    this.isStarted = false;
-    this.isEnded = false;
+    this.phase = 'NOT_STARTED';
   }
 
   initialize({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
     this.turn = 0;
     this.gameId = gameId;
-    this.isStarted = true;
-    this.isEnded = false;
+    this.phase = 'IN_PROGRESS';
     this.activePlayerCount = activePlayerCount;
+  }
+
+  initiateScoreConfirmation() {
+    this.phase = 'CONFIRMING_SCORE';
   }
 
   reset() {
     this.turn = -1;
     this.gameId = null;
-    this.isStarted = false;
-    this.isEnded = true;
+    this.phase = 'NOT_STARTED';
   }
 
   /**
@@ -52,7 +54,7 @@ export class GameStateManager {
    * On failure: `{ isValid: false, reason: string }`.
    */
   verifyMoveContext({ turn }: { turn: number }): MoveContextVerificationResult {
-    if (this.isEnded || !this.isStarted) {
+    if (this.phase !== 'IN_PROGRESS') {
       return { isValid: false, reason: 'game is not started' };
     }
     if (turn !== this.turn + 1) {
@@ -67,22 +69,19 @@ export class GameStateManager {
   restoreGameState({
     turn,
     gameId,
-    isStarted,
-    isEnded,
+    phase,
   }: {
     turn: number,
     gameId: GameId,
-    isStarted: boolean,
-    isEnded: boolean,
+    phase: Phase;
   }) {
     this.turn = turn;
     this.gameId = gameId;
-    this.isStarted = isStarted;
-    this.isEnded = isEnded;
+    this.phase = phase;
   }
 
   advanceTurn() {
-    if (this.isEnded) {
+    if (this.phase !== 'IN_PROGRESS') {
       return -1;
     }
     this.turn += 1;
