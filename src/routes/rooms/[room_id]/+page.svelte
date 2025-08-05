@@ -104,7 +104,6 @@
       players: [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3],
       playerIdx: playerIdx as PlayerIdx,
       slotIdx: [],
-      eventBus,
     });
     gameManager = new GameManager_Legacy({
       board,

@@ -1,11 +1,9 @@
 import { participantStore } from "$lib/store";
 import type { ParticipantInf, PlayerIdx, SlotIdx } from "$types";
 import { get } from "svelte/store";
-import type { EventBus } from "../event";
 import { getPlayersSlot } from "$lib/utils";
 
 export class PlayerStateManager {
-  private eventBus: EventBus;
   private clientPlayerIdx: PlayerIdx;
   private clientSlotIndices: SlotIdx[];
 
@@ -13,14 +11,11 @@ export class PlayerStateManager {
     players,
     playerIdx,
     slotIdx,
-    eventBus,
   }: {
     players: (ParticipantInf | undefined)[],
     playerIdx: PlayerIdx;
     slotIdx: SlotIdx[];
-    eventBus: EventBus,
   }) {
-    this.eventBus = eventBus;
     this.clientPlayerIdx = playerIdx;
     this.clientSlotIndices = slotIdx;
     participantStore.initialize(players);
