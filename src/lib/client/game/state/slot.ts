@@ -112,4 +112,8 @@ export class SlotStateManager {
   getExhaustedSlots() {
     return this.slots.filter(slot => slot.exhausted === true).map((_, idx) => idx);
   }
+
+  reset() {
+    this.slots = [];
+  }
 }
