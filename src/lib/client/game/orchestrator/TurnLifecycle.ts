@@ -103,6 +103,7 @@ export class TurnLifecycleOrchestrator {
     }
     const { result, reason } = this.boardStateManager.checkBlockPleaceability(move);
     if (!result) {
+      // [TODO] add events for mediate / error report / ... using `reason`
       this.eventBus.publish('BlockNotPlaceable', { reason });
       return;
     }
