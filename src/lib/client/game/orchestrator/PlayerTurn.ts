@@ -112,6 +112,7 @@ export class PlayerTurnOrchestrator {
           break;
         }
         case 'PLAYER_TURN': {
+          // [TODO] wait for confirm modal here
           const moveMessage: InboundMoveMessage = {
             type: 'MOVE',
             blockInfo,
