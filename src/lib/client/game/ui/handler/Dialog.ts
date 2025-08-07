@@ -25,6 +25,13 @@ export class ConfirmManager {
       onCancel: () => res('CANCEL'),
     }));
   }
+
+  async openMoveConfirmModal(imgUrl: string): Promise<ConfirmResult> {
+    return this._open({
+      title: 'confirm your move',
+      message: `<img src="${imgUrl}" alt="board preview" style="max-width: 100%;" />`,
+    });
+  }
 }
 
 export class AlertManager {
