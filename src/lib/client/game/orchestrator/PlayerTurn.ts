@@ -5,6 +5,7 @@ import type { PlayerTurnTimer } from "../sequence/timer";
 import type { BoardStateManager } from "../state/board";
 import type { GameStateManager } from "../state/game";
 import type { PlayerStateManager } from "../state/player";
+import type { ConfirmManager } from "../ui/handler/Dialog";
 
 /**
  * @description When player's turn comes, TurnState becomes PLAYER_TURN.
@@ -27,6 +28,7 @@ export class PlayerTurnOrchestrator {
   private playerStateManager: PlayerStateManager;
   private gameStateManager: GameStateManager;
   private boardStateManager: BoardStateManager;
+  private confirmManager: ConfirmManager;
 
   private turnState: TurnState = 'NOT_PLAYER_TURN';
 
@@ -36,18 +38,21 @@ export class PlayerTurnOrchestrator {
     playerStateManager,
     gameStateManager,
     boardStateManager,
+    confirmManager,
   }: {
     eventBus: EventBus;
     playerTurnTimer: PlayerTurnTimer;
     playerStateManager: PlayerStateManager;
     gameStateManager: GameStateManager;
     boardStateManager: BoardStateManager;
+    confirmManager: ConfirmManager;
   }) {
     this.eventBus = eventBus;
     this.playerTurnTimer = playerTurnTimer;
     this.playerStateManager = playerStateManager;
     this.gameStateManager = gameStateManager;
     this.boardStateManager = boardStateManager;
+    this.confirmManager = confirmManager;
 
     this.eventBus.subscribe('PlayerTurnStarted', (event) => {
       const { slotIdx } = event.payload;
