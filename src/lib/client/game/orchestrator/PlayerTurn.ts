@@ -89,6 +89,7 @@ export class PlayerTurnOrchestrator {
         console.warn('move is duplicated or delayed');
         return;
       }
+      this.setState('MOVE_PROCESSING');
       const { blockInfo, position, slotIdx } = event.payload;
       const playerIdx = this.playerStateManager.getClientPlayerIdx();
       const turn = this.gameStateManager.getCurrentTurn();
