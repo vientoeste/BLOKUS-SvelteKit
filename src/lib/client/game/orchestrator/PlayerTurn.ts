@@ -89,13 +89,12 @@ export class PlayerTurnOrchestrator {
       }
     });
 
-    this.eventBus.subscribe('PlayerMoveSubmitted', (event) => {
+    this.eventBus.subscribe('PlayerMoveSubmitted', async (event) => {
       if (this.turnState === 'MOVE_PROCESSING' || this.turnState === 'TURN_ENDED') {
         console.warn('move is duplicated or delayed');
         return;
       }
-      this.setState('MOVE_PROCESSING');
-      const { blockInfo, position, slotIdx } = event.payload;
+      const { blockInfo, position, slotIdx, previewUrl } = event.payload;
       const playerIdx = this.playerStateManager.getClientPlayerIdx();
       const turn = this.gameStateManager.getCurrentTurn();
       const board = this.boardStateManager.getBoard();
@@ -118,20 +117,24 @@ export class PlayerTurnOrchestrator {
           break;
         }
         case 'PLAYER_TURN': {
-          // [TODO] wait for confirm modal here
-          const moveMessage: InboundMoveMessage = {
-            type: 'MOVE',
-            blockInfo,
-            playerIdx,
-            position,
-            slotIdx,
-            turn,
-          };
-          this.eventBus.once('MessageReceived_Move', () => {
-            this.setState('NOT_PLAYER_TURN');
-          });
-          this.eventBus.publish('DispatchMessage', moveMessage);
-          break;
+          this.setState('MOVE_PROCESSING');
+          const result = await this.confirmManager.openMoveConfirmModal(previewUrl);
+          if (result === 'CONFIRM') {
+            const moveMessage: InboundMoveMessage = {
+              type: 'MOVE',
+              blockInfo,
+              playerIdx,
+              position,
+              slotIdx,
+              turn,
+            };
+            this.eventBus.once('MessageReceived_Move', () => {
+              this.setState('NOT_PLAYER_TURN');
+            });
+            this.eventBus.publish('DispatchMessage', moveMessage);
+            break;
+          }
+          this.setState('PLAYER_TURN');
         }
       }
     });
