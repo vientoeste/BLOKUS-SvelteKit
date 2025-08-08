@@ -10,6 +10,7 @@ export type TurnAdvancedPayload = {
 
 export type SlotExhaustedPayload = {
   slotIdx: SlotIdx;
+  cause: 'CALCULATED' | 'RECEIVED';
 }
 
 export type TimeoutOccuredPayload = {
@@ -30,4 +31,8 @@ export type PlayerMoveSubmittedPayload = {
 export type PlayerTurnStartedPayload = {
   slotIdx: SlotIdx;
   playerIdx: PlayerIdx;
+}
+
+export type GameStateRestoredPayload = {
+  // [TODO] fill
 }
