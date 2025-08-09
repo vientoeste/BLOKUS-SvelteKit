@@ -153,7 +153,7 @@ export class TurnLifecycleOrchestrator {
         !result.available.some(block => block.slotIdx === sIdx)
       );
       unavailableSlots.forEach((slotIdx) => {
-        this.slotStateManager.markAsExhausted(slotIdx);
+        this.eventBus.publish('SlotExhausted', { slotIdx, cause: 'CALCULATED' });
       });
     }
   }

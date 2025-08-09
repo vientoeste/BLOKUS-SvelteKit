@@ -1,4 +1,4 @@
-import type { InboundExhaustedMessage, PlayerIdx, SlotIdx } from "$types";
+import type { PlayerIdx, SlotIdx } from "$types";
 import type { EventBus } from "../event";
 
 type SlotState = {
@@ -79,6 +79,7 @@ export class SlotStateManager {
     if (exhaustedSlots !== undefined && exhaustedSlots.length > 0) {
       exhaustedSlots.forEach(slotIdx => {
         // [TODO] if one of the slot is players', disable remaining blocks
+        this.eventBus.publish('SlotExhausted', { slotIdx, cause: 'RECEIVED' });
         slots[slotIdx].exhausted = true;
       });
     }
@@ -93,21 +94,17 @@ export class SlotStateManager {
   }
 
   /**
-   * @description mark one of my slot as exhausted and **dispatch** it to other clients
+   * @description mark one of my slot as exhausted return whether the slot is newly exhausted or not.
    */
-  markAsExhausted(slotIdx: SlotIdx) {
+  markAsExhausted(slotIdx: SlotIdx): { result: 'ALREADY_EXHAUSTED' | 'NEWLY_EXHAUSTED' } {
     const slotState = this.slots[slotIdx];
-    if (slotState === undefined) return;
-    if (slotState.exhausted === false) {
-      // [TODO] if needed, publish SlotExhausted too, or separate DispatchMessage to another direction
-      // this.eventBus.publish('SlotExhausted', { slotIdx });
-      const exhaustedMessage: InboundExhaustedMessage = {
-        type: 'EXHAUSTED',
-        slotIdx,
-      };
-      this.eventBus.publish('DispatchMessage', exhaustedMessage);
+    if (slotState === undefined) throw new Error('');
+
+    if (slotState.exhausted) {
+      return { result: 'ALREADY_EXHAUSTED' };
     }
     this._setExhausted(slotState);
+    return { result: 'NEWLY_EXHAUSTED' };
   }
 
   /**
