@@ -1,3 +1,4 @@
+import { createNewBoard, getBlockMatrix, placeBlock } from "$lib/game/core";
 import type { EventBus } from "../event";
 import type { BlockStateManager } from "../state/block";
 import type { BoardStateManager } from "../state/board";
@@ -63,6 +64,35 @@ export class GameSetupTeardownOrchestrator {
       this.blockStateManager.reset();
       this.slotStateManager.reset();
       this.eventBus.publish('GameStateReset', undefined);
+    });
+
+    // [TODO] publish this event at onMount by GameManager's public method
+    /**
+     * @description The GameStateRestored event indicates that the 'static' state managers have been initialized,
+     * especially those that depend on server-sent data (via $props).
+     * Therefore, 'dynamic' data —such as move related states, like move history/blocks/board—
+     * should be handled in this handler.
+     */
+    this.eventBus.subscribe('GameStateRestored', (event) => {
+      const restoredBoard = createNewBoard();
+      const { moves } = event.payload;
+      moves.forEach((move) => {
+        this.moveStateManager.addMoveToHistory(move);
+        if (move.exhausted === false && move.timeout === false) {
+          placeBlock({
+            block: getBlockMatrix(move.blockInfo),
+            board: restoredBoard,
+            position: move.position,
+            slotIdx: move.slotIdx,
+            turn: move.turn,
+          });
+          this.blockStateManager.removeBlockFromStore({
+            blockType: move.blockInfo.type,
+            slotIdx: move.slotIdx,
+          });
+        }
+      });
+      this.boardStateManager.initializeBoard(restoredBoard);
     });
   }
 }

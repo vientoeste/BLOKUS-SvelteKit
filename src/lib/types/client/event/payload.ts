@@ -1,4 +1,5 @@
 import type { Block, SlotIdx } from "$types/game";
+import type { Move } from "$types/move";
 import type { PlayerIdx } from "$types/room";
 
 export type TurnAdvancedPayload = {
@@ -34,5 +35,6 @@ export type PlayerTurnStartedPayload = {
 }
 
 export type GameStateRestoredPayload = {
-  // [TODO] fill
+  playerIdx: PlayerIdx;
+  moves: Move[];
 }
