@@ -130,13 +130,14 @@ export class PlayerTurnOrchestrator {
               slotIdx,
               turn,
             };
-            // [TODO] unsubscribe both subscribers
-            this.eventBus.once('MessageReceived_BadReq', (event) => {
+            const failureSubscription = this.eventBus.once('MessageReceived_BadReq', (event) => {
+              successSubscription.unsubscribe();
               const { message } = event.payload;
               // [TODO] add modal
               console.warn(message);
             });
-            this.eventBus.once('MessageReceived_Move', () => {
+            const successSubscription = this.eventBus.once('MessageReceived_Move', () => {
+              failureSubscription.unsubscribe();
               this.setState('NOT_PLAYER_TURN');
             });
             this.eventBus.publish('DispatchMessage', moveMessage);
