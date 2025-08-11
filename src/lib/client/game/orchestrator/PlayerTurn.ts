@@ -5,6 +5,7 @@ import type { PlayerTurnTimer } from "../sequence/timer";
 import type { BoardStateManager } from "../state/board";
 import type { GameStateManager } from "../state/game";
 import type { PlayerStateManager } from "../state/player";
+import type { SlotStateManager } from "../state/slot";
 import type { ConfirmManager } from "../ui/handler/Dialog";
 
 /**
@@ -29,6 +30,7 @@ export class PlayerTurnOrchestrator {
   private gameStateManager: GameStateManager;
   private boardStateManager: BoardStateManager;
   private confirmManager: ConfirmManager;
+  private slotStateManager: SlotStateManager;
 
   private turnState: TurnState = 'NOT_PLAYER_TURN';
 
@@ -39,6 +41,7 @@ export class PlayerTurnOrchestrator {
     gameStateManager,
     boardStateManager,
     confirmManager,
+    slotStateManager,
   }: {
     eventBus: EventBus;
     playerTurnTimer: PlayerTurnTimer;
@@ -46,6 +49,7 @@ export class PlayerTurnOrchestrator {
     gameStateManager: GameStateManager;
     boardStateManager: BoardStateManager;
     confirmManager: ConfirmManager;
+    slotStateManager: SlotStateManager;
   }) {
     this.eventBus = eventBus;
     this.playerTurnTimer = playerTurnTimer;
@@ -53,6 +57,7 @@ export class PlayerTurnOrchestrator {
     this.gameStateManager = gameStateManager;
     this.boardStateManager = boardStateManager;
     this.confirmManager = confirmManager;
+    this.slotStateManager = slotStateManager;
 
     this.eventBus.subscribe('PlayerTurnStarted', (event) => {
       const { slotIdx } = event.payload;
