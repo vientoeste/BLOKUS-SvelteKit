@@ -91,6 +91,7 @@ export class PlayerTurnOrchestrator {
 
     this.eventBus.subscribe('PlayerMoveSubmitted', async (event) => {
       if (this.turnState === 'MOVE_PROCESSING' || this.turnState === 'TURN_ENDED') {
+        // [TODO] add modal
         console.warn('move is duplicated or delayed');
         return;
       }
@@ -108,6 +109,7 @@ export class PlayerTurnOrchestrator {
         block, board, position, slotIdx, turn,
       });
       if (!result) {
+        // [TODO] replace to modal
         this.eventBus.publish('BlockNotPlaceable', { reason });
       }
 
@@ -128,6 +130,12 @@ export class PlayerTurnOrchestrator {
               slotIdx,
               turn,
             };
+            // [TODO] unsubscribe both subscribers
+            this.eventBus.once('MessageReceived_BadReq', (event) => {
+              const { message } = event.payload;
+              // [TODO] add modal
+              console.warn(message);
+            });
             this.eventBus.once('MessageReceived_Move', () => {
               this.setState('NOT_PLAYER_TURN');
             });
