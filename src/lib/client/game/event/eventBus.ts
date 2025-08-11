@@ -28,8 +28,13 @@ export class EventBus {
   once<T extends AppEvent>(
     eventType: T,
     callback: (event: GameEvent<T>) => void,
-  ): void {
+  ): { unsubscribe: () => void } {
     this.emitter.once(eventType, callback);
+    return {
+      unsubscribe: () => {
+        this.emitter.off(eventType, callback);
+      }
+    };
   }
 
   publish<T extends AppEvent>(
