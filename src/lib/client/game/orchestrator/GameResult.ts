@@ -29,8 +29,13 @@ export class GameResultOrchestrator {
         type: 'SCORE_CONFIRM',
         score: score.toString(),
       };
-      this.eventBus.once('MessageReceived_GameEnd', () => {
+      const successSubscription = this.eventBus.once('MessageReceived_GameEnd', () => {
         // [TODO] add modal
+        failureSubscription.unsubscribe();
+      });
+      const failureSubscription = this.eventBus.once('MessageReceived_BadReq', () => {
+        // [TODO] sync
+        successSubscription.unsubscribe();
       });
       this.eventBus.publish('DispatchMessage', confirmMessage);
     });
