@@ -62,6 +62,27 @@ export class PlayerTurnOrchestrator {
     this.eventBus.subscribe('PlayerTurnStarted', (event) => {
       const { slotIdx } = event.payload;
       this.setState('PLAYER_TURN');
+
+      if (this.slotStateManager.isSlotExhausted(slotIdx)) {
+        const skipTurnMessage: InboundSkipTurnMessage = {
+          type: 'SKIP_TURN',
+          slotIdx,
+          exhausted: true,
+          timeout: false,
+          turn: this.gameStateManager.getCurrentTurn(),
+        };
+        const failureSubscription = this.eventBus.once('MessageReceived_BadReq', () => {
+          successSubscription.unsubscribe();
+          // [TODO] add handler
+        });
+        const successSubscription = this.eventBus.once('MessageReceived_SkipTurn', () => {
+          failureSubscription.unsubscribe();
+          this.setState('NOT_PLAYER_TURN');
+        });
+        this.eventBus.publish('DispatchMessage', skipTurnMessage);
+        return;
+      }
+
       this.playerTurnTimer.setTurnTimeout({ slotIdx });
     });
 
