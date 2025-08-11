@@ -1,4 +1,5 @@
 import { createNewBoard, getBlockMatrix, placeBlock } from "$lib/game/core";
+import type { InboundStartMessage } from "$types";
 import type { EventBus } from "../event";
 import type { BlockStateManager } from "../state/block";
 import type { BoardStateManager } from "../state/board";
@@ -64,6 +65,24 @@ export class GameSetupTeardownOrchestrator {
       this.blockStateManager.reset();
       this.slotStateManager.reset();
       this.eventBus.publish('GameStateReset', undefined);
+    });
+
+    this.eventBus.subscribe('GameStartRequested', () => {
+      const playerIdx = this.playerStateManager.getClientPlayerIdx();
+      if (playerIdx !== 0) {
+        // [TODO] add modal
+        return;
+      }
+      const players = this.playerStateManager.getPlayers();
+      if (players.some(p => p !== undefined && !p.ready)) {
+        // [TODO] add modal
+        return;
+      }
+      const startMessage: InboundStartMessage = {
+        type: 'START',
+      };
+      this.eventBus.publish('DispatchMessage', startMessage);
+      // [TODO] check server's response
     });
 
     // [TODO] publish this event at onMount by GameManager's public method
