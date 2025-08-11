@@ -47,6 +47,9 @@ export class WebSocketMessageReceiver implements MessageReceiver {
       }
       const { type, ...payload } = incomingMessage;
       const messageType = this.toSafeEventType(type);
+      if (messageType === 'MessageReceived_BadReq') {
+        // [TODO] handle global scope error here
+      }
       if (messageType !== null) {
         /**
          * @description
