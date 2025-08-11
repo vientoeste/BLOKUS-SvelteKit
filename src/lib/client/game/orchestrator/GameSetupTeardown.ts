@@ -68,6 +68,7 @@ export class GameSetupTeardownOrchestrator {
     });
 
     this.eventBus.subscribe('GameStartRequested', () => {
+      // [TODO] remove validation if needed(e.g. make "start game" button disable/enable w. ready state)
       const playerIdx = this.playerStateManager.getClientPlayerIdx();
       if (playerIdx !== 0) {
         // [TODO] add modal

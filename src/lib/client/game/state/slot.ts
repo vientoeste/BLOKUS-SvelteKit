@@ -120,6 +120,12 @@ export class SlotStateManager {
     return this.slots.filter(slot => slot.exhausted === true).map((_, idx) => idx);
   }
 
+  isSlotExhausted(slotIdx: SlotIdx) {
+    const slot = this.slots[slotIdx];
+    if (slot === undefined) throw new Error('slot is empty');
+    return slot.exhausted;
+  }
+
   reset() {
     this.slots = [];
   }
