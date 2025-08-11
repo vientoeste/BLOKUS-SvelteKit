@@ -40,6 +40,8 @@ export interface EventPayloadMap {
 
   'GameStateRestored': GameStateRestoredPayload,
 
+  'GameStartRequested': void,
+
   '*': { type: string, payload: unknown },
 }
 

@@ -37,4 +37,8 @@ export class PlayerActionHandler {
     };
     this.eventBus.publish('DispatchMessage', cancelReadyMessage);
   }
+
+  startGame() {
+    this.eventBus.publish('GameStartRequested', undefined);
+  }
 }
