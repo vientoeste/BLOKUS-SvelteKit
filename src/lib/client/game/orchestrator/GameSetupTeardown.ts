@@ -82,7 +82,14 @@ export class GameSetupTeardownOrchestrator {
         type: 'START',
       };
       this.eventBus.publish('DispatchMessage', startMessage);
-      // [TODO] check server's response
+
+      const successSubscription = this.eventBus.once('MessageReceived_Start', () => {
+        failureSubscription.unsubscribe();
+      });
+      const failureSubscription = this.eventBus.once('MessageReceived_BadReq', () => {
+        successSubscription.unsubscribe();
+        // [TODO] add modal / sync here
+      });
     });
 
     // [TODO] publish this event at onMount by GameManager's public method
