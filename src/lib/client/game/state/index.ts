@@ -1,3 +1,4 @@
+import type { BlockType, SlotIdx } from "$types";
 import type { BlockStateManager } from "./block";
 import type { BoardStateManager } from "./board";
 import type { GameStateManager } from "./game";
@@ -35,4 +36,29 @@ export class GameStateLayer {
   private moveStateManager: MoveStateManager;
   private playerStateManager: PlayerStateManager;
   private slotStateManager: SlotStateManager;
+
+  // ----------------------block---------------------------------
+  initializeBlocks(slots: SlotIdx[]) {
+    this.blockStateManager.initialize(slots);
+  }
+
+  useBlock({ blockType, slotIdx }: { blockType: BlockType, slotIdx: SlotIdx }) {
+    this.blockStateManager.removeBlockFromStore({ blockType, slotIdx });
+  }
+
+  /**
+   * @description update block placeability by list of **unavailable** blocks
+   */
+  updateBlockAvailability(unavailableBlocks: { slotIdx: SlotIdx, blockType: BlockType }[]) {
+    this.blockStateManager.updateAvailability(unavailableBlocks);
+  }
+
+  getAvailableBlocks() {
+    return this.blockStateManager.getUnusedBlocks();
+  }
+
+  resetBlocks() {
+    this.blockStateManager.reset();
+  }
+  // ------------------------------------------------------------
 }
