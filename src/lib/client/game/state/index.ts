@@ -1,4 +1,4 @@
-import type { BlockType, SlotIdx } from "$types";
+import type { Block, BlockType, BoardMatrix, SlotIdx } from "$types";
 import type { BlockStateManager } from "./block";
 import type { BoardStateManager } from "./board";
 import type { GameStateManager } from "./game";
@@ -59,6 +59,42 @@ export class GameStateLayer {
 
   resetBlocks() {
     this.blockStateManager.reset();
+  }
+  // ------------------------------------------------------------
+
+
+  // ----------------------board---------------------------------
+  getBoard(): BoardMatrix | undefined {
+    return this.boardStateManager.getBoard();
+  }
+
+  initializeBoard(board?: BoardMatrix) {
+    this.boardStateManager.initializeBoard(board);
+  }
+
+  resetBoard() {
+    this.boardStateManager.destroyBoard();
+  }
+
+  canPlaceBlock({
+    blockInfo, position, turn, slotIdx
+  }: {
+    blockInfo: Block,
+    position: [number, number],
+    turn: number,
+    slotIdx: SlotIdx,
+  }) {
+    return this.boardStateManager.checkBlockPleaceability({
+      blockInfo, position, turn, slotIdx,
+    });
+  }
+
+  placeBlock({ blockInfo, position, slotIdx }: {
+    blockInfo: Block;
+    position: [number, number];
+    slotIdx: SlotIdx;
+  }) {
+    this.boardStateManager.placeBlock({ blockInfo, position, slotIdx });
   }
   // ------------------------------------------------------------
 }
