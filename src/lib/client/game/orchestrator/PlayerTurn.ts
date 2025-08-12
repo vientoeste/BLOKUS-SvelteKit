@@ -6,7 +6,7 @@ import type { BoardStateManager } from "../state/board";
 import type { GameStateManager } from "../state/game";
 import type { PlayerStateManager } from "../state/player";
 import type { SlotStateManager } from "../state/slot";
-import type { ConfirmManager } from "../ui/handler/Dialog";
+import type { AlertManager, ConfirmManager } from "../ui/handler/Dialog";
 
 /**
  * @description When player's turn comes, TurnState becomes PLAYER_TURN.
@@ -31,6 +31,7 @@ export class PlayerTurnOrchestrator {
   private boardStateManager: BoardStateManager;
   private confirmManager: ConfirmManager;
   private slotStateManager: SlotStateManager;
+  private alertManager: AlertManager;
 
   private turnState: TurnState = 'NOT_PLAYER_TURN';
 
@@ -42,6 +43,7 @@ export class PlayerTurnOrchestrator {
     boardStateManager,
     confirmManager,
     slotStateManager,
+    alertManager,
   }: {
     eventBus: EventBus;
     playerTurnTimer: PlayerTurnTimer;
@@ -50,6 +52,7 @@ export class PlayerTurnOrchestrator {
     boardStateManager: BoardStateManager;
     confirmManager: ConfirmManager;
     slotStateManager: SlotStateManager;
+    alertManager: AlertManager;
   }) {
     this.eventBus = eventBus;
     this.playerTurnTimer = playerTurnTimer;
@@ -58,6 +61,7 @@ export class PlayerTurnOrchestrator {
     this.boardStateManager = boardStateManager;
     this.confirmManager = confirmManager;
     this.slotStateManager = slotStateManager;
+    this.alertManager = alertManager;
 
     this.eventBus.subscribe('PlayerTurnStarted', (event) => {
       const { slotIdx } = event.payload;
@@ -83,12 +87,14 @@ export class PlayerTurnOrchestrator {
         return;
       }
 
+      this.alertManager.openTurnStartedModal();
       this.playerTurnTimer.setTurnTimeout({ slotIdx });
     });
 
     this.eventBus.subscribe('TimeoutOccured', (event) => {
       switch (this.turnState) {
         case 'PLAYER_TURN': {
+          this.alertManager.openTimeoutModal();
           this.setState('TURN_ENDED');
           const turn = this.gameStateManager.getCurrentTurn();
           const { slotIdx } = event.payload;
@@ -135,8 +141,7 @@ export class PlayerTurnOrchestrator {
         block, board, position, slotIdx, turn,
       });
       if (!result) {
-        // [TODO] replace to modal
-        this.eventBus.publish('BlockNotPlaceable', { reason });
+        this.alertManager.openInvalidMoveModal(reason);
       }
 
       switch (this.turnState) {
