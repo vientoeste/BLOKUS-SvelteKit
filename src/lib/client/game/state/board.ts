@@ -2,12 +2,6 @@ import { getBlockMatrix, isBlockPlaceableAt } from "$lib/game/core";
 import type { Block, BoardMatrix, SlotIdx } from "$types";
 
 export class BoardStateManager {
-  constructor({ board }: {
-    board?: BoardMatrix;
-  }) {
-    this.board = board;
-  }
-
   private board?: BoardMatrix;
 
   getBoard(): BoardMatrix | undefined {
