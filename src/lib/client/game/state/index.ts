@@ -1,7 +1,7 @@
-import type { Block, BlockType, BoardMatrix, SlotIdx } from "$types";
+import type { Block, BlockType, BoardMatrix, GameId, SlotIdx } from "$types";
 import type { BlockStateManager } from "./block";
 import type { BoardStateManager } from "./board";
-import type { GameStateManager } from "./game";
+import type { GameStateManager, MoveContextVerificationResult, Phase } from "./game";
 import type { MoveStateManager } from "./move";
 import type { PlayerStateManager } from "./player";
 import type { SlotStateManager } from "./slot";
@@ -95,6 +95,70 @@ export class GameStateLayer {
     slotIdx: SlotIdx;
   }) {
     this.boardStateManager.placeBlock({ blockInfo, position, slotIdx });
+  }
+  // ------------------------------------------------------------
+
+
+  // ----------------------game----------------------------------
+  initializeGame({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
+    this.gameStateManager.initialize({ gameId, activePlayerCount });
+  }
+
+  initiateScoreConfirmation() {
+    this.gameStateManager.initiateScoreConfirmation();
+  }
+
+  resetGame() {
+    this.gameStateManager.reset();
+  }
+
+  /**
+   * Verifies the contextual validity of a Move.
+   *
+   * This method checks if the game has started, if it's the correct turn sequence,
+   * and if the `gameId` is valid.
+   * 
+   * It returns a result object indicating success or failure.
+   *
+   * @returns {MoveContextVerificationResult} An object representing the validation result.
+   * 
+   * On success: `{ isValid: true, gameId: GameId }`,
+   * 
+   * On failure: `{ isValid: false, reason: string }`.
+   */
+  isMoveContextValid({ turn }: { turn: number }): MoveContextVerificationResult {
+    return this.gameStateManager.verifyMoveContext({ turn });
+  }
+
+  restoreGameState({
+    turn,
+    gameId,
+    phase,
+  }: {
+    turn: number,
+    gameId: GameId,
+    phase: Phase;
+  }) {
+    this.gameStateManager.restoreGameState({
+      turn,
+      gameId,
+      phase,
+    });
+  }
+
+  /**
+   * @see TurnLifecycleOrchestrator
+   */
+  advanceTurn() {
+    return this.gameStateManager.advanceTurn();
+  }
+
+  getCurrentTurn() {
+    return this.gameStateManager.getCurrentTurn();
+  }
+
+  getActivePlayerCount() {
+    return this.gameStateManager.getActivePlayerCount();
   }
   // ------------------------------------------------------------
 }

@@ -1,6 +1,6 @@
 import type { GameId } from "$types";
 
-type MoveContextVerificationResult = {
+export type MoveContextVerificationResult = {
   isValid: true;
   gameId: GameId;
 } | {
@@ -8,7 +8,7 @@ type MoveContextVerificationResult = {
   reason: string;
 };
 
-type Phase = 'NOT_STARTED' | 'IN_PROGRESS' | 'CONFIRMING_SCORE';
+export type Phase = 'NOT_STARTED' | 'IN_PROGRESS' | 'CONFIRMING_SCORE';
 
 export class GameStateManager {
   private turn: number;
