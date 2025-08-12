@@ -102,7 +102,12 @@ export class GameSetupTeardownOrchestrator {
      */
     this.eventBus.subscribe('GameStateRestored', (event) => {
       const restoredBoard = createNewBoard();
-      const { moves } = event.payload;
+      const { moves, exhaustedSlots } = event.payload;
+      exhaustedSlots.forEach(slotIdx => {
+        // [TODO] if one of the slot is players', disable remaining blocks
+        this.eventBus.publish('SlotExhausted', { slotIdx, cause: 'RECEIVED' });
+        this.slotStateManager.applyExhaustedState(slotIdx);
+      });
       moves.forEach((move) => {
         this.moveStateManager.addMoveToHistory(move);
         if (move.exhausted === false && move.timeout === false) {

@@ -16,12 +16,10 @@ export class SlotStateManager {
   }
 
   /**
-   * @description initialize slot states based on number of participants, especially at a game started
-   * @param params Object containing:
-   *   - count: number of participants
-   *   - exhaustedSlots(optional): array of exhausted slot indices
+   * @description initialize slot states based on number of participants
+   * @param count number of participants
    */
-  initialize({ count, exhaustedSlots }: { count: number, exhaustedSlots?: SlotIdx[] }) {
+  initialize(count: number) {
     switch (count) {
       case 2:
         this.slots = [{
@@ -73,15 +71,6 @@ export class SlotStateManager {
 
       default:
         throw new Error('wrong participant count passed');
-    }
-
-    const slots = this.slots;
-    if (exhaustedSlots !== undefined && exhaustedSlots.length > 0) {
-      exhaustedSlots.forEach(slotIdx => {
-        // [TODO] if one of the slot is players', disable remaining blocks
-        this.eventBus.publish('SlotExhausted', { slotIdx, cause: 'RECEIVED' });
-        slots[slotIdx].exhausted = true;
-      });
     }
   }
 
