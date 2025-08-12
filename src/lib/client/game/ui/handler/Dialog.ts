@@ -5,7 +5,7 @@ import { modalStore } from "$lib/store";
 type ConfirmResult = 'CONFIRM' | 'CANCEL' | 'CLOSE';
 
 export class ConfirmManager {
-  private _open({
+  private async _open({
     title,
     message,
     confirmText = 'confirm',
