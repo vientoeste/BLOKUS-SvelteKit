@@ -10,14 +10,14 @@ export class PlayerStateManager {
   constructor({
     players,
     playerIdx,
-    slotIdx,
+    slots,
   }: {
     players: (ParticipantInf | undefined)[],
     playerIdx: PlayerIdx;
-    slotIdx: SlotIdx[];
+    slots: SlotIdx[];
   }) {
     this.clientPlayerIdx = playerIdx;
-    this.clientSlotIndices = slotIdx;
+    this.clientSlotIndices = slots;
     participantStore.initialize(players);
   }
 

@@ -103,7 +103,7 @@
     playerStateManager = new PlayerStateManager({
       players: [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3],
       playerIdx: playerIdx as PlayerIdx,
-      slotIdx: [],
+      slots: [],
     });
     gameManager = new GameManager_Legacy({
       board,
