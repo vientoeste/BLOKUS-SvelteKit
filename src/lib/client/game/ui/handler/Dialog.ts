@@ -1,3 +1,4 @@
+import Alert from "$lib/components/Alert.svelte";
 import Confirm from "$lib/components/Confirm.svelte";
 import { modalStore } from "$lib/store";
 
@@ -35,7 +36,23 @@ export class ConfirmManager {
 }
 
 export class AlertManager {
-
+  // [TODO] add cancelText to Alert modal
+  private async _open({
+    title,
+    message,
+    // cancelText = 'cancel',
+  }: {
+    title: string;
+    message: string;
+    // cancelText?: string;
+  }): Promise<void> {
+    return new Promise<void>((res) => modalStore.open(Alert, {
+      title,
+      message,
+      // cancelText,
+      onClose: () => res(),
+    }));
+  }
 }
 
 export class InputManager {
