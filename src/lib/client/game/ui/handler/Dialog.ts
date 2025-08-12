@@ -53,6 +53,43 @@ export class AlertManager {
       onClose: () => res(),
     }));
   }
+
+  async openInvalidMoveModal(reason: string) {
+    return this._open({
+      title: 'invalid move: please try again',
+      message: reason,
+    });
+  }
+
+  async openTimeoutModal() {
+    // [TODO] separate this modal w. new strategy: waiting confirm -> submit move
+    return this._open({
+      title: `time's up`,
+      message: '',
+    });
+  }
+
+  async openTurnStartedModal() {
+    return this._open({
+      title: 'your turn',
+      message: 'please make your move',
+    });
+  }
+
+  async openGlobalBadReqModal(message?: string) {
+    // [TODO] add proper command for global scope error
+    return this._open({
+      title: 'error occured',
+      message: message ?? '',
+    });
+  }
+
+  async openUnknownMessageReceivedModal(message: string) {
+    return this._open({
+      title: "received unknown message",
+      message: message ?? '',
+    });
+  }
 }
 
 export class InputManager {
