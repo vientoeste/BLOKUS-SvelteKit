@@ -23,6 +23,7 @@ self.onmessage = (e: MessageEvent<{ board: BoardMatrix, blocks: { blockType: Blo
   if (earlyReturn) {
     self.postMessage(false);
   }
+  console.log(`...new unavailable blocks are: `, unavailableBlocks);
   self.postMessage({ available: availableBlocks, unavailable: unavailableBlocks });
 };
 

@@ -11,6 +11,7 @@
   let key = $state(0);
 
   // [TODO] refactor to display blocks based on blockState
+  // blockstatemanager will replace it
   let blockState: Map<BlockType, { rotation: number; flip: boolean }> = $state(
     new Map(),
   );

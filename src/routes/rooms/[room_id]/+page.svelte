@@ -27,7 +27,19 @@
   import { getPlayersSlot } from "$lib/utils";
   import { PlayerStateManager } from "$lib/client/game/state/player";
   import { EventBus } from "$lib/client/game/event";
+
+  import { GameManager } from "$lib/client/game";
+  import { UILayer } from "$lib/client/game/ui";
+  import { GameSequenceLayer } from "$lib/client/game/sequence";
+  import {
+    WebsocketNetworkLayer,
+    type NetworkLayer,
+  } from "$lib/client/game/network";
+  import { GameStateLayer } from "$lib/client/game/state";
   import { WebSocketMessageReceiver } from "$lib/client/game/network/receiver";
+  import { BoardStateManager } from "$lib/client/game/state/board";
+  import { MoveStateManager } from "$lib/client/game/state/move";
+  import { PlayerActionHandler } from "$lib/client/game/ui/handler/PlayerAction";
 
   const { data }: { data: PageData } = $props();
   const { room, playerIdx, roomCache, moves } = data;
@@ -41,12 +53,21 @@
   });
 
   let worker: Worker | null = null;
-  let gameManager: GameManager_Legacy | null = $state(null);
-  let messageReceiver: WebSocketMessageReceiver;
+  let legacyGameManager: GameManager_Legacy | null = $state(null);
+  let legacyMessageReceiver: WebSocketMessageReceiver;
   let messageDispatcher: WebSocketMessageDispatcher;
   let blockPlacementValidator: BlockPlacementValidator;
   let playerStateManager: PlayerStateManager;
   let eventBus = new EventBus();
+  // let gameManager: GameManager;
+  let uiLayer: UILayer;
+  let sequenceLayer: GameSequenceLayer;
+  let networkLayer: NetworkLayer;
+  let stateLayer: GameStateLayer;
+  let messageReceiver: WebSocketMessageReceiver;
+  let boardStateManager: BoardStateManager;
+  let moveStateManager: MoveStateManager;
+  let playerInputHandler: PlayerActionHandler;
 
   onDestroy(() => {
     gameStore.set({
@@ -98,6 +119,9 @@
       eventBus,
       webSocket: socket,
     });
+
+    // legacyMessageReceiver = new WebSocketMessageReceiver_LEGACY(socket);
+
     messageDispatcher = new WebSocketMessageDispatcher(socket);
     blockPlacementValidator = new BlockPlacementValidator(worker);
     playerStateManager = new PlayerStateManager({
@@ -105,26 +129,61 @@
       playerIdx: playerIdx as PlayerIdx,
       slots: [],
     });
-    gameManager = new GameManager_Legacy({
+    legacyGameManager = new GameManager_Legacy({
       board,
       gameId: roomCache.gameId,
       turn: roomCache.turn ?? -1,
       playerIdx: $gameStore.playerIdx,
+      // messageReceiver: legacyMessageReceiver,
       messageReceiver,
       messageDispatcher,
       playerStateManager,
       blockPlacementValidator,
       eventBus,
     });
+    playerInputHandler = new PlayerActionHandler({ eventBus });
 
+    // [TODO] to prevent initializing error, add condition for single player game(prevent to start game)
     if (roomCache.started) {
-      $gameStore.mySlots = getPlayersSlot({
+      const slots = getPlayersSlot({
         playerIdx: $gameStore.playerIdx,
         players: $participantStore,
       });
       playerStateManager.initializeClientSlots();
-      gameManager?.restoreGameState(moves);
+      $gameStore.mySlots = slots;
+      legacyGameManager?.restoreGameState(moves);
     }
+
+    messageReceiver = new WebSocketMessageReceiver({
+      eventBus,
+      webSocket: socket,
+    });
+    networkLayer = new WebsocketNetworkLayer({
+      eventBus,
+      messageDispatcher,
+      messageReceiver,
+      webSocket: socket,
+    });
+    sequenceLayer = new GameSequenceLayer();
+
+    boardStateManager = new BoardStateManager();
+    moveStateManager = new MoveStateManager();
+    stateLayer = new GameStateLayer({
+      boardStateManager,
+      moveStateManager,
+      playerStateManager,
+    });
+    uiLayer = new UILayer();
+
+    // websocket instance can only be subscribed once,
+    // one of gameManager dont work
+    // gameManager = new GameManager({
+    //   eventBus,
+    //   networkLayer,
+    //   sequenceLayer,
+    //   stateLayer,
+    //   uiLayer,
+    // });
   });
 
   onDestroy(() => {
@@ -134,19 +193,19 @@
 
 <Players
   ready={() => {
-    gameManager?.ready();
+    // legacyGameManager?.ready();
   }}
   unready={() => {
-    gameManager?.unready();
+    // legacyGameManager?.unready();
   }}
 ></Players>
-<Board
+<!-- <Board
   relayMove={({
     position,
     blockInfo: { type, rotation, flip },
     slotIdx,
   }: SubmitMoveDTO) => {
-    gameManager?.submitMove({
+    legacyGameManager?.submitMove({
       blockInfo: {
         type,
         flip,
@@ -157,6 +216,10 @@
     });
   }}
   board={gameManager?.board}
+/> -->
+<Board
+  {playerInputHandler}
+  board={legacyGameManager?.board ?? ([] as BoardMatrix)}
 />
 
-<Controller startGame={() => gameManager?.startGame()}></Controller>
+<Controller startGame={() => legacyGameManager?.startGame()}></Controller>

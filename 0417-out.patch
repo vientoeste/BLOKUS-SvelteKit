@@ -1,0 +1,250 @@
+diff --git a/src/lib/components/BlocksContainer.svelte b/src/lib/components/BlocksContainer.svelte
+index 6d986f6..4cc620e 100644
+--- a/src/lib/components/BlocksContainer.svelte
++++ b/src/lib/components/BlocksContainer.svelte
+@@ -11,6 +11,7 @@
+   let key = $state(0);
+ 
+   // [TODO] refactor to display blocks based on blockState
++  // blockstatemanager will replace it
+   let blockState: Map<BlockType, { rotation: number; flip: boolean }> = $state(
+     new Map(),
+   );
+diff --git a/src/lib/components/Board.svelte b/src/lib/components/Board.svelte
+index efa00e2..306783d 100644
+--- a/src/lib/components/Board.svelte
++++ b/src/lib/components/Board.svelte
+@@ -80,7 +80,7 @@
+ 
+   async function handleDrop(e: DragEvent, rowIdx: number, colIdx: number) {
+     e.preventDefault();
+-
++    console.log("handleDrop started");
+     const position = getPosition({ x: e.clientX, y: e.clientY });
+ 
+     dragPositionOffsetStore.set([0, 0]);
+diff --git a/src/lib/database/move.ts b/src/lib/database/move.ts
+index bf5e34a..b6083ae 100644
+--- a/src/lib/database/move.ts
++++ b/src/lib/database/move.ts
+@@ -53,6 +53,7 @@ export const getMovesByGameId = async (gameId: string, options: {
+   });
+ };
+ 
++// [TODO] update param type
+ export const insertTimeoutMove = async (moveId: string, moveDto: InsertTimeoutMoveDto) => {
+   const { acknowledged, insertedId } = await Moves.insertOne({
+     ...moveDto,
+@@ -65,6 +66,7 @@ export const insertTimeoutMove = async (moveId: string, moveDto: InsertTimeoutMo
+   return insertedId.toString();
+ };
+ 
++// [TODO] update param type
+ export const insertExhaustedMove = async (moveId: string, moveDto: InsertExhaustedMoveDto) => {
+   const { acknowledged, insertedId } = await Moves.insertOne({
+     ...moveDto,
+diff --git a/src/lib/game/client.svelte.ts b/src/lib/game/client.svelte.ts
+index 39e8830..f8e0fec 100644
+--- a/src/lib/game/client.svelte.ts
++++ b/src/lib/game/client.svelte.ts
+@@ -82,6 +82,7 @@ export class GameManager_Legacy {
+   moves: Move[] = [];
+ 
+   handleIncomingMessage(message: OutboundWebSocketMessage) {
++    console.log(message);
+     switch (message.type) {
+       case "LEAVE":
+         this.removeUser(message);
+@@ -121,6 +122,7 @@ export class GameManager_Legacy {
+         this.handleGameEnd();
+         break;
+       default:
++        // [MARK] state updater
+         modalStore.open(Alert, {
+           title: "received unknown message",
+           message,
+@@ -221,6 +223,7 @@ export class GameManager_Legacy {
+   }
+ 
+   handleBadRequestException({ message }: OutboundBadReqMessage) {
++    // [MARK] state updater
+     modalStore.open(Alert, {
+       title: 'error occured',
+       message,
+@@ -228,16 +231,21 @@ export class GameManager_Legacy {
+   }
+ 
+   initiateNextTurn(): Promise<void> | void {
++    // [MARK] state updater
++    console.log('next turn initiated')
+     gameStore.update(({ turn, ...rest }) => ({
+       ...rest,
+       turn: turn + 1,
+     }));
+     if (this.isMyTurn()) {
++      console.log('my turn is going to initiate')
+       this.processMyTurn();
+     }
+   }
+ 
++  // [CHECK] improper bug occured here: initialize failed
+   async processMyTurn(leftTime?: number) {
++    // [MARK] state updater
+     const slotIdx: SlotIdx = this.turn % 4 as SlotIdx;
+     if (this.exhaustedSlots.has(slotIdx)) {
+       const exhaustedSkipMessage: InboundSkipTurnMessage = {
+@@ -249,6 +257,7 @@ export class GameManager_Legacy {
+       };
+       this.messageDispatcher.dispatch(exhaustedSkipMessage);
+     }
++    // [MARK] state updater
+     modalStore.open(Alert, {
+       title: 'your turn',
+       message: 'please make your move',
+@@ -272,8 +281,12 @@ export class GameManager_Legacy {
+     let isSubmitted = false;
+     // 2. wait
+     while (!isSubmitted) {
++      console.log('waiting for move...')
+       // 3. resolve move
+-      const move = await this.waitMoveResolution().catch(() => null);
++      const move = await this.waitMoveResolution().catch((e) => {
++        console.error('turnPromise at waitMoveResolution caused error', e);
++        return null;
++      });
+       if (move === null) {
+         // if the move is empty, maybe that means the turnPromise was rejected
+         /**
+@@ -313,6 +326,7 @@ export class GameManager_Legacy {
+           confirmText: 'confirm',
+           cancelText: 'cancel',
+           onConfirm: () => {
++            // [TODO] if the turn promise is resolved/rejected during this callback, forced-rollback is needed
+             // 6. if confirmed, dispatch
+             const moveMessage: InboundMoveMessage = {
+               type: 'MOVE',
+@@ -348,6 +362,7 @@ export class GameManager_Legacy {
+   }
+ 
+   isMyTurn() {
++    // [MARK] state query
+     return isRightTurn({
+       turn: this.turn,
+       activePlayerCount: this.playerStateManager.getPlayers().filter(e => e !== undefined).length,
+@@ -360,10 +375,12 @@ export class GameManager_Legacy {
+   private turnPromiseRejecter: ((reason: string) => void) | null = null;
+ 
+   async applyMove(message: OutboundMoveMessage) {
++    // [MARK] state query
+     if (!this.gameId) {
+       throw new Error('gameId is not set');
+     }
+     const { blockInfo, playerIdx, position, turn, slotIdx } = message;
++    // [MARK] state updater
+     const reason = putBlockOnBoard({
+       board: this.board,
+       blockInfo,
+@@ -373,6 +390,7 @@ export class GameManager_Legacy {
+       slotIdx,
+     });
+     if (!reason) {
++      // [MARK] state updater
+       blockStore.updateBlockPlacementStatus({ slotIdx, blockType: blockInfo.type });
+       this.moves.push({
+         gameId: this.gameId,
+@@ -393,11 +411,12 @@ export class GameManager_Legacy {
+         // [TODO] find proper magic number
+         earlyReturn: turn < 20,
+       });
++      console.log(`...control is passed to GameManager.applyMove: result is ${res}`);
+       if (res === true || res === undefined) {
+         return;
+       }
+       if (res === false) {
+-        console.log('...retire');
++        console.log('...exhausted');
+         return;
+       }
+       const slots = get(gameStore).mySlots;
+@@ -463,10 +482,12 @@ export class GameManager_Legacy {
+     });
+     const move = await this.turnPromise;
+     this.initializeTurnPromise();
++    console.log('returning move...', move);
+     return move;
+   }
+ 
+   initiateGameStatus(gameId: string) {
++    // [MARK] state updater(initiator)
+     this.gameId = gameId;
+     this.board = createNewBoard();
+     const slots = getPlayersSlot({
+@@ -517,6 +538,7 @@ export class GameManager_Legacy {
+       blocks: blockStore.getUnusedBlocks(),
+     });
+ 
++    // [CHECK] is this the lastest move?
+     const leftTime = moves[moves.length - 1].createdAt.valueOf() - Date.now();
+     if (!this.isMyTurn()) {
+       return;
+@@ -552,17 +574,20 @@ export class BlockPlacementValidator {
+   }, options?: {
+     earlyReturn?: boolean,
+   }) {
++    console.log(`...searchPlaceableBlocks called with option-${options?.earlyReturn ? 'early-return' : 'non-early-return'}`);
++
+     /**
+      * @description Creates a deep copy of the board to prevent "DOMException: Proxy object could not be cloned"
+      * errors when sending to worker. This error occurs because:
+      * 1. Web Workers use structured clone algorithm for message passing
+      * 2. Our original board is a Proxy object (from $state)
+-     * 3. Proxy objects cannot be cloned by the structured clone algorithm
++     * 3. Proxy objects cannot be cloned by the structured clone algorithm 
+      */
+     const copiedProxyBoard = board.map(e => [...e]);
+     if (options?.earlyReturn === true) {
+       return new Promise<boolean>((res, rej) => {
+         this.worker.onmessage = (e: MessageEvent<boolean>) => {
++          console.log(`...searching promise result is resolved with ${e.data}`)
+           res(e.data);
+         };
+         this.worker.postMessage({ board: copiedProxyBoard, blocks });
+@@ -576,12 +601,13 @@ export class BlockPlacementValidator {
+             rej('unexpected boolean value returned from a non-early-return worker procedure');
+             return;
+           }
++          console.log(`...searching promise result is resolved`);
+           res(e.data);
+         };
+         this.worker.postMessage({ board: copiedProxyBoard, blocks });
+       });
+     } catch (e) {
+-      console.error(e);
++      console.error(503, e);
+     }
+   }
+ }
+diff --git a/src/lib/workers/checkBlockPlaceability.worker.ts b/src/lib/workers/checkBlockPlaceability.worker.ts
+index b4effd0..4f790c7 100644
+--- a/src/lib/workers/checkBlockPlaceability.worker.ts
++++ b/src/lib/workers/checkBlockPlaceability.worker.ts
+@@ -23,6 +23,7 @@ self.onmessage = (e: MessageEvent<{ board: BoardMatrix, blocks: { blockType: Blo
+   if (earlyReturn) {
+     self.postMessage(false);
+   }
++  console.log(`...new unavailable blocks are: `, unavailableBlocks);
+   self.postMessage({ available: availableBlocks, unavailable: unavailableBlocks });
+ };
+ 
+diff --git a/src/websocket/handlers.ts b/src/websocket/handlers.ts
+index 261f183..ab993ab 100644
+--- a/src/websocket/handlers.ts
++++ b/src/websocket/handlers.ts
+@@ -514,6 +514,7 @@ export class WebSocketConnectionOrchestrator {
+       });
+     } catch (e) {
+       // [TODO] log
++      console.error(e);
+     }
+   }
+ }

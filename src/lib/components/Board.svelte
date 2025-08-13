@@ -1,14 +1,21 @@
 <script lang="ts">
   import { getBlockMatrix } from "$lib/game/core";
-  import type { BlockMatrix, SlotIdx } from "$types";
+  import type { BlockMatrix, BoardMatrix, SlotIdx } from "$types";
   import {
     dragPositionOffsetStore,
     movePreviewStore,
     moveStore,
   } from "$lib/store";
   import html2canvas from "html2canvas";
+  import { PlayerActionHandler } from "$lib/client/game/ui/handler/PlayerAction";
 
-  const { board, relayMove } = $props();
+  const {
+    board,
+    playerInputHandler,
+  }: {
+    board: BoardMatrix;
+    playerInputHandler: PlayerActionHandler;
+  } = $props();
 
   let boardElement: HTMLElement;
 
@@ -80,7 +87,7 @@
 
   async function handleDrop(e: DragEvent, rowIdx: number, colIdx: number) {
     e.preventDefault();
-
+    console.log("handleDrop started");
     const position = getPosition({ x: e.clientX, y: e.clientY });
 
     dragPositionOffsetStore.set([0, 0]);
@@ -101,12 +108,18 @@
         position as [number, number],
         slotIdx,
       );
-      $movePreviewStore = capturedImageURL;
-      relayMove({
+      playerInputHandler.submitMove({
+        previewUrl: capturedImageURL,
         position,
         blockInfo: { type, rotation, flip },
         slotIdx,
       });
+      // $movePreviewStore = capturedImageURL;
+      // relayMove({
+      //   position,
+      //   blockInfo: { type, rotation, flip },
+      //   slotIdx,
+      // });
       unhighlightCells();
     } catch (error) {
       console.error("DnD(drop):", error);

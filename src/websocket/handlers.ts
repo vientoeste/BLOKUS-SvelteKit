@@ -49,6 +49,7 @@ export class WebSocketMessageHandler {
 
   private handleUserConnected(client: ActiveWebSocket, { username }: InboundConnectedMessage): MessageProcessResult {
     if (!username) {
+      // done
       const message: OutboundBadReqMessage = {
         type: 'BAD_REQ',
         message: 'username is missing',
@@ -521,6 +522,7 @@ export class WebSocketConnectionOrchestrator {
       });
     } catch (e) {
       // [TODO] log
+      console.error(e);
     }
   }
 }

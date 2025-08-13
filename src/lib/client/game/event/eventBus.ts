@@ -8,7 +8,7 @@ export class EventBus {
     this.emitter = new EventEmitter();
     if (process.env.NODE_ENV === 'development') {
       this.emitter.on('*', (event) => {
-        // Debug here
+        console.log('event received: ', event);
       });
     }
   }
