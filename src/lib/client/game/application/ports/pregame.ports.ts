@@ -11,4 +11,6 @@ export interface IParticipantManager {
   updateReadyState(payload: { playerIdx: PlayerIdx; ready: boolean }): void;
 
   getPlayers(): (ParticipantInf | undefined)[];
+
+  getClientPlayerIdx(): PlayerIdx;
 }
