@@ -1,4 +1,3 @@
-import { getBlockMatrix, isBlockPlaceableAt } from "$lib/game/core";
 import type { InboundMoveMessage, InboundSkipTurnMessage, SubmitMoveDTO } from "$types";
 import type { EventBus } from "../event";
 import type { PlayerTurnTimer } from "../sequence/timer";
