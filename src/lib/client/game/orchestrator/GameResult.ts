@@ -1,29 +1,24 @@
 import { Score } from "$lib/domain/score";
 import type { InboundScoreConfirmationMessage } from "$types";
+import type { IGameResultManager } from "../application/ports";
 import type { EventBus } from "../event";
-import type { BoardStateManager } from "../state/board";
-import type { GameStateManager } from "../state/game";
 
 export class GameResultOrchestrator {
   private eventBus: EventBus;
-  private gameStateManager: GameStateManager;
-  private boardStateManager: BoardStateManager;
+  private gameResultManager: IGameResultManager;
 
   constructor({
     eventBus,
-    gameStateManager,
-    boardStateManager,
+    gameResultManager,
   }: {
     eventBus: EventBus;
-    gameStateManager: GameStateManager;
-    boardStateManager: BoardStateManager;
+    gameResultManager: IGameResultManager;
   }) {
     this.eventBus = eventBus;
-    this.gameStateManager = gameStateManager;
-    this.boardStateManager = boardStateManager
+    this.gameResultManager = gameResultManager;
 
     this.eventBus.subscribe('MessageReceived_ScoreConfirmation', () => {
-      this.initiateScoreConfirmation();
+      this.gameResultManager.initiateScoreConfirmation();
       const score = this.calculateScore();
       const confirmMessage: InboundScoreConfirmationMessage = {
         type: 'SCORE_CONFIRM',
@@ -41,12 +36,8 @@ export class GameResultOrchestrator {
     });
   }
 
-  initiateScoreConfirmation() {
-    this.gameStateManager.initiateScoreConfirmation();
-  }
-
   calculateScore(): Score {
-    const board = this.boardStateManager.getBoard();
+    const board = this.gameResultManager.getBoard();
     if (!board) {
       // [TODO] dispatch some event but it won't happen as well
       throw new Error('board is unavailable');
