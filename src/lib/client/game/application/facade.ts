@@ -12,9 +12,11 @@ import type { MoveStateManager } from '../state/move';
 import type { PlayerStateManager } from '../state/player';
 import type { SlotStateManager } from '../state/slot';
 import { createNewBoard, getBlockMatrix, placeBlock } from '$lib/game/core';
+import type { IGameResultManager } from './ports';
 
 export class GameStateLayer implements
   IGameLifecycleManager,
+  IGameResultManager,
   IMoveApplier,
   IClientInfoReader,
   IParticipantManager,
@@ -90,6 +92,17 @@ export class GameStateLayer implements
       }
     });
     this.boardStateManager.initializeBoard(restoredBoard);
+  }
+  // ------------------------------------------------------------------------
+
+
+  // -------------------------- GameResultManager ---------------------------
+  initiateScoreConfirmation(): void {
+    this.gameStateManager.initiateScoreConfirmation();
+  }
+
+  getBoard(): BoardMatrix | undefined {
+    return this.boardStateManager.getBoard();
   }
   // ------------------------------------------------------------------------
 
@@ -193,13 +206,10 @@ export class GameStateLayer implements
 
 
   // ------------------------ CalculationDataProvider -----------------------
-  getBoard(): BoardMatrix | undefined {
-    return this.boardStateManager.getBoard();
-  }
-
   getUnusedBlocks(): { blockType: BlockType; slotIdx: SlotIdx }[] {
     return this.blockStateManager.getUnusedBlocks();
   }
+  // getBoard is dup with GameResultManager
   // ------------------------------------------------------------------------
 
 
