@@ -8,6 +8,30 @@ import type { MoveStateManager } from "../state/move";
 import type { PlayerStateManager } from "../state/player";
 import type { SlotStateManager } from "../state/slot";
 
+
+// [TODO] Refactor TurnLifecycleOrchestrator responsibilities:
+/*
+ * This class currently handles multiple responsibilities: applying received moves,
+ * finalizing the turn, and processing exhaustion messages. This violates the
+ * Single Responsibility Principle and increases coupling.
+ * 
+ * 1. Create a new `MoveApplicationOrchestrator`:
+ *    - It should subscribe to `MessageReceived_Move` and `MessageReceived_SkipTurn`.
+ *    - Its only responsibility is to validate the move and apply it to the state
+ *      (Board, Block, MoveStateManager).
+ *    - After applying the move, it should publish a new event, e.g., `TurnFinalized`.
+ * 
+ * 2. Redefine `TurnLifecycleOrchestrator`:
+ *    - It should subscribe to the new `TurnFinalized` event instead of raw move messages.
+ *    - Its responsibility will be narrowed down to post-turn logic:
+ *      - Calling `gameStateManager.advanceTurn()`.
+ *      - Calculating block placeability for the next turn.
+ *      - Publishing the `TurnAdvanced` event.
+ * 
+ * 3. Delegate Exhaustion Message Handling:
+ *    - Move the subscription and logic for `MessageReceived_Exhausted` to the
+ *      `SlotExhaustionOrchestrator`, which is the more appropriate place for this concern.
+ */
 export class TurnLifecycleOrchestrator {
   private eventBus: EventBus;
   private boardStateManager: BoardStateManager;
