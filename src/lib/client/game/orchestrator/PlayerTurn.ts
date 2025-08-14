@@ -130,15 +130,8 @@ export class PlayerTurnOrchestrator {
       const { blockInfo, position, slotIdx, previewUrl } = event.payload;
       const playerIdx = this.playerStateManager.getClientPlayerIdx();
       const turn = this.gameStateManager.getCurrentTurn();
-      const board = this.boardStateManager.getBoard();
-      const block = getBlockMatrix(blockInfo);
-      if (board === undefined) {
-        this.eventBus.publish('BoardNotInitialized', undefined);
-        return;
-      }
-
-      const { result, reason } = isBlockPlaceableAt({
-        block, board, position, slotIdx, turn,
+      const { result, reason } = this.boardStateManager.checkBlockPleaceability({
+        blockInfo, position, slotIdx, turn,
       });
       if (!result) {
         this.alertManager.openInvalidMoveModal(reason);
