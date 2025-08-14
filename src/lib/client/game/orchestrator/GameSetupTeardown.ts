@@ -1,12 +1,6 @@
-import { createNewBoard, getBlockMatrix, placeBlock } from "$lib/game/core";
 import type { InboundStartMessage } from "$types";
+import type { IGameLifecycleManager, IParticipantManager } from "../application/ports";
 import type { EventBus } from "../event";
-import type { BlockStateManager } from "../state/block";
-import type { BoardStateManager } from "../state/board";
-import type { GameStateManager } from "../state/game";
-import type { MoveStateManager } from "../state/move";
-import type { PlayerStateManager } from "../state/player";
-import type { SlotStateManager } from "../state/slot";
 
 /**
  * Orchestrates the setup and teardown phases of a game session.
@@ -18,63 +12,41 @@ import type { SlotStateManager } from "../state/slot";
  */
 export class GameSetupTeardownOrchestrator {
   private eventBus: EventBus;
-  private gameStateManager: GameStateManager;
-  private blockStateManager: BlockStateManager;
-  private playerStateManager: PlayerStateManager;
-  private boardStateManager: BoardStateManager;
-  private slotStateManager: SlotStateManager;
-  private moveStateManager: MoveStateManager;
+  private gameLifecycleManager: IGameLifecycleManager;
+  private participantManager: IParticipantManager;
 
   constructor({
     eventBus,
-    gameStateManager,
-    blockStateManager,
-    playerStateManager,
-    boardStateManager,
-    slotStateManager,
-    moveStateManager,
+    gameLifecycleManager,
+    participantManager,
   }: {
     eventBus: EventBus;
-    gameStateManager: GameStateManager;
-    blockStateManager: BlockStateManager;
-    playerStateManager: PlayerStateManager;
-    boardStateManager: BoardStateManager;
-    slotStateManager: SlotStateManager;
-    moveStateManager: MoveStateManager;
+    gameLifecycleManager: IGameLifecycleManager;
+    participantManager: IParticipantManager;
   }) {
     this.eventBus = eventBus;
-    this.gameStateManager = gameStateManager;
-    this.blockStateManager = blockStateManager;
-    this.playerStateManager = playerStateManager;
-    this.boardStateManager = boardStateManager;
-    this.slotStateManager = slotStateManager;
-    this.moveStateManager = moveStateManager;
+    this.gameLifecycleManager = gameLifecycleManager;
+    this.participantManager = participantManager;
 
     this.eventBus.subscribe('MessageReceived_Start', (event) => {
       const { activePlayerCount, gameId } = event.payload;
-      this.gameStateManager.initialize({ activePlayerCount, gameId });
-      this.playerStateManager.initializeClientSlots();
-      this.blockStateManager.initialize(this.playerStateManager.getClientSlots());
-      this.boardStateManager.initializeBoard();
+      this.gameLifecycleManager.initializeNewGame({ activePlayerCount, gameId });
       this.eventBus.publish('GameStateInitialized', undefined);
     });
 
     this.eventBus.subscribe('MessageReceived_GameEnd', () => {
-      this.gameStateManager.reset();
-      this.boardStateManager.initializeBoard();
-      this.blockStateManager.reset();
-      this.slotStateManager.reset();
+      this.gameLifecycleManager.resetAllGameStates();
       this.eventBus.publish('GameStateReset', undefined);
     });
 
     this.eventBus.subscribe('GameStartRequested', () => {
       // [TODO] remove validation if needed(e.g. make "start game" button disable/enable w. ready state)
-      const playerIdx = this.playerStateManager.getClientPlayerIdx();
+      const playerIdx = this.participantManager.getClientPlayerIdx();
       if (playerIdx !== 0) {
         // [TODO] add modal
         return;
       }
-      const players = this.playerStateManager.getPlayers();
+      const players = this.participantManager.getPlayers();
       if (players.some(p => p !== undefined && !p.ready)) {
         // [TODO] add modal
         return;
@@ -101,30 +73,10 @@ export class GameSetupTeardownOrchestrator {
      * should be handled in this handler.
      */
     this.eventBus.subscribe('GameStateRestored', (event) => {
-      const restoredBoard = createNewBoard();
       const { moves, exhaustedSlots } = event.payload;
-      exhaustedSlots.forEach(slotIdx => {
-        // [TODO] if one of the slot is players', disable remaining blocks
-        this.eventBus.publish('SlotExhausted', { slotIdx, cause: 'RECEIVED' });
-        this.slotStateManager.applyExhaustedState(slotIdx);
+      this.gameLifecycleManager.restoreGameStateFromHistory({
+        moves, exhaustedSlots,
       });
-      moves.forEach((move) => {
-        this.moveStateManager.addMoveToHistory(move);
-        if (move.exhausted === false && move.timeout === false) {
-          placeBlock({
-            block: getBlockMatrix(move.blockInfo),
-            board: restoredBoard,
-            position: move.position,
-            slotIdx: move.slotIdx,
-            turn: move.turn,
-          });
-          this.blockStateManager.removeBlockFromStore({
-            blockType: move.blockInfo.type,
-            slotIdx: move.slotIdx,
-          });
-        }
-      });
-      this.boardStateManager.initializeBoard(restoredBoard);
     });
   }
 }
