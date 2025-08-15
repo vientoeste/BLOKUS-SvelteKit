@@ -163,15 +163,19 @@ export class GameStateLayer implements
   addPlayer(playerInfo: ParticipantInf & { playerIdx: PlayerIdx; }): void {
     this.playerStateManager.addPlayer(playerInfo);
   }
+
   removePlayerByIdx(playerIdx: PlayerIdx): void {
     this.playerStateManager.removePlayerByIdx(playerIdx);
   }
+
   updateReadyState(payload: { playerIdx: PlayerIdx; ready: boolean; }): void {
     this.playerStateManager.updateReadyState(payload);
   }
+
   getPlayers(): (ParticipantInf | undefined)[] {
     return this.playerStateManager.getPlayers();
   }
+  // getClientPlayerIdx is dup with ClientInfoReader
   // ------------------------------------------------------------------------
 
 
