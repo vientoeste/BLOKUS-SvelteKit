@@ -1,26 +1,26 @@
 import type { InboundExhaustedMessage } from "$types";
+import type { ISlotManager } from "../application/ports";
 import type { EventBus } from "../event";
-import type { SlotStateManager } from "../state/slot";
 
 export class SlotExhaustionOrchestrator {
   private eventBus: EventBus;
-  private slotStateManager: SlotStateManager;
+  private slotManager: ISlotManager;
 
   constructor({
     eventBus,
-    slotStateManager,
+    slotManager,
   }: {
     eventBus: EventBus;
-    slotStateManager: SlotStateManager;
+    slotManager: ISlotManager;
   }) {
     this.eventBus = eventBus;
-    this.slotStateManager = slotStateManager;
+    this.slotManager = slotManager;
 
     // [TODO] update block after the slot exhausted
     this.eventBus.subscribe('SlotExhausted', (event) => {
       const { slotIdx, cause } = event.payload;
       if (cause === 'CALCULATED') {
-        const { result } = this.slotStateManager.markAsExhausted(slotIdx);
+        const { result } = this.slotManager.markAsExhausted(slotIdx);
         if (result === 'NEWLY_EXHAUSTED') {
           const exhaustedMessage: InboundExhaustedMessage = {
             type: 'EXHAUSTED',
@@ -30,7 +30,7 @@ export class SlotExhaustionOrchestrator {
         }
         return;
       }
-      this.slotStateManager.applyExhaustedState(slotIdx);
+      this.slotManager.applyExhaustedState(slotIdx);
     });
   }
 }
