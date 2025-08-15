@@ -1,26 +1,26 @@
+import type { IParticipantManager } from "../application/ports";
 import { EventBus } from "../event";
-import type { PlayerStateManager } from "../state/player";
 
 /**
  * Orchestrates the participants' join, leave, ready, ...etc before starting the game. 
  */
 export class PregameOrchestrator {
   private eventBus: EventBus;
-  private playerStateManager: PlayerStateManager;
+  private participantManager: IParticipantManager;
 
   constructor({
     eventBus,
-    playerStateManager,
+    participantManager,
   }: {
     eventBus: EventBus;
-    playerStateManager: PlayerStateManager;
+    participantManager: IParticipantManager;
   }) {
     this.eventBus = eventBus;
-    this.playerStateManager = playerStateManager;
+    this.participantManager = participantManager;
 
     this.eventBus.subscribe('MessageReceived_CancelReady', (event) => {
       const { playerIdx } = event.payload;
-      this.playerStateManager.updateReadyState({
+      this.participantManager.updateReadyState({
         playerIdx,
         ready: false,
       });
@@ -28,7 +28,7 @@ export class PregameOrchestrator {
 
     this.eventBus.subscribe('MessageReceived_Connected', (event) => {
       const { id, username, playerIdx } = event.payload;
-      this.playerStateManager.addPlayer({
+      this.participantManager.addPlayer({
         id,
         username,
         playerIdx,
@@ -38,7 +38,7 @@ export class PregameOrchestrator {
 
     this.eventBus.subscribe('MessageReceived_Ready', (event) => {
       const { playerIdx } = event.payload;
-      this.playerStateManager.updateReadyState({
+      this.participantManager.updateReadyState({
         playerIdx,
         ready: true,
       });
@@ -46,7 +46,7 @@ export class PregameOrchestrator {
 
     this.eventBus.subscribe('MessageReceived_Leave', (event) => {
       const { playerIdx } = event.payload;
-      this.playerStateManager.removePlayerByIdx(playerIdx);
+      this.participantManager.removePlayerByIdx(playerIdx);
     });
   }
 }
