@@ -1,28 +1,28 @@
 import type { EventBus } from "../event";
 import type { TurnSequencer } from "../sequence/turn";
-import type { PlayerStateManager } from "../state/player";
+import type { IClientInfoReader } from '../application/ports';
 
 export class TurnAdvancedOrchestrator {
   private eventBus: EventBus;
-  private playerStateManager: PlayerStateManager;
+  private clientInfoReader: IClientInfoReader;
   private turnSequencer: TurnSequencer;
 
   constructor({
     eventBus,
-    playerStateManager,
     turnSequencer,
+    clientInfoReader,
   }: {
     eventBus: EventBus;
-    playerStateManager: PlayerStateManager;
     turnSequencer: TurnSequencer;
+    clientInfoReader: IClientInfoReader
   }) {
     this.eventBus = eventBus;
-    this.playerStateManager = playerStateManager;
     this.turnSequencer = turnSequencer;
+    this.clientInfoReader = clientInfoReader;
 
     this.eventBus.subscribe('TurnAdvanced', (event) => {
       const { turn, activePlayerCount } = event.payload;
-      const playerIdx = this.playerStateManager.getClientPlayerIdx();
+      const playerIdx = this.clientInfoReader.getClientPlayerIdx();
       const { nextPlayerIdx, nextSlotIdx } = this.turnSequencer.calculatePlayerAndSlotIdx({
         turn,
         activePlayerCount,
