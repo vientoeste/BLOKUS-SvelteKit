@@ -115,6 +115,7 @@ export class GameStateLayer implements
     slotIdx: SlotIdx;
   }): {
     result: true;
+    reason?: undefined;
   } | {
     result: false;
     reason: string;

@@ -14,6 +14,7 @@ export interface IMoveApplier {
     slotIdx: SlotIdx;
   }): {
     result: true;
+    reason?: undefined;
   } | {
     result: false;
     reason: string;

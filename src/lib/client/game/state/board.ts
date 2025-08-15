@@ -28,7 +28,13 @@ export class BoardStateManager {
     position: [number, number],
     turn: number,
     slotIdx: SlotIdx,
-  }) {
+  }): {
+    result: true;
+    reason?: undefined;
+  } | {
+    result: false;
+    reason: string;
+  } {
     if (!this.board) return { result: false, reason: 'Board Is Not Initialized' };
     return isBlockPlaceableAt({
       block: getBlockMatrix(blockInfo),
