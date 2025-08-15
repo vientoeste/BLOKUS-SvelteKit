@@ -1,10 +1,7 @@
 import type { InboundMoveMessage, InboundSkipTurnMessage, SubmitMoveDTO } from "$types";
+import type { IClientInfoReader, IMoveApplier, ISlotManager, ITurnManager } from "../application/ports";
 import type { EventBus } from "../event";
 import type { PlayerTurnTimer } from "../sequence/timer";
-import type { BoardStateManager } from "../state/board";
-import type { GameStateManager } from "../state/game";
-import type { PlayerStateManager } from "../state/player";
-import type { SlotStateManager } from "../state/slot";
 import type { AlertManager, ConfirmManager } from "../ui/handler/Dialog";
 
 /**
@@ -25,54 +22,55 @@ export class PlayerTurnOrchestrator {
   private eventBus: EventBus;
   private reservedMove: SubmitMoveDTO | undefined;
   private playerTurnTimer: PlayerTurnTimer;
-  private playerStateManager: PlayerStateManager;
-  private gameStateManager: GameStateManager;
-  private boardStateManager: BoardStateManager;
   private confirmManager: ConfirmManager;
-  private slotStateManager: SlotStateManager;
   private alertManager: AlertManager;
+  private slotManager: ISlotManager;
+  private turnManager: ITurnManager;
+  private moveApplier: IMoveApplier;
+  private clientInfoReader: IClientInfoReader;
 
   private turnState: TurnState = 'NOT_PLAYER_TURN';
 
   constructor({
     eventBus,
     playerTurnTimer,
-    playerStateManager,
-    gameStateManager,
-    boardStateManager,
     confirmManager,
-    slotStateManager,
     alertManager,
+    slotManager,
+    turnManager,
+    moveApplier,
+    clientInfoReader,
   }: {
     eventBus: EventBus;
     playerTurnTimer: PlayerTurnTimer;
-    playerStateManager: PlayerStateManager;
-    gameStateManager: GameStateManager;
-    boardStateManager: BoardStateManager;
     confirmManager: ConfirmManager;
-    slotStateManager: SlotStateManager;
     alertManager: AlertManager;
+    slotManager: ISlotManager;
+    turnManager: ITurnManager;
+    moveApplier: IMoveApplier;
+    clientInfoReader: IClientInfoReader;
+
   }) {
     this.eventBus = eventBus;
     this.playerTurnTimer = playerTurnTimer;
-    this.playerStateManager = playerStateManager;
-    this.gameStateManager = gameStateManager;
-    this.boardStateManager = boardStateManager;
     this.confirmManager = confirmManager;
-    this.slotStateManager = slotStateManager;
     this.alertManager = alertManager;
+    this.slotManager = slotManager;
+    this.turnManager = turnManager;
+    this.moveApplier = moveApplier;
+    this.clientInfoReader = clientInfoReader;
 
     this.eventBus.subscribe('PlayerTurnStarted', (event) => {
       const { slotIdx } = event.payload;
       this.setState('PLAYER_TURN');
 
-      if (this.slotStateManager.isSlotExhausted(slotIdx)) {
+      if (this.slotManager.isSlotExhausted(slotIdx)) {
         const skipTurnMessage: InboundSkipTurnMessage = {
           type: 'SKIP_TURN',
           slotIdx,
           exhausted: true,
           timeout: false,
-          turn: this.gameStateManager.getCurrentTurn(),
+          turn: this.turnManager.getCurrentTurn(),
         };
         const failureSubscription = this.eventBus.once('MessageReceived_BadReq', () => {
           successSubscription.unsubscribe();
@@ -95,7 +93,7 @@ export class PlayerTurnOrchestrator {
         case 'PLAYER_TURN': {
           this.alertManager.openTimeoutModal();
           this.setState('TURN_ENDED');
-          const turn = this.gameStateManager.getCurrentTurn();
+          const turn = this.turnManager.getCurrentTurn();
           const { slotIdx } = event.payload;
           const timeoutMessage: InboundSkipTurnMessage = {
             type: 'SKIP_TURN',
@@ -127,9 +125,9 @@ export class PlayerTurnOrchestrator {
         return;
       }
       const { blockInfo, position, slotIdx, previewUrl } = event.payload;
-      const playerIdx = this.playerStateManager.getClientPlayerIdx();
-      const turn = this.gameStateManager.getCurrentTurn();
-      const { result, reason } = this.boardStateManager.checkBlockPleaceability({
+      const playerIdx = this.clientInfoReader.getClientPlayerIdx();
+      const turn = this.turnManager.getCurrentTurn();
+      const { result, reason } = this.moveApplier.checkBlockPlaceability({
         blockInfo, position, slotIdx, turn,
       });
       if (!result) {
