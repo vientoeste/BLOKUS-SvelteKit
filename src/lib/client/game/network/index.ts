@@ -1,7 +1,7 @@
 import type { InboundWebSocketMessage } from "$types";
 import type { EventBus } from "../event";
-import type { MessageDispatcher } from "./dispatcher";
-import type { MessageReceiver } from "./receiver";
+import { WebSocketMessageDispatcher, type MessageDispatcher } from "./dispatcher";
+import { WebSocketMessageReceiver, type MessageReceiver } from "./receiver";
 
 export interface NetworkLayer {
   receiver: MessageReceiver;
@@ -40,3 +40,5 @@ export class WebsocketNetworkLayer implements NetworkLayer {
   private webSocket: WebSocket;
   private eventBus: EventBus;
 }
+
+export { WebSocketMessageDispatcher, WebSocketMessageReceiver };

@@ -1,9 +1,11 @@
 import type { Block, ParticipantInf, PlayerIdx, SlotIdx } from "$types";
 import { BlockPlaceabilityCalculator } from "./domain/blockPlaceabilityCalculator";
 import { EventBus } from "./event";
-import { WebsocketNetworkLayer } from "./network";
-import { WebSocketMessageDispatcher } from "./network/dispatcher";
-import { WebSocketMessageReceiver } from "./network/receiver";
+import {
+  WebsocketNetworkLayer,
+  WebSocketMessageDispatcher,
+  WebSocketMessageReceiver,
+} from "./network";
 import { GameResultOrchestrator } from "./orchestrator/GameResult";
 import { GameSetupTeardownOrchestrator } from "./orchestrator/GameSetupTeardown";
 import { PlayerTurnOrchestrator } from "./orchestrator/PlayerTurn";
