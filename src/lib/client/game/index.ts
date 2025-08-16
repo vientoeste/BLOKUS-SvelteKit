@@ -72,7 +72,7 @@ export class GameClientFactory {
   }: {
     webWorker: Worker;
     webSocket: WebSocket;
-    players: ParticipantInf[];
+    players: (ParticipantInf | undefined)[];
     playerIdx: PlayerIdx;
     slots: SlotIdx[];
   }) {
