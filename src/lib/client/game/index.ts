@@ -1,5 +1,5 @@
 import type { Block, ParticipantInf, PlayerIdx, SlotIdx } from "$types";
-import { BlockPlaceabilityCalculator } from "./domain/blockPlaceabilityCalculator";
+import { BlockPlaceabilityCalculator } from "./domain";
 import { EventBus } from "./event";
 import {
   WebsocketNetworkLayer,
