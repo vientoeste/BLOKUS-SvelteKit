@@ -73,6 +73,7 @@ export class GameStateLayer implements
   restoreGameStateFromHistory(payload: { moves: Move[]; exhaustedSlots: SlotIdx[]; }): void {
     const restoredBoard = createNewBoard();
     payload.exhaustedSlots.forEach(slotIdx => {
+      // [TODO] if one of the slot is players', disable remaining blocks
       this.slotStateManager.applyExhaustedState(slotIdx);
     });
     payload.moves.forEach(move => {
@@ -123,6 +124,7 @@ export class GameStateLayer implements
     return this.boardStateManager.checkBlockPleaceability(payload);
   }
 
+  // [TODO] createdAt should be replaced as server-sent timestamp
   applyRegularMove(move: OutboundMoveMessage): void {
     const { blockInfo, slotIdx } = move;
     const result = this.gameStateManager.verifyMoveContext(move)
@@ -136,6 +138,7 @@ export class GameStateLayer implements
     this.moveStateManager.addMoveToHistory({ ...move, gameId, createdAt: new Date(), timeout: false, exhausted: false });
   }
 
+  // [TODO] createdAt should be replaced as server-sent timestamp
   applySkipMove(skipMove: OutboundSkipTurnMessage): void {
     const result = this.gameStateManager.verifyMoveContext(skipMove)
     if (!result.isValid) {
