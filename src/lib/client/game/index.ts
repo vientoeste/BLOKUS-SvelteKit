@@ -13,13 +13,15 @@ import { TurnAdvancedOrchestrator } from "./orchestrator/TurnAdvanced";
 import { TurnLifecycleOrchestrator } from "./orchestrator/TurnLifecycle";
 import { PlayerTurnTimer } from "./sequence/timer";
 import { TurnSequencer } from "./sequence/turn";
-import { GameStateLayer } from "./state";
-import { BlockStateManager } from "./state/block";
-import { BoardStateManager } from "./state/board";
-import { GameStateManager } from "./state/game";
-import { MoveStateManager } from "./state/move";
-import { PlayerStateManager } from "./state/player";
-import { SlotStateManager } from "./state/slot";
+import {
+  GameStateLayer,
+  BlockStateManager,
+  BoardStateManager,
+  GameStateManager,
+  MoveStateManager,
+  PlayerStateManager,
+  SlotStateManager
+} from "./state";
 import { AlertManager, ConfirmManager, InputManager } from "./ui/handler/Dialog";
 
 export class GameManager {
