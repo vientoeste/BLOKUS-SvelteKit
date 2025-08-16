@@ -11,8 +11,7 @@ import { PregameOrchestrator } from "./orchestrator/Pregame";
 import { SlotExhaustionOrchestrator } from "./orchestrator/SlotExhaustion";
 import { TurnAdvancedOrchestrator } from "./orchestrator/TurnAdvanced";
 import { TurnLifecycleOrchestrator } from "./orchestrator/TurnLifecycle";
-import { PlayerTurnTimer } from "./sequence/timer";
-import { TurnSequencer } from "./sequence/turn";
+import { PlayerTurnTimer, TurnSequencer } from "./sequence";
 import {
   GameStateLayer,
   BlockStateManager,
