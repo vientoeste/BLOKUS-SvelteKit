@@ -42,6 +42,9 @@ export interface EventPayloadMap {
 
   'GameStartRequested': void,
 
+  'PlayerReadySubmitted': void,
+  'PlayerReadyCancelSubmitted': void,
+
   '*': { type: string, payload: unknown },
 }
 

@@ -1,3 +1,4 @@
+import type { InboundCancelReadyMessage, InboundReadyMessage } from "$types";
 import type { IParticipantManager } from "../application/ports";
 import { EventBus } from "../event";
 
@@ -47,6 +48,28 @@ export class PregameOrchestrator {
     this.eventBus.subscribe('MessageReceived_Leave', (event) => {
       const { playerIdx } = event.payload;
       this.participantManager.removePlayerByIdx(playerIdx);
+    });
+
+    this.eventBus.subscribe('PlayerReadySubmitted', () => {
+      const playerIdx = this.participantManager.getClientPlayerIdx();
+      const player = this.participantManager.getPlayers()[playerIdx];
+      if (player?.ready === false) {
+        const readyMessage: InboundReadyMessage = {
+          type: 'READY',
+        };
+        this.eventBus.publish('DispatchMessage', readyMessage);
+      }
+    });
+
+    this.eventBus.subscribe('PlayerReadyCancelSubmitted', () => {
+      const playerIdx = this.participantManager.getClientPlayerIdx();
+      const player = this.participantManager.getPlayers()[playerIdx];
+      if (player?.ready === true) {
+        const cancelReadyMessage: InboundCancelReadyMessage = {
+          type: 'CANCEL_READY',
+        };
+        this.eventBus.publish('DispatchMessage', cancelReadyMessage);
+      }
     });
   }
 }
