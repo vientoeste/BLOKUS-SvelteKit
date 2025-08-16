@@ -22,7 +22,7 @@ import {
   PlayerStateManager,
   SlotStateManager
 } from "./state";
-import { AlertManager, ConfirmManager, InputManager } from "./ui/handler/Dialog";
+import { AlertManager, ConfirmManager, InputManager } from "./ui";
 
 export class GameManager {
   private eventBus: EventBus;
