@@ -60,6 +60,7 @@ export class GameStateLayer implements
     this.playerStateManager.initializeClientSlots();
     this.blockStateManager.initialize(this.playerStateManager.getClientSlots());
     this.boardStateManager.initializeBoard();
+    this.slotStateManager.initialize(payload.activePlayerCount);
   }
 
   resetAllGameStates(): void {
