@@ -1,23 +1,24 @@
 import { getBlockMatrix, isBlockPlaceableAt } from "$lib/game/core";
+import { boardStoreWriter, getBoardFromStore } from "$lib/store";
 import type { Block, BoardMatrix, SlotIdx } from "$types";
 
 export class BoardStateManager {
-  private board?: BoardMatrix;
-
   getBoard(): BoardMatrix | undefined {
-    return this.board?.map(e => [...e]);
+    return getBoardFromStore()?.map(e => [...e]);
   }
 
   initializeBoard(board?: BoardMatrix) {
     if (!board) {
-      this.board = Array(20).fill(null).map(() => Array(20).fill(false));
+      boardStoreWriter.set(
+        Array(20).fill(null).map(() => Array(20).fill(false))
+      )
       return;
     }
-    this.board = board;
+    boardStoreWriter.set(board);
   }
 
   destroyBoard() {
-    this.board = undefined;
+    boardStoreWriter.set([]);
     // re-render
   }
 
@@ -35,11 +36,12 @@ export class BoardStateManager {
     result: false;
     reason: string;
   } {
-    if (!this.board) return { result: false, reason: 'Board Is Not Initialized' };
+    const board = this.getBoard();
+    if (board === undefined) return { result: false, reason: 'Board Is Not Initialized' };
     return isBlockPlaceableAt({
       block: getBlockMatrix(blockInfo),
       position,
-      board: this.board,
+      board,
       slotIdx,
       turn,
     });
@@ -55,7 +57,7 @@ export class BoardStateManager {
     /**
      * @description stable reference of board to avoid dup null-check
      */
-    const board = this.board;
+    const board = this.getBoard();
     if (!board || board === undefined) {
       throw new Error('Board Is Not Initialized');
     }

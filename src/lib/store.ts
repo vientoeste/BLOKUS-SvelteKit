@@ -181,3 +181,12 @@ export const participantStore = (() => {
     initialize, addPlayer, removePlayerByIdx, setPlayerReadyState,
   };
 })();
+
+export const { boardStore, boardStoreWriter, getBoardFromStore } = (() => {
+  const { subscribe, update, set } = writable<BoardMatrix | undefined>(undefined);
+  return {
+    boardStore: { subscribe },
+    boardStoreWriter: { update, set },
+    getBoardFromStore: () => get({ subscribe }),
+  };
+})();
