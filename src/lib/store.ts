@@ -1,5 +1,5 @@
 import { preset } from '$lib/game/core';
-import { type ParticipantInf, type BlockType, type PlayerIdx, type Rotation, type SlotIdx, type UserInfo } from '$types';
+import { type ParticipantInf, type BlockType, type PlayerIdx, type Rotation, type SlotIdx, type UserInfo, type BoardMatrix } from '$types';
 import type { Undefinedable } from '$lib/utils';
 import { get, writable } from 'svelte/store';
 import type { Phase } from './client/game/state/game';
