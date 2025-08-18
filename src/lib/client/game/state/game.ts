@@ -1,3 +1,4 @@
+import { gamePhaseStore } from "$lib/store";
 import type { GameId } from "$types";
 
 export type MoveContextVerificationResult = {
@@ -13,30 +14,29 @@ export type Phase = 'NOT_STARTED' | 'IN_PROGRESS' | 'CONFIRMING_SCORE';
 export class GameStateManager {
   private turn: number;
   private gameId: GameId | null;
-  private phase: Phase;
   private activePlayerCount: 2 | 3 | 4 | undefined;
 
   constructor() {
     this.turn = -1;
     this.gameId = null;
-    this.phase = 'NOT_STARTED';
+    this.setPhase('NOT_STARTED');
   }
 
   initialize({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
     this.turn = 0;
     this.gameId = gameId;
-    this.phase = 'IN_PROGRESS';
+    this.setPhase('IN_PROGRESS');
     this.activePlayerCount = activePlayerCount;
   }
 
   initiateScoreConfirmation() {
-    this.phase = 'CONFIRMING_SCORE';
+    this.setPhase('CONFIRMING_SCORE');
   }
 
   reset() {
     this.turn = -1;
     this.gameId = null;
-    this.phase = 'NOT_STARTED';
+    this.setPhase('NOT_STARTED');
   }
 
   /**
@@ -54,7 +54,7 @@ export class GameStateManager {
    * On failure: `{ isValid: false, reason: string }`.
    */
   verifyMoveContext({ turn }: { turn: number }): MoveContextVerificationResult {
-    if (this.phase !== 'IN_PROGRESS') {
+    if (this.getPhase() !== 'IN_PROGRESS') {
       return { isValid: false, reason: 'game is not started' };
     }
     if (turn !== this.turn + 1) {
@@ -77,11 +77,11 @@ export class GameStateManager {
   }) {
     this.turn = turn;
     this.gameId = gameId;
-    this.phase = phase;
+    this.setPhase(phase);
   }
 
   advanceTurn() {
-    if (this.phase !== 'IN_PROGRESS') {
+    if (this.getPhase() !== 'IN_PROGRESS') {
       return -1;
     }
     this.turn += 1;
@@ -98,5 +98,13 @@ export class GameStateManager {
       throw new Error('GameStateManager.activePlayerCount is missing');
     }
     return this.activePlayerCount;
+  }
+
+  getPhase() {
+    return gamePhaseStore.get();
+  }
+
+  setPhase(phase: Phase) {
+    gamePhaseStore.set(phase);
   }
 }
