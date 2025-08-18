@@ -57,7 +57,7 @@ export class GameStateManager {
     if (this.getPhase() !== 'IN_PROGRESS') {
       return { isValid: false, reason: 'game is not started' };
     }
-    if (turn !== this.turn + 1) {
+    if (turn !== this.turn) {
       return { isValid: false, reason: 'invalid turn' };
     }
     if (!this.gameId) {
