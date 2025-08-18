@@ -168,7 +168,7 @@
 </script>
 
 <div id="board" bind:this={boardElement}>
-  {#each board as boardLine, rowIdx}
+  {#each $boardStore ?? [] as boardLine, rowIdx}
     <div id="boardLine-{rowIdx}" class="boardLine">
       {#each boardLine as cell, colIdx}
         <div class="cell-cover">
