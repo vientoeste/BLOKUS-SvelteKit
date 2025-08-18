@@ -54,19 +54,18 @@ export class BoardStateManager {
   }) {
     const [row, col] = position;
     const block = getBlockMatrix(blockInfo);
-    /**
-     * @description stable reference of board to avoid dup null-check
-     */
-    const board = this.getBoard();
-    if (!board || board === undefined) {
-      throw new Error('Board Is Not Initialized');
-    }
-    block.forEach((blockLine, rowIdx) => {
-      blockLine.forEach((blockCell, colIdx) => {
-        if (blockCell) {
-          board[row + rowIdx][col + colIdx] = slotIdx;
-        }
+    boardStoreWriter.update((board) => {
+      if (!board || board === undefined) {
+        throw new Error('Board Is Not Initialized');
+      }
+      block.forEach((blockLine, rowIdx) => {
+        blockLine.forEach((blockCell, colIdx) => {
+          if (blockCell) {
+            board[row + rowIdx][col + colIdx] = slotIdx;
+          }
+        });
       });
+      return board;
     });
   }
 }
