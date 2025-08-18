@@ -210,7 +210,6 @@
 
 <div id="blocks-container">
   {#each $blockStore as block}
-    {block.blockType}
     {#if !block.isPlaced}
       <DraggableBlock
         block={preset[block.blockType]}
