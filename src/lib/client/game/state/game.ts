@@ -22,7 +22,7 @@ export class GameStateManager {
     this.setPhase('NOT_STARTED');
   }
 
-  initialize({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
+  initializeNewGame({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
     this.turn = 0;
     this.gameId = gameId;
     this.setPhase('IN_PROGRESS');

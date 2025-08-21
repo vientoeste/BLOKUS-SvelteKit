@@ -56,7 +56,7 @@ export class GameStateLayer implements
 
   // -------------------------- GameLifecycleManager -------------------------
   initializeNewGame(payload: { gameId: GameId; activePlayerCount: 2 | 3 | 4; }): void {
-    this.gameStateManager.initialize(payload);
+    this.gameStateManager.initializeNewGame(payload);
     this.playerStateManager.initializeClientSlots();
     this.blockStateManager.initialize(this.playerStateManager.getClientSlots());
     this.boardStateManager.initializeBoard();
