@@ -70,14 +70,17 @@ export class GameStateManager {
     turn,
     gameId,
     phase,
+    activePlayerCount,
   }: {
     turn: number,
     gameId: GameId,
     phase: Phase;
+    activePlayerCount: 2 | 3 | 4;
   }) {
     this.turn = turn;
     this.gameId = gameId;
     this.setPhase(phase);
+    this.activePlayerCount = activePlayerCount;
   }
 
   advanceTurn() {
