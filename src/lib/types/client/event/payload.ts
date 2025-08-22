@@ -1,6 +1,7 @@
+import type { Phase } from "$lib/client/game/state/game";
 import type { Block, SlotIdx } from "$types/game";
 import type { Move } from "$types/move";
-import type { PlayerIdx } from "$types/room";
+import type { GameId, PlayerIdx } from "$types/room";
 
 export type TurnAdvancedPayload = {
   turn: number;
@@ -35,7 +36,9 @@ export type PlayerTurnStartedPayload = {
 }
 
 export type GameRestoreRequestedPayload = {
-  playerIdx: PlayerIdx;
   moves: Move[];
   exhaustedSlots: SlotIdx[];
+  turn: number;
+  gameId: GameId;
+  phase: Phase;
 }

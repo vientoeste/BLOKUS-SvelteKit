@@ -7,7 +7,7 @@ import type { ISlotManager } from './ports/slot-state.ports';
 import type { IClientInfoReader } from './ports/player-info.ports';
 import type { BlockStateManager } from '../state/block';
 import type { BoardStateManager } from '../state/board';
-import type { GameStateManager } from '../state/game';
+import type { GameStateManager, Phase } from '../state/game';
 import type { MoveStateManager } from '../state/move';
 import type { PlayerStateManager } from '../state/player';
 import type { SlotStateManager } from '../state/slot';
@@ -71,12 +71,30 @@ export class GameStateLayer implements
     this.moveStateManager.clearHistory();
   }
 
-  restoreGame(payload: { moves: Move[]; exhaustedSlots: SlotIdx[]; }): void {
-    const restoredBoard = createNewBoard();
+  restoreGame(payload: {
+    moves: Move[];
+    exhaustedSlots: SlotIdx[];
+    turn: number;
+    gameId: GameId;
+    phase: Phase;
+  }): void {
+    this.playerStateManager.initializeClientSlots();
+    const activePlayerCount = this.playerStateManager.getActivePlayerCount();
+    if (activePlayerCount === 0) throw new Error('failed to initialize player state manager');
+    this.gameStateManager.restoreGameState({
+      turn: payload.turn,
+      activePlayerCount,
+      gameId: payload.gameId,
+      phase: payload.phase,
+    });
+    this.blockStateManager.initialize(this.playerStateManager.getClientSlots());
+
     payload.exhaustedSlots.forEach(slotIdx => {
       // [TODO] if one of the slot is players', disable remaining blocks
       this.slotStateManager.applyExhaustedState(slotIdx);
     });
+
+    const restoredBoard = createNewBoard();
     payload.moves.forEach(move => {
       this.moveStateManager.addMoveToHistory(move);
       if (move.exhausted === false && move.timeout === false) {

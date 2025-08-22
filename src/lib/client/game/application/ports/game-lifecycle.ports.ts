@@ -1,4 +1,5 @@
 import type { GameId, Move, SlotIdx } from '$types';
+import type { Phase } from '../../state/game';
 
 /**
  * Manages the core lifecycle of a game session, such as initialization, restoration, and reset.
@@ -10,7 +11,13 @@ export interface IGameLifecycleManager {
 
   /**
    * Restores game state upon reconnect.
-   * It encapsulates all state restoration logic (board, blocks, slots, moveHistory) within the facade.
+   * It encapsulates all state restoration logic within the facade.
    */
-  restoreGame(payload: { moves: Move[]; exhaustedSlots: SlotIdx[] }): void;
+  restoreGame(payload: {
+    moves: Move[];
+    exhaustedSlots: SlotIdx[];
+    turn: number;
+    gameId: GameId;
+    phase: Phase;
+  }): void;
 }
