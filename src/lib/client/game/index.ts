@@ -100,7 +100,6 @@ export class GameClientFactory {
     const playerStateManager = new PlayerStateManager({
       players,
       playerIdx,
-      slots,
     });
     const slotStateManager = new SlotStateManager();
     const stateLayer = new GameStateLayer({

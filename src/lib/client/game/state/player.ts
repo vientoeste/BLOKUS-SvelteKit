@@ -5,19 +5,16 @@ import { getPlayersSlot } from "$lib/utils";
 
 export class PlayerStateManager {
   private clientPlayerIdx: PlayerIdx;
-  private clientSlotIndices: SlotIdx[];
+  private clientSlotIndices: SlotIdx[] | undefined = undefined;
 
   constructor({
     players,
     playerIdx,
-    slots,
   }: {
     players: (ParticipantInf | undefined)[],
     playerIdx: PlayerIdx;
-    slots: SlotIdx[];
   }) {
     this.clientPlayerIdx = playerIdx;
-    this.clientSlotIndices = slots;
     participantStore.initialize(players);
   }
 
@@ -57,7 +54,10 @@ export class PlayerStateManager {
   }
 
   getClientSlots(): SlotIdx[] {
-    return [...this.clientSlotIndices];
+    const slots = this.clientSlotIndices;
+    // [TODO] check this error throwing is necessary: could the length of slot be 0?
+    if (slots === undefined) throw new Error('slot is not initialized');
+    return [...slots];
   }
 
   getClientPlayerIdx() {
