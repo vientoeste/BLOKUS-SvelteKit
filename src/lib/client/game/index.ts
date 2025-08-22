@@ -1,4 +1,4 @@
-import type { Block, ParticipantInf, PlayerIdx, SlotIdx } from "$types";
+import type { Block, GameId, Move, ParticipantInf, PlayerIdx, SlotIdx } from "$types";
 import { BlockPlaceabilityCalculator } from "./domain";
 import { EventBus } from "./event";
 import {
@@ -23,6 +23,7 @@ import {
   PlayerStateManager,
   SlotStateManager
 } from "./state";
+import type { Phase } from "./state/game";
 import { AlertManager, ConfirmManager, InputManager } from "./ui";
 
 export class GameManager {
@@ -34,6 +35,17 @@ export class GameManager {
     eventBus: EventBus;
   }) {
     this.eventBus = eventBus;
+  }
+
+  // [TODO] 'phase' info should be depend on 'isStarted' and redis' score confirmation keys
+  restoreGame(restoreGamePayload: {
+    turn: number;
+    gameId: GameId;
+    phase: Phase;
+    exhaustedSlots: SlotIdx[];
+    moves: Move[];
+  }) {
+    this.eventBus.publish('GameRestoreRequested', restoreGamePayload);
   }
 
   submitMove({
