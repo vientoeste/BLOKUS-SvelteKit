@@ -1,4 +1,4 @@
-import type { Block, GameId, Move, ParticipantInf, PlayerIdx, SlotIdx } from "$types";
+import type { Block, GameClientContext, GameId, Move, SlotIdx } from "$types";
 import { BlockPlaceabilityCalculator } from "./domain";
 import { EventBus } from "./event";
 import {
@@ -81,15 +81,14 @@ export class GameClientFactory {
   static create({
     webWorker,
     webSocket,
-    players,
-    playerIdx,
-    slots,
+    context: {
+      playerIdx,
+      players,
+    },
   }: {
     webWorker: Worker;
     webSocket: WebSocket;
-    players: (ParticipantInf | undefined)[];
-    playerIdx: PlayerIdx;
-    slots: SlotIdx[];
+    context: GameClientContext;
   }) {
     const eventBus = new EventBus();
 
