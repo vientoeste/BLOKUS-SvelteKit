@@ -90,7 +90,7 @@ export class GameClientFactory {
       playerIdx,
       slots,
     });
-    const slotStateManager = new SlotStateManager({ eventBus });
+    const slotStateManager = new SlotStateManager();
     const stateLayer = new GameStateLayer({
       gameStateManager,
       playerStateManager,

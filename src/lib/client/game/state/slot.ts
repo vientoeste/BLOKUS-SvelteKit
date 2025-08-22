@@ -1,5 +1,4 @@
 import type { PlayerIdx, SlotIdx } from "$types";
-import type { EventBus } from "../event";
 
 type SlotState = {
   exhausted: boolean;
@@ -8,11 +7,9 @@ type SlotState = {
 
 export class SlotStateManager {
   private slots: [SlotState, SlotState, SlotState, SlotState] | [];
-  private eventBus: EventBus;
 
-  constructor({ eventBus }: { eventBus: EventBus }) {
+  constructor() {
     this.slots = [];
-    this.eventBus = eventBus;
   }
 
   /**
