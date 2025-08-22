@@ -71,7 +71,7 @@ export class GameStateLayer implements
     this.moveStateManager.clearHistory();
   }
 
-  restoreGameStateFromHistory(payload: { moves: Move[]; exhaustedSlots: SlotIdx[]; }): void {
+  restoreGame(payload: { moves: Move[]; exhaustedSlots: SlotIdx[]; }): void {
     const restoredBoard = createNewBoard();
     payload.exhaustedSlots.forEach(slotIdx => {
       // [TODO] if one of the slot is players', disable remaining blocks

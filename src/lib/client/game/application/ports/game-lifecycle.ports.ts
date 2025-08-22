@@ -12,5 +12,5 @@ export interface IGameLifecycleManager {
    * Restores game state upon reconnect.
    * It encapsulates all state restoration logic (board, blocks, slots, moveHistory) within the facade.
    */
-  restoreGameStateFromHistory(payload: { moves: Move[]; exhaustedSlots: SlotIdx[] }): void;
+  restoreGame(payload: { moves: Move[]; exhaustedSlots: SlotIdx[] }): void;
 }

@@ -75,7 +75,7 @@ export class GameSetupTeardownOrchestrator {
      */
     this.eventBus.subscribe('GameRestoreRequested', (event) => {
       const { moves, exhaustedSlots } = event.payload;
-      this.gameLifecycleManager.restoreGameStateFromHistory({
+      this.gameLifecycleManager.restoreGame({
         moves, exhaustedSlots,
       });
     });
