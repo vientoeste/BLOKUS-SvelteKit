@@ -1,0 +1,7 @@
+each states are initialized like...
+
+| -                 | Block                         | Board                                  | Move            | Player                                           | Slot                                                 | Game                                                                                 |
+| ----------------- | ----------------------------- | -------------------------------------- | --------------- | ------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| before game start | empty arr                     | undefined                              | empty arr       | actual playerIdx<br>actual players<br>empty slot | empty arr                                            | turn = -1<br>gameId = null<br>phase = 'NOT_STARTED'<br>activePlayerCound = undefined |
+| at game start     | init(slots)                   | undefined -> empty board               | empty arr       | initializeClientSlots(aPC)                       | turn = 0<br>gameId<br>setPhase('IN_PROGRESS')<br>aPC |
+| at reconnect      | initialize -> DYNAMIC RESTORE | initialize(board restored dynamically) | DYNAMIC RESTORE | initializeClientSlots(aPC)                       | each markAsExhausted(slotIdx)                        | restore({turn, gameId, phase, aPC})                                                  |
