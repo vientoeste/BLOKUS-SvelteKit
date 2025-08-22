@@ -67,12 +67,13 @@ export class GameSetupTeardownOrchestrator {
 
     // [TODO] publish this event at onMount by GameManager's public method
     /**
+     * @deprecated this event will be replaced to new event
      * @description The GameStateRestored event indicates that the 'static' state managers have been initialized,
      * especially those that depend on server-sent data (via $props).
      * Therefore, 'dynamic' data —such as move related states, like move history/blocks/board—
      * should be handled in this handler.
      */
-    this.eventBus.subscribe('GameStateRestored', (event) => {
+    this.eventBus.subscribe('GameRestoreRequested', (event) => {
       const { moves, exhaustedSlots } = event.payload;
       this.gameLifecycleManager.restoreGameStateFromHistory({
         moves, exhaustedSlots,

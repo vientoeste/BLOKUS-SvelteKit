@@ -34,7 +34,7 @@ export type PlayerTurnStartedPayload = {
   playerIdx: PlayerIdx;
 }
 
-export type GameStateRestoredPayload = {
+export type GameRestoreRequestedPayload = {
   playerIdx: PlayerIdx;
   moves: Move[];
   exhaustedSlots: SlotIdx[];
