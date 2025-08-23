@@ -27,7 +27,7 @@ import type {
  *    - Its responsibility will be narrowed down to post-turn logic:
  *      - Calling `gameStateManager.advanceTurn()`.
  *      - Calculating block placeability for the next turn.
- *      - Publishing the `TurnAdvanced` event.
+ *      - Publishing the `TurnProgressionTriggered` event.
  * 
  * 3. Delegate Exhaustion Message Handling:
  *    - Move the subscription and logic for `MessageReceived_Exhausted` to the
@@ -73,7 +73,7 @@ export class TurnLifecycleOrchestrator {
 
     this.eventBus.subscribe('GameStateInitialized', () => {
       if (this.turnManager.getCurrentTurn() === 0) {
-        this.eventBus.publish('TurnAdvanced', {
+        this.eventBus.publish('TurnProgressionTriggered', {
           turn: 0,
           activePlayerCount: this.turnManager.getActivePlayerCount(),
           playerIdx: this.clientInfoReader.getClientPlayerIdx(),
@@ -147,7 +147,7 @@ export class TurnLifecycleOrchestrator {
     // 1. advance turn
     const nextTurn = this.turnManager.advanceTurn();
     if (nextTurn !== -1) {
-      this.eventBus.publish('TurnAdvanced', {
+      this.eventBus.publish('TurnProgressionTriggered', {
         turn: nextTurn,
         activePlayerCount: this.turnManager.getActivePlayerCount(),
         playerIdx,

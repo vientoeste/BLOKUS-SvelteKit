@@ -1,5 +1,5 @@
 import type { InboundWebSocketMessage, OutboundBadReqMessage, OutboundCancelReadyMessage, OutboundConnectedMessage, OutboundErrorMessage, OutboundExhaustedMessage, OutboundGameEndMessage, OutboundLeaveMessage, OutboundMediateMessage, OutboundMoveMessage, OutboundReadyMessage, OutboundScoreConfirmationMessage, OutboundSkipTurnMessage, OutboundStartMessage } from "$types/websocket";
-import type { SlotExhaustedPayload, TurnAdvancedPayload, BlockNotPlaceablePayload, PlayerMoveSubmittedPayload, TimeoutOccuredPayload, PlayerTurnStartedPayload, GameRestoreRequestedPayload } from "./payload";
+import type { SlotExhaustedPayload, TurnProgressionTriggeredPayload, BlockNotPlaceablePayload, PlayerMoveSubmittedPayload, TimeoutOccuredPayload, PlayerTurnStartedPayload, GameRestoreRequestedPayload } from "./payload";
 
 export interface EventPayloadMap {
   'MessageReceived_CancelReady': OutboundCancelReadyMessage,
@@ -24,7 +24,7 @@ export interface EventPayloadMap {
   'InvalidTurn': void,
   'InvalidGameId': void,
   'InvalidGameInitializedState': void,
-  'TurnAdvanced': TurnAdvancedPayload,
+  'TurnProgressionTriggered': TurnProgressionTriggeredPayload,
 
   'BoardNotInitialized': void,
 

@@ -3,7 +3,7 @@ import type { Block, SlotIdx } from "$types/game";
 import type { Move } from "$types/move";
 import type { GameId, PlayerIdx } from "$types/room";
 
-export type TurnAdvancedPayload = {
+export type TurnProgressionTriggeredPayload = {
   turn: number;
   activePlayerCount: 2 | 3 | 4;
   // [CHECK] remove?

@@ -2,7 +2,7 @@ import type { EventBus } from "../event";
 import type { TurnSequencer } from "../sequence/turn";
 import type { IClientInfoReader } from '../application/ports';
 
-export class TurnAdvancedOrchestrator {
+export class TurnProgressionOrchestrator {
   private eventBus: EventBus;
   private clientInfoReader: IClientInfoReader;
   private turnSequencer: TurnSequencer;
@@ -20,7 +20,7 @@ export class TurnAdvancedOrchestrator {
     this.turnSequencer = turnSequencer;
     this.clientInfoReader = clientInfoReader;
 
-    this.eventBus.subscribe('TurnAdvanced', (event) => {
+    this.eventBus.subscribe('TurnProgressionTriggered', (event) => {
       const { turn, activePlayerCount } = event.payload;
       const playerIdx = this.clientInfoReader.getClientPlayerIdx();
       const { nextPlayerIdx, nextSlotIdx } = this.turnSequencer.calculatePlayerAndSlotIdx({

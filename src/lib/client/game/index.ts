@@ -11,7 +11,7 @@ import { GameSetupTeardownOrchestrator } from "./orchestrator/GameSetupTeardown"
 import { PlayerTurnOrchestrator } from "./orchestrator/PlayerTurn";
 import { PregameOrchestrator } from "./orchestrator/Pregame";
 import { SlotExhaustionOrchestrator } from "./orchestrator/SlotExhaustion";
-import { TurnAdvancedOrchestrator } from "./orchestrator/TurnAdvanced";
+import { TurnProgressionOrchestrator } from "./orchestrator/TurnProgression";
 import { TurnLifecycleOrchestrator } from "./orchestrator/TurnLifecycle";
 import { PlayerTurnTimer, TurnSequencer } from "./sequence";
 import {
@@ -159,7 +159,7 @@ export class GameClientFactory {
       eventBus,
       slotManager: stateLayer,
     });
-    new TurnAdvancedOrchestrator({
+    new TurnProgressionOrchestrator({
       eventBus,
       turnSequencer,
       clientInfoReader: stateLayer,
