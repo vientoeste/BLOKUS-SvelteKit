@@ -33,6 +33,7 @@ export type PlayerMoveSubmittedPayload = {
 export type PlayerTurnStartedPayload = {
   slotIdx: SlotIdx;
   playerIdx: PlayerIdx;
+  remainingTime?: number;
 }
 
 export type GameRestoreRequestedPayload = {
