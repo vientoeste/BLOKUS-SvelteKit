@@ -6,6 +6,8 @@ import type { GameId, PlayerIdx } from "$types/room";
 export type TurnProgressionTriggeredPayload = {
   turn: number;
   activePlayerCount: 2 | 3 | 4;
+  // This field is only for reconnected
+  lastMoveTimestamp?: Date;
 }
 
 export type SlotExhaustedPayload = {
@@ -39,4 +41,5 @@ export type GameRestoreRequestedPayload = {
   turn: number;
   gameId: GameId;
   phase: Phase;
+  activePlayerCount: 2 | 3 | 4;
 }

@@ -1,14 +1,19 @@
 <script lang="ts">
   import { getBlockMatrix } from "$lib/game/core";
-  import type { BlockMatrix, SlotIdx } from "$types";
-  import {
-    dragPositionOffsetStore,
-    movePreviewStore,
-    moveStore,
-  } from "$lib/store";
+  import type { Block, BlockMatrix, SlotIdx } from "$types";
+  import { boardStore, dragPositionOffsetStore, moveStore } from "$lib/store";
   import html2canvas from "html2canvas";
 
-  const { board, relayMove } = $props();
+  const {
+    submitMove,
+  }: {
+    submitMove: (param: {
+      previewUrl: string;
+      position: [number, number];
+      blockInfo: Block;
+      slotIdx: SlotIdx;
+    }) => void;
+  } = $props();
 
   let boardElement: HTMLElement;
 
@@ -101,8 +106,8 @@
         position as [number, number],
         slotIdx,
       );
-      $movePreviewStore = capturedImageURL;
-      relayMove({
+      submitMove({
+        previewUrl: capturedImageURL,
         position,
         blockInfo: { type, rotation, flip },
         slotIdx,

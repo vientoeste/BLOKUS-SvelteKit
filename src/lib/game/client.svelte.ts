@@ -66,22 +66,22 @@ export class GameManager_Legacy {
 
     this.messageReceiver.listen();
 
-    // eventBus.subscribe('MessageReceived_Leave', (event) => {
-    //   const message = event.payload as OutboundLeaveMessage;
-    //   this.removeUser(message);
-    // });
-    // eventBus.subscribe('MessageReceived_Connected', (event) => {
-    //   const message = event.payload as OutboundConnectedMessage;
-    //   this.addUser(message);
-    // });
-    // eventBus.subscribe('MessageReceived_Ready', (event) => {
-    //   const message = event.payload as OutboundReadyMessage;
-    //   this.updateReadyState(message);
-    // });
-    // eventBus.subscribe('MessageReceived_CancelReady', (event) => {
-    //   const message = event.payload as OutboundCancelReadyMessage;
-    //   this.updateReadyState(message);
-    // });
+    eventBus.subscribe('MessageReceived_Leave', (event) => {
+      const message = event.payload as OutboundLeaveMessage;
+      this.removeUser(message);
+    });
+    eventBus.subscribe('MessageReceived_Connected', (event) => {
+      const message = event.payload as OutboundConnectedMessage;
+      this.addUser(message);
+    });
+    eventBus.subscribe('MessageReceived_Ready', (event) => {
+      const message = event.payload as OutboundReadyMessage;
+      this.updateReadyState(message);
+    });
+    eventBus.subscribe('MessageReceived_CancelReady', (event) => {
+      const message = event.payload as OutboundCancelReadyMessage;
+      this.updateReadyState(message);
+    });
     eventBus.subscribe('MessageReceived_Move', (event) => {
       const message = event.payload as OutboundMoveMessage;
       this.applyMove(message);
@@ -268,6 +268,7 @@ export class GameManager_Legacy {
   }
 
   handleBadRequestException({ message }: OutboundBadReqMessage) {
+    // [MARK] state updater
     modalStore.open(Alert, {
       title: 'error occured',
       message,
@@ -284,11 +285,14 @@ export class GameManager_Legacy {
       turn: turn + 1,
     }));
     if (this.isMyTurn()) {
+      console.log('my turn is going to initiate')
       this.processMyTurn();
     }
   }
 
+  // [CHECK] improper bug occured here: initialize failed
   async processMyTurn(leftTime?: number) {
+    // [MARK] state updater
     const slotIdx: SlotIdx = this.turn % 4 as SlotIdx;
     if (this.exhaustedSlots.has(slotIdx)) {
       const exhaustedSkipMessage: InboundSkipTurnMessage = {
@@ -300,6 +304,7 @@ export class GameManager_Legacy {
       };
       this.messageDispatcher.dispatch(exhaustedSkipMessage);
     }
+    // [MARK] state updater
     modalStore.open(Alert, {
       title: 'your turn',
       message: 'please make your move',
@@ -323,8 +328,12 @@ export class GameManager_Legacy {
     let isSubmitted = false;
     // 2. wait
     while (!isSubmitted) {
+      console.log('waiting for move...')
       // 3. resolve move
-      const move = await this.waitMoveResolution().catch(() => null);
+      const move = await this.waitMoveResolution().catch((e) => {
+        console.error('turnPromise at waitMoveResolution caused error', e);
+        return null;
+      });
       if (move === null) {
         // if the move is empty, maybe that means the turnPromise was rejected
         /**
@@ -364,6 +373,7 @@ export class GameManager_Legacy {
           confirmText: 'confirm',
           cancelText: 'cancel',
           onConfirm: () => {
+            // [TODO] if the turn promise is resolved/rejected during this callback, forced-rollback is needed
             // 6. if confirmed, dispatch
             const moveMessage: InboundMoveMessage = {
               type: 'MOVE',
@@ -399,6 +409,7 @@ export class GameManager_Legacy {
   }
 
   isMyTurn() {
+    // [MARK] state query
     return isRightTurn({
       turn: this.turn,
       activePlayerCount: this.playerStateManager.getPlayers().filter(e => e !== undefined).length as 2 | 3 | 4,
@@ -411,10 +422,13 @@ export class GameManager_Legacy {
   private turnPromiseRejecter: ((reason: string) => void) | null = null;
 
   async applyMove(message: OutboundMoveMessage) {
+    // [MARK] state query
     if (!this.gameId) {
       throw new Error('gameId is not set');
     }
+    // [MARK] parse message
     const { blockInfo, playerIdx, position, turn, slotIdx } = message;
+    // [MARK] state updater
     const reason = putBlockOnBoard({
       board: this.board,
       blockInfo,
@@ -424,6 +438,7 @@ export class GameManager_Legacy {
       slotIdx,
     });
     if (!reason) {
+      // [MARK] state updater
       blockStore.updateBlockPlacementStatus({ slotIdx, blockType: blockInfo.type });
       this.moves.push({
         gameId: this.gameId,
@@ -491,10 +506,12 @@ export class GameManager_Legacy {
     });
     const move = await this.turnPromise;
     this.initializeTurnPromise();
+    console.log('returning move...', move);
     return move;
   }
 
   initiateGameStatus(gameId: string) {
+    // [MARK] state updater(initiator)
     this.gameId = gameId;
     this.board = createNewBoard();
     const slots = getPlayersSlot({
@@ -609,6 +626,8 @@ export class BlockPlacementValidator {
   }, options?: {
     earlyReturn?: boolean,
   }) {
+    console.log(`...searchPlaceableBlocks called with option-${options?.earlyReturn ? 'early-return' : 'non-early-return'}`);
+
     /**
      * @description Creates a deep copy of the board to prevent "DOMException: Proxy object could not be cloned"
      * errors when sending to worker. This error occurs because:
@@ -620,6 +639,7 @@ export class BlockPlacementValidator {
     if (options?.earlyReturn === true) {
       return new Promise<boolean>((res, rej) => {
         this.worker.onmessage = (e: MessageEvent<boolean>) => {
+          console.log(`...searching promise result is resolved with ${e.data}`)
           res(e.data);
         };
         this.worker.postMessage({ board: copiedProxyBoard, blocks });
@@ -633,12 +653,13 @@ export class BlockPlacementValidator {
             rej('unexpected boolean value returned from a non-early-return worker procedure');
             return;
           }
+          console.log(`...searching promise result is resolved`);
           res(e.data);
         };
         this.worker.postMessage({ board: copiedProxyBoard, blocks });
       });
     } catch (e) {
-      console.error(e);
+      console.error(503, e);
     }
   }
 }

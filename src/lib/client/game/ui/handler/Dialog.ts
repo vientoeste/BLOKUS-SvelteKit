@@ -76,6 +76,7 @@ export class AlertManager {
     });
   }
 
+  // 
   async openGlobalBadReqModal(message?: string) {
     // [TODO] add proper command for global scope error
     return this._open({
@@ -84,6 +85,7 @@ export class AlertManager {
     });
   }
 
+  // 
   async openUnknownMessageReceivedModal(message: string) {
     return this._open({
       title: "received unknown message",

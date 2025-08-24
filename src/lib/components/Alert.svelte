@@ -3,10 +3,12 @@
     title,
     message,
     onClose = $bindable(),
+    // onCancel = $bindable(),
   } = $props<{
     title?: string;
     message?: string;
     onClose?: () => void;
+    // onCancel?: () => void;
   }>();
 </script>
 

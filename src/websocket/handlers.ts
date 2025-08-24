@@ -521,6 +521,7 @@ export class WebSocketConnectionOrchestrator {
       });
     } catch (e) {
       // [TODO] log
+      console.error(e);
     }
   }
 }

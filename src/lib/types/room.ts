@@ -1,4 +1,4 @@
-import type { PlayerId } from '.';
+import type { ParticipantInf, PlayerId, SlotIdx } from '.';
 
 export type RoomId = string;
 export type GameId = string;

@@ -2,6 +2,10 @@ import { blockStore } from "$lib/store";
 import type { BlockType, SlotIdx } from "$types";
 
 export class BlockStateManager {
+  constructor() {
+    blockStore.set([]);
+  }
+
   initialize(slots: SlotIdx[]) {
     blockStore.initialize(slots);
   }

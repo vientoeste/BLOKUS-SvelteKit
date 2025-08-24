@@ -44,6 +44,7 @@ export class GameManager {
     phase: Phase;
     exhaustedSlots: SlotIdx[];
     moves: Move[];
+    activePlayerCount: 2 | 3 | 4;
   }) {
     this.eventBus.publish('GameRestoreRequested', restoreGamePayload);
   }

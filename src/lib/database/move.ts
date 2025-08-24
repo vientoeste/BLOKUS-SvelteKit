@@ -53,6 +53,7 @@ export const getMovesByGameId = async (gameId: string, options: {
   });
 };
 
+// [TODO] update param type
 export const insertTimeoutMove = async (moveId: string, moveDto: InsertTimeoutMoveDto) => {
   const { acknowledged, insertedId } = await Moves.insertOne({
     ...moveDto,
@@ -65,6 +66,7 @@ export const insertTimeoutMove = async (moveId: string, moveDto: InsertTimeoutMo
   return insertedId.toString();
 };
 
+// [TODO] update param type
 export const insertExhaustedMove = async (moveId: string, moveDto: InsertExhaustedMoveDto) => {
   const { acknowledged, insertedId } = await Moves.insertOne({
     ...moveDto,

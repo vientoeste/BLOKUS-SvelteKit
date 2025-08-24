@@ -53,6 +53,11 @@
     {@render children()}
   </article>
   <aside>
+    <button
+      onclick={() => {
+        rerenderer += 1;
+      }}>rerender</button
+    >
     <!-- [TODO] need to replace this component: dynamically render the components when sub-pages want to -->
     {#key rerenderer}
       <BlocksContainer />
