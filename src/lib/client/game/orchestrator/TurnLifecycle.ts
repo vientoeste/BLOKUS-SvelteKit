@@ -76,7 +76,6 @@ export class TurnLifecycleOrchestrator {
         this.eventBus.publish('TurnProgressionTriggered', {
           turn: 0,
           activePlayerCount: this.turnManager.getActivePlayerCount(),
-          playerIdx: this.clientInfoReader.getClientPlayerIdx(),
         });
       }
     });
@@ -150,7 +149,6 @@ export class TurnLifecycleOrchestrator {
       this.eventBus.publish('TurnProgressionTriggered', {
         turn: nextTurn,
         activePlayerCount: this.turnManager.getActivePlayerCount(),
-        playerIdx,
       });
     }
 

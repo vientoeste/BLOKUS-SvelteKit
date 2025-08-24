@@ -6,8 +6,6 @@ import type { GameId, PlayerIdx } from "$types/room";
 export type TurnProgressionTriggeredPayload = {
   turn: number;
   activePlayerCount: 2 | 3 | 4;
-  // [CHECK] remove?
-  playerIdx: PlayerIdx;
 }
 
 export type SlotExhaustedPayload = {
