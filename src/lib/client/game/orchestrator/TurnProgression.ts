@@ -29,7 +29,6 @@ export class TurnProgressionOrchestrator {
       });
       if (playerIdx === nextPlayerIdx) {
         this.eventBus.publish('PlayerTurnStarted', {
-          playerIdx: nextPlayerIdx,
           slotIdx: nextSlotIdx,
         });
       }
