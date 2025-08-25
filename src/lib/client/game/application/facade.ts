@@ -143,6 +143,13 @@ export class GameStateLayer implements
     result: false;
     reason: string;
   } {
+    const contextValidationResult = this.gameStateManager.verifyMoveContext(payload);
+    if (!contextValidationResult.isValid) {
+      return {
+        result: false,
+        reason: contextValidationResult.reason,
+      };
+    }
     return this.boardStateManager.checkBlockPleaceability(payload);
   }
 
