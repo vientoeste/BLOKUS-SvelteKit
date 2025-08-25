@@ -30,7 +30,7 @@ export type PlayerMoveSubmittedPayload = {
 
 export type PlayerTurnStartedPayload = {
   slotIdx: SlotIdx;
-  remainingTime?: number;
+  lastMoveTimestamp?: Date;
 }
 
 export type GameRestoreRequestedPayload = {

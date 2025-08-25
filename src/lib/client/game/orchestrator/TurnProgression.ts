@@ -21,7 +21,7 @@ export class TurnProgressionOrchestrator {
     this.clientInfoReader = clientInfoReader;
 
     this.eventBus.subscribe('TurnProgressionTriggered', (event) => {
-      const { turn, activePlayerCount } = event.payload;
+      const { turn, activePlayerCount, lastMoveTimestamp } = event.payload;
       const playerIdx = this.clientInfoReader.getClientPlayerIdx();
       const { nextPlayerIdx, nextSlotIdx } = this.turnSequencer.calculatePlayerAndSlotIdx({
         turn,
@@ -30,6 +30,7 @@ export class TurnProgressionOrchestrator {
       if (playerIdx === nextPlayerIdx) {
         this.eventBus.publish('PlayerTurnStarted', {
           slotIdx: nextSlotIdx,
+          lastMoveTimestamp,
         });
       }
     });
