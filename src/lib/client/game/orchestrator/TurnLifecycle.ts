@@ -82,12 +82,12 @@ export class TurnLifecycleOrchestrator {
 
     this.eventBus.subscribe('MessageReceived_Move', (event) => {
       this.handleRegularMoveMessage(event.payload);
-      this.finalizeTurn(event.payload);
+      this.finalizeTurn();
     });
 
     this.eventBus.subscribe('MessageReceived_SkipTurn', (event) => {
       this.handleSkipMessage(event.payload);
-      this.finalizeTurn(event.payload);
+      this.finalizeTurn();
     });
 
     /**
@@ -142,7 +142,7 @@ export class TurnLifecycleOrchestrator {
     this.moveApplier.applySkipMove(skipMove);
   }
 
-  private async finalizeTurn({ playerIdx }: { playerIdx: PlayerIdx }) {
+  private async finalizeTurn() {
     // 1. advance turn
     const nextTurn = this.turnManager.advanceTurn();
     if (nextTurn !== -1) {
