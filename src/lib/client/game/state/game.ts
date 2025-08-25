@@ -1,5 +1,5 @@
 import { gamePhaseStore } from "$lib/store";
-import type { GameId } from "$types";
+import type { GameId, SlotIdx } from "$types";
 
 export type MoveContextVerificationResult = {
   isValid: true;
@@ -53,7 +53,7 @@ export class GameStateManager {
    * 
    * On failure: `{ isValid: false, reason: string }`.
    */
-  verifyMoveContext({ turn }: { turn: number }): MoveContextVerificationResult {
+  verifyMoveContext({ turn, slotIdx }: { turn: number, slotIdx: SlotIdx }): MoveContextVerificationResult {
     if (this.getPhase() !== 'IN_PROGRESS') {
       return { isValid: false, reason: 'game is not started' };
     }
@@ -62,6 +62,9 @@ export class GameStateManager {
     }
     if (!this.gameId) {
       return { isValid: false, reason: 'gameId is missing' };
+    }
+    if (slotIdx !== turn % 4) {
+      return { isValid: false, reason: 'wrong turn: try make move of your other slot' };
     }
     return { isValid: true, gameId: this.gameId };
   }

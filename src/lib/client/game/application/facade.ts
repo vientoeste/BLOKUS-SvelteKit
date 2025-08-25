@@ -229,7 +229,7 @@ export class GameStateLayer implements
   getActivePlayerCount(): 2 | 3 | 4 {
     return this.gameStateManager.getActivePlayerCount();
   }
-  verifyMoveContext(payload: { turn: number; }): { isValid: boolean; reason?: string; gameId?: GameId } {
+  verifyMoveContext(payload: { turn: number; slotIdx: SlotIdx }): { isValid: boolean; reason?: string; gameId?: GameId } {
     return this.gameStateManager.verifyMoveContext(payload);
   }
   // ------------------------------------------------------------------------

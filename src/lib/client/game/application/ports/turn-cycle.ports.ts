@@ -13,7 +13,7 @@ export interface ITurnManager {
   /**
    * Verifies the contextual validity of a received Move: turn order, gameId.
    */
-  verifyMoveContext(payload: { turn: number }): { isValid: boolean; reason?: string; gameId?: GameId };
+  verifyMoveContext(payload: { turn: number; slotIdx: SlotIdx }): { isValid: boolean; reason?: string; gameId?: GameId };
 }
 
 /**

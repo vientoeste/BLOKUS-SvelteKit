@@ -148,6 +148,7 @@ export class PlayerTurnOrchestrator {
       });
       if (!result) {
         this.alertManager.openInvalidMoveModal(reason);
+        return;
       }
 
       switch (this.turnState) {

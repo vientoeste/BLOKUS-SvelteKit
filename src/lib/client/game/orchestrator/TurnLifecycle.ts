@@ -1,4 +1,4 @@
-import type { OutboundMoveMessage, OutboundSkipTurnMessage, PlayerIdx } from "$types";
+import type { OutboundMoveMessage, OutboundSkipTurnMessage, PlayerIdx, SlotIdx } from "$types";
 import type { BlockPlaceabilityCalculator } from "../domain/blockPlaceabilityCalculator";
 import type { EventBus } from "../event";
 import type {
@@ -100,8 +100,8 @@ export class TurnLifecycleOrchestrator {
     });
   }
 
-  private verifyMoveContext({ turn }: { turn: number }) {
-    const result = this.turnManager.verifyMoveContext({ turn });
+  private verifyMoveContext({ turn, slotIdx }: { turn: number, slotIdx: SlotIdx }) {
+    const result = this.turnManager.verifyMoveContext({ turn, slotIdx });
     if (!result.isValid) {
       switch (result.reason) {
         case 'game is not started':
