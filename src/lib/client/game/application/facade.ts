@@ -77,7 +77,7 @@ export class GameStateLayer implements
     turn: number;
     gameId: GameId;
     phase: Phase;
-  }): void {
+  }): { activePlayerCount: 2 | 3 | 4 } {
     this.playerStateManager.initializeClientSlots();
     const activePlayerCount = this.playerStateManager.getActivePlayerCount();
     if (activePlayerCount === 0) throw new Error('failed to initialize player state manager');
@@ -112,6 +112,8 @@ export class GameStateLayer implements
       }
     });
     this.boardStateManager.initializeBoard(restoredBoard);
+
+    return { activePlayerCount };
   }
   // ------------------------------------------------------------------------
 

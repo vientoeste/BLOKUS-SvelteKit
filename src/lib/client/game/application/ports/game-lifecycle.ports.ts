@@ -19,5 +19,5 @@ export interface IGameLifecycleManager {
     turn: number;
     gameId: GameId;
     phase: Phase;
-  }): void;
+  }): { activePlayerCount: 2 | 3 | 4 };
 }
