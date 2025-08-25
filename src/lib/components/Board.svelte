@@ -2,6 +2,7 @@
   import { getBlockMatrix } from "$lib/game/core";
   import type { BlockMatrix, SlotIdx } from "$types";
   import {
+    boardStore,
     dragPositionOffsetStore,
     movePreviewStore,
     moveStore,
