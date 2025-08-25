@@ -84,10 +84,14 @@ export class PlayerTurnOrchestrator {
         return;
       }
 
-      const ellapsedTime = lastMoveTimestamp
+      const ellapsedTime = lastMoveTimestamp !== undefined
         ? new Date().getTime() - lastMoveTimestamp.getTime()
         : undefined;
-      if (ellapsedTime === undefined || ellapsedTime > 0) {
+      if (ellapsedTime && ellapsedTime > 60000) {
+        this.eventBus.publish('TimeoutOccured', { slotIdx });
+        return;
+      }
+      if (ellapsedTime === undefined || ellapsedTime < 60000) {
         this.alertManager.openTurnStartedModal();
         this.playerTurnTimer.setTurnTimeout({ slotIdx, time: ellapsedTime });
         return;
