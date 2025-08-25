@@ -61,7 +61,7 @@ export class PlayerTurnOrchestrator {
     this.clientInfoReader = clientInfoReader;
 
     this.eventBus.subscribe('PlayerTurnStarted', (event) => {
-      const { slotIdx } = event.payload;
+      const { slotIdx, lastMoveTimestamp } = event.payload;
       this.setState('PLAYER_TURN');
 
       if (this.slotManager.isSlotExhausted(slotIdx)) {
@@ -84,8 +84,15 @@ export class PlayerTurnOrchestrator {
         return;
       }
 
-      this.alertManager.openTurnStartedModal();
-      this.playerTurnTimer.setTurnTimeout({ slotIdx });
+      const ellapsedTime = lastMoveTimestamp
+        ? new Date().getTime() - lastMoveTimestamp.getTime()
+        : undefined;
+      if (ellapsedTime === undefined || ellapsedTime > 0) {
+        this.alertManager.openTurnStartedModal();
+        this.playerTurnTimer.setTurnTimeout({ slotIdx, time: ellapsedTime });
+        return;
+      }
+      // [TODO] is modal needed?
     });
 
     this.eventBus.subscribe('TimeoutOccured', (event) => {
