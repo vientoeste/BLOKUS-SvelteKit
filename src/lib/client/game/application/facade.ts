@@ -81,6 +81,7 @@ export class GameStateLayer implements
     this.playerStateManager.initializeClientSlots();
     const activePlayerCount = this.playerStateManager.getActivePlayerCount();
     if (activePlayerCount === 0) throw new Error('failed to initialize player state manager');
+    this.slotStateManager.initialize(activePlayerCount);
     this.gameStateManager.restoreGameState({
       turn: payload.turn,
       activePlayerCount,
