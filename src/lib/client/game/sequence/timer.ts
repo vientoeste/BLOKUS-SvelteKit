@@ -9,9 +9,9 @@ export class PlayerTurnTimer {
   private eventBus: EventBus;
 
   // [TODO] set timeout by game strategy
-  setTurnTimeout({ time = 60, slotIdx }: { time?: number, slotIdx: SlotIdx }) {
+  setTurnTimeout({ time = 60000, slotIdx }: { time?: number, slotIdx: SlotIdx }) {
     setTimeout(() => {
       this.eventBus.publish('TimeoutOccured', { slotIdx });
-    }, time * 1000);
+    }, time);
   }
 }
