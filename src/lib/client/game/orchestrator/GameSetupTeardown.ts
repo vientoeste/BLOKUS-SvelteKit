@@ -67,7 +67,12 @@ export class GameSetupTeardownOrchestrator {
 
     // [TODO] publish this event at onMount by GameManager's public method
     this.eventBus.subscribe('GameRestoreRequested', (event) => {
-      this.gameLifecycleManager.restoreGame(event.payload);
+      const { activePlayerCount } = this.gameLifecycleManager.restoreGame(event.payload);
+      this.eventBus.publish('TurnProgressionTriggered', {
+        turn: event.payload.turn,
+        activePlayerCount,
+        lastMoveTimestamp: event.payload.moves[event.payload.moves.length - 1].createdAt,
+      });
     });
   }
 }
