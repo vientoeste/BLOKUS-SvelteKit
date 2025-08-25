@@ -17,6 +17,7 @@ export type SlotExhaustedPayload = {
 
 export type TimeoutOccuredPayload = {
   slotIdx: SlotIdx;
+  turn: number;
 }
 
 export type BlockNotPlaceablePayload = {

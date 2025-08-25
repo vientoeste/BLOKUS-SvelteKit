@@ -88,18 +88,23 @@ export class PlayerTurnOrchestrator {
         ? new Date().getTime() - lastMoveTimestamp.getTime()
         : undefined;
       if (ellapsedTime && ellapsedTime > 60000) {
-        this.eventBus.publish('TimeoutOccured', { slotIdx });
+        this.eventBus.publish('TimeoutOccured', { slotIdx, turn: this.turnManager.getCurrentTurn() });
         return;
       }
       if (ellapsedTime === undefined || ellapsedTime < 60000) {
         this.alertManager.openTurnStartedModal();
-        this.playerTurnTimer.setTurnTimeout({ slotIdx, time: ellapsedTime });
+        this.playerTurnTimer.setTurnTimeout({ slotIdx, time: ellapsedTime, turn: this.turnManager.getCurrentTurn() });
         return;
       }
       // [TODO] is modal needed?
     });
 
     this.eventBus.subscribe('TimeoutOccured', (event) => {
+      // there is no logic for cancel timeout, so turn's timeout could affect another turn.
+      // Therefore, check payload's turn and current turn and if they're different just skip timeout handler.
+      if (event.payload.turn !== this.turnManager.getCurrentTurn()) {
+        return;
+      }
       switch (this.turnState) {
         case 'PLAYER_TURN': {
           this.alertManager.openTimeoutModal();
