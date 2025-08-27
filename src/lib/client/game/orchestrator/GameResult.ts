@@ -20,6 +20,7 @@ export class GameResultOrchestrator {
     this.eventBus.subscribe('MessageReceived_ScoreConfirmation', () => {
       this.gameResultManager.initiateScoreConfirmation();
       const score = this.calculateScore();
+      this.gameResultManager.setScore(score);
       const confirmMessage: InboundScoreConfirmationMessage = {
         type: 'SCORE_CONFIRM',
         score: score.toString(),
