@@ -44,7 +44,12 @@ export class GameSetupTeardownOrchestrator {
       this.eventBus.publish('GameStateInitialized', undefined);
     });
 
-    this.eventBus.subscribe('MessageReceived_GameEnd', () => {
+    this.eventBus.subscribe('MessageReceived_GameEnd', async () => {
+      const score = this.gameResultReader.getScore();
+      if (!score) {
+        throw new Error('score is empty');
+      }
+      await this.alertManager.openGameEndModal(score);
       this.gameLifecycleManager.resetAllGameStates();
       this.eventBus.publish('GameStateReset', undefined);
     });
