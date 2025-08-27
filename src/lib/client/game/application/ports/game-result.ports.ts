@@ -1,3 +1,4 @@
+import type { Score } from '$lib/domain/score';
 import type { BoardMatrix } from '$types';
 
 /**
@@ -7,4 +8,6 @@ export interface IGameResultManager {
   initiateScoreConfirmation(): void;
 
   getBoard(): BoardMatrix | undefined;
+
+  setScore(score: Score): void;
 }

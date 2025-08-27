@@ -13,6 +13,8 @@ import type { PlayerStateManager } from '../state/player';
 import type { SlotStateManager } from '../state/slot';
 import { createNewBoard, getBlockMatrix, placeBlock } from '$lib/game/core';
 import type { IGameResultManager } from './ports';
+import type { Score } from '$lib/domain/score';
+import type { IGameResultReader } from './ports/game-result-reader.ports';
 
 export class GameStateLayer implements
   IGameLifecycleManager,
@@ -23,7 +25,8 @@ export class GameStateLayer implements
   ISlotManager,
   ITurnManager,
   ICalculationDataProvider,
-  ICalculationResultApplier {
+  ICalculationResultApplier,
+  IGameResultReader {
   private blockStateManager: BlockStateManager;
   private boardStateManager: BoardStateManager;
   private gameStateManager: GameStateManager;
@@ -126,6 +129,10 @@ export class GameStateLayer implements
 
   getBoard(): BoardMatrix | undefined {
     return this.boardStateManager.getBoard();
+  }
+
+  setScore(score: Score): void {
+    this.gameStateManager.setScore(score);
   }
   // ------------------------------------------------------------------------
 
@@ -253,6 +260,13 @@ export class GameStateLayer implements
   // ----------------------- CalculationResultApplier -----------------------
   updateBlockAvailability(unavailableBlocks: { slotIdx: SlotIdx; blockType: BlockType }[]): void {
     this.blockStateManager.updateAvailability(unavailableBlocks);
+  }
+  // ------------------------------------------------------------------------
+
+
+  // ------------------------- GameResultReader------------------------------
+  getScore(): Score | undefined {
+    return this.gameStateManager.getScore();
   }
   // ------------------------------------------------------------------------
 }

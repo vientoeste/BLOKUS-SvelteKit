@@ -1,3 +1,4 @@
+import type { Score } from "$lib/domain/score";
 import { gamePhaseStore } from "$lib/store";
 import type { GameId, SlotIdx } from "$types";
 
@@ -15,6 +16,7 @@ export class GameStateManager {
   private turn: number;
   private gameId: GameId | null;
   private activePlayerCount: 2 | 3 | 4 | undefined;
+  private score?: Score;
 
   constructor() {
     this.turn = -1;
@@ -112,5 +114,13 @@ export class GameStateManager {
 
   setPhase(phase: Phase) {
     gamePhaseStore.set(phase);
+  }
+
+  setScore(score: Score) {
+    this.score = score;
+  }
+
+  getScore() {
+    return this.score;
   }
 }
