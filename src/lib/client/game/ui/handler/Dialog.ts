@@ -77,7 +77,7 @@ export class AlertManager {
     });
   }
 
-  async openGameEndModal(score: Score) {
+  async openGameResultModal(score: Score) {
     // [TODO] beautify
     return this._open({
       title: 'game is over',

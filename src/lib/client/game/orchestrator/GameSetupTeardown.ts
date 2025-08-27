@@ -49,7 +49,7 @@ export class GameSetupTeardownOrchestrator {
       if (!score) {
         throw new Error('score is empty');
       }
-      await this.alertManager.openGameEndModal(score);
+      await this.alertManager.openGameResultModal(score);
       this.gameLifecycleManager.resetAllGameStates();
       this.eventBus.publish('GameStateReset', undefined);
     });
