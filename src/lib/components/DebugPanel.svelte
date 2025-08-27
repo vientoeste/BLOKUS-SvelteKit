@@ -6,7 +6,14 @@
     blockStore,
     dragPositionOffsetStore,
     movePreviewStore,
+    participantStore,
   } from "$lib/store";
+
+  let tmp = $state(0);
+  let { subscribe } = participantStore;
+  subscribe(() => {
+    tmp += 1;
+  });
 </script>
 
 <div id="game-store-monitor" class="monitor">
@@ -86,6 +93,21 @@
   </div>
   <div>
     flip: {$moveStore?.flip}
+  </div>
+</div>
+
+<div id="participant-store-monitor">
+  <div>
+    {#key tmp}
+      {#each $participantStore as player, idx}
+        <div>
+          p{idx}:
+          {player?.id},
+          {player?.username},
+          {player?.ready}
+        </div>
+      {/each}
+    {/key}
   </div>
 </div>
 

@@ -194,7 +194,7 @@ export const handleApiError = (e: unknown): Response => {
 export const extractPlayerCountFromCache_LEGACY = (roomCache: RoomCacheInf) => 1 + (+(roomCache.p1 !== undefined)) + (+(roomCache.p2 !== undefined)) + (+(roomCache.p3 !== undefined));
 export const extractPlayerCountFromCache = (roomCache: RoomCacheEntity) => 1 + (+(roomCache.p1_id !== undefined)) + (+(roomCache.p2_id !== undefined)) + (+(roomCache.p3_id !== undefined));
 
-export const isRightTurn = ({ turn, playerIdx, activePlayerCount }: { turn: number, playerIdx: PlayerIdx, activePlayerCount: number }) => ({
+export const isRightTurn = ({ turn, playerIdx, activePlayerCount }: { turn: number, playerIdx: PlayerIdx, activePlayerCount: 2 | 3 | 4 }) => ({
   2: turn % 2 === playerIdx,
   3: turn % 4 === 3 ? (turn % 12) === (playerIdx * 4 + 3) : turn % 4 === playerIdx,
   4: turn % 4 === playerIdx,

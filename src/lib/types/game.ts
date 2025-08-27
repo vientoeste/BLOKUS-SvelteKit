@@ -1,5 +1,6 @@
 import type { MoveDTO } from "./move";
 import type { PlayerIdx } from "./room";
+import type { ParticipantInf } from "./user";
 
 export type BlockType = '50' | '51' | '52' | '53' | '54' | '55' | '56' | '57' | '58' | '59' | '5a' | '5b' | '40' | '41' | '42' | '43' | '44' | '30' | '31' | '20' | '10';
 
@@ -34,3 +35,8 @@ export type PutBlockDTO = MoveDTO & {
 export type Rotation = PlayerIdx;
 
 export type SlotIdx = PlayerIdx;
+
+export type GameClientContext = {
+  playerIdx: PlayerIdx;
+  players: (ParticipantInf | undefined)[];
+};

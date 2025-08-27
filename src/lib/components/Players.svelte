@@ -1,13 +1,11 @@
 <script lang="ts">
   import type { ParticipantInf } from "$types";
-  import { userStore } from "$lib/store";
+  import { participantStore, userStore } from "$lib/store";
 
   let {
-    players,
     ready,
     unready,
   }: {
-    players: (ParticipantInf | undefined)[];
     ready: () => void;
     unready: () => void;
   } = $props();
@@ -35,7 +33,7 @@
 {/snippet}
 
 <div id="players-container" class="row-layout">
-  {#each players as playerInfo}
+  {#each $participantStore as playerInfo}
     {@render player(playerInfo)}
   {/each}
 </div>
