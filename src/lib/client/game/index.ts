@@ -139,6 +139,8 @@ export class GameClientFactory {
       eventBus,
       gameLifecycleManager: stateLayer,
       participantManager: stateLayer,
+      gameResultReader: stateLayer,
+      alertManager,
     });
     new PlayerTurnOrchestrator({
       eventBus,

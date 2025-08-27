@@ -1,6 +1,8 @@
 import type { InboundStartMessage } from "$types";
 import type { IGameLifecycleManager, IParticipantManager } from "../application/ports";
+import type { IGameResultReader } from "../application/ports/game-result-reader.ports";
 import type { EventBus } from "../event";
+import type { AlertManager } from "../ui";
 
 /**
  * Orchestrates the setup and teardown phases of a game session.
@@ -14,19 +16,27 @@ export class GameSetupTeardownOrchestrator {
   private eventBus: EventBus;
   private gameLifecycleManager: IGameLifecycleManager;
   private participantManager: IParticipantManager;
+  private alertManager: AlertManager;
+  private gameResultReader: IGameResultReader;
 
   constructor({
     eventBus,
     gameLifecycleManager,
     participantManager,
+    alertManager,
+    gameResultReader,
   }: {
     eventBus: EventBus;
     gameLifecycleManager: IGameLifecycleManager;
     participantManager: IParticipantManager;
+    alertManager: AlertManager;
+    gameResultReader: IGameResultReader;
   }) {
     this.eventBus = eventBus;
     this.gameLifecycleManager = gameLifecycleManager;
     this.participantManager = participantManager;
+    this.alertManager = alertManager;
+    this.gameResultReader = gameResultReader;
 
     this.eventBus.subscribe('MessageReceived_Start', (event) => {
       const { activePlayerCount, gameId } = event.payload;
