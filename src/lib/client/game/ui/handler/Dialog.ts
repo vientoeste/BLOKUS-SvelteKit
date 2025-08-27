@@ -1,5 +1,6 @@
 import Alert from "$lib/components/Alert.svelte";
 import Confirm from "$lib/components/Confirm.svelte";
+import type { Score } from "$lib/domain/score";
 import { modalStore } from "$lib/store";
 
 type ConfirmResult = 'CONFIRM' | 'CANCEL' | 'CLOSE';
@@ -73,6 +74,14 @@ export class AlertManager {
     return this._open({
       title: 'your turn',
       message: 'please make your move',
+    });
+  }
+
+  async openGameEndModal(score: Score) {
+    // [TODO] beautify
+    return this._open({
+      title: 'game is over',
+      message: `slot 0: ${score.getScoreBySlot(0)}<br>slot 1: ${score.getScoreBySlot(1)}<br>slot 2: ${score.getScoreBySlot(2)}<br>slot 3: ${score.getScoreBySlot(3)}`,
     });
   }
 
