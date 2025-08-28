@@ -230,6 +230,9 @@ export const convertBoardToArr = (board: string): BoardMatrix =>
     board.slice(i * 20, i * 20 + 20).split('').map(cell => (cell === '4' ? false : parseInt(cell)))
   );
 
+type Flip = 'f' | '';
+export type CompressedMove = `${PlayerIdx}:${BlockType}[${number},${number}]r${Rotation}${Flip}`;
+
 export const compressMove = ({
   playerIdx,
   type,
@@ -242,10 +245,10 @@ export const compressMove = ({
   position: [number, number],
   rotation: Rotation,
   flip: boolean,
-}) =>
+}): CompressedMove =>
   `${playerIdx}:${type}[${position[0]},${position[1]}]r${rotation}${flip ? 'f' : ''}`;
 
-export const decompressMove = (compressedMove: string) => {
+export const decompressMove = (compressedMove: CompressedMove) => {
   const [playerIdx, ...rest1] = compressedMove.split(':');
   const [type, ...rest2] = rest1[0].split('[');
   const [position0, ...rest3] = rest2[0].split(',');

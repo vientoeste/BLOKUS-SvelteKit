@@ -3,7 +3,7 @@ import { insertExhaustedMove, insertRegularMove, insertTimeoutMove } from "./dat
 import { roomCacheRepository } from "./database/redis";
 import { getRoomCache, getRoomInfo, getRooms, insertRoom, insertRoomCache, updateRoomCacheStartedState, updateRoomStartedState } from "./database/room";
 import { CustomError } from "./error";
-import type { CreateRoomDTO, MoveDTO, PlayerIdx, RoomCacheInf, RoomDocumentInf, RoomId, SlotIdx } from "./types";
+import type { CreateRoomCacheDTO, CreateRoomDTO, MoveDTO, PlayerIdx, RoomCacheInf, RoomDocumentInf, RoomId, SlotIdx } from "./types";
 import { compressMove, extractPlayerCountFromCache, isRightTurn } from "./utils";
 
 export const createRoom = async (roomId: RoomId, createRoomDTO: CreateRoomDTO): Promise<RoomId> => {
@@ -18,6 +18,30 @@ export const createRoom = async (roomId: RoomId, createRoomDTO: CreateRoomDTO): 
 export const getRoomsFromLastObj = async (lastDocId: string | null) => {
   const rooms = await getRooms({ lastDocId, limit: 10 });
   return rooms;
+};
+
+export const createImmitatedRooms = async () => {
+  const room = await getRoomInfo('immitated');
+  // const result = await roomCacheRepository.save('immitated', {
+  //   name: `immitated_${new Date().toISOString()}`,
+  //   gameId: "immitated",
+  //   turn: 285,
+  //   started: true,
+  //   p0_id: "0193d991-e5ac-7061-a59a-7cd4afdd7661",
+  //   p0_username: "temp1218",
+  //   p0_ready: true,
+  //   p1_id: "0194c14c-483a-7941-952c-50bfae5ad8f7",
+  //   p1_ready: true,
+  //   p1_username: "imtesting",
+  //   slot0_exhausted: false,
+  //   slot1_exhausted: false,
+  //   slot2_exhausted: false,
+  //   slot3_exhausted: false,
+  // });
+  const result = await getRoomCache('immitated');
+  return {
+    room, roomCache: result,
+  };
 };
 
 export const getRoomById = async (roomId: RoomId): Promise<{ room: RoomDocumentInf, roomCache: RoomCacheInf }> => {

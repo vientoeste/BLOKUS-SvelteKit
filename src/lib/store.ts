@@ -86,6 +86,7 @@ export const blockStore = (() => {
   }[]>();
 
   const initialize = (slots: SlotIdx[]) => {
+    if (slots === undefined) return;
     set(slots.map(slotIdx => Object.keys(preset).map(blockType => ({
       blockType: blockType as BlockType,
       slotIdx,

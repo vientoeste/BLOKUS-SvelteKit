@@ -1,0 +1,3270 @@
+import { createImmitatedRooms, getRoomById } from "$lib/room";
+import { redirect } from "@sveltejs/kit";
+import type { PageServerLoad } from "./$types";
+import { validateSessionCookie } from "$lib/auth";
+import { getMovesByGameId } from "$lib/database/move";
+import { parseJson } from "$lib/utils";
+import type { WithId } from "mongodb";
+import type { Move, MoveDocumentInf } from "$types";
+import { convertBlockToObj } from "$lib/utils";
+import { roomCacheRepository } from "$lib/database/redis";
+
+export const load: PageServerLoad = async ({ cookies }) => {
+  try {
+    const { id } = await validateSessionCookie(cookies);
+    console.log(id);
+    // const { room, roomCache } = await getRoomById(roomId);
+    const gameId = 'immitated';
+    const { room, roomCache } = await createImmitatedRooms();
+    const { p0, p1, p2, p3 } = roomCache;
+    console.log(p0, p1)
+    const playerIdx = p0?.id === id ?
+      0 : p1?.id === id ?
+        1 : p2?.id === id ?
+          2 : p3?.id === id ?
+            3 : -1;
+    if (playerIdx === -1) {
+      throw new Error('not allowed to join the room');
+    }
+    /*
+    blockInfo
+: 
+{type: '42', rotation: 1, flip: false}
+playerIdx
+: 
+0
+position
+: 
+(2) [11, 16]
+slotIdx
+: 
+2
+turn
+: 
+286
+type
+: 
+"MOVE"
+    "_id": "0198e0e4-9133-76f0-8789-1f2da1347b5b",
+    "blockInfo": "t31r1f",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      7,
+      10
+    ],
+    "slotIdx": 2,
+    "turn": 282,
+    "createdAt": "2025-08-25T11:02:12.531Z",
+    "exhausted": false,
+    "timeout": fal
+*/
+    const moves = parseJson<WithId<MoveDocumentInf>[]>(`[
+  {
+    "_id": "0198e0e4-9154-79c0-a7e4-24b5ae6ebf9a",
+    "createdAt": "2025-08-25T11:11:12.564Z",
+    "exhausted": false,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": false,    
+    "turn": 285,
+    "blockInfo": "t42r1",
+    "position": [
+      11,
+      16
+    ]
+  },
+  {
+    "_id": "0198e0e4-9154-79c0-a7e4-24b5ae6ebf98",
+    "createdAt": "2025-08-25T11:02:12.564Z",
+    "exhausted": true,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": false,
+    "turn": 284
+  },
+  {
+    "_id": "0198e0e4-9144-7c3e-ba5a-faae8ef38827",
+    "createdAt": "2025-08-25T11:02:12.548Z",
+    "exhausted": true,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": false,
+    "turn": 283
+  },
+  {
+    "_id": "0198e0e4-9133-76f0-8789-1f2da1347b5b",
+    "blockInfo": "t31r1f",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      7,
+      10
+    ],
+    "slotIdx": 2,
+    "turn": 282,
+    "createdAt": "2025-08-25T11:02:12.531Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e4-5364-70da-b3bc-972c0f8b4cf1",
+    "createdAt": "2025-08-25T11:01:56.709Z",
+    "exhausted": true,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": false,
+    "turn": 281
+  },
+  {
+    "_id": "0198e0e4-5358-7205-a7ad-8b4eb99e24ac",
+    "createdAt": "2025-08-25T11:01:56.696Z",
+    "exhausted": true,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": false,
+    "turn": 280
+  },
+  {
+    "_id": "0198e0e4-534c-7041-b782-e238658fcddd",
+    "blockInfo": "t31r1f",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      18,
+      5
+    ],
+    "slotIdx": 3,
+    "turn": 279,
+    "createdAt": "2025-08-25T11:01:56.684Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e4-27d9-7663-8ddf-3b1f4cd473a0",
+    "blockInfo": "t30r1",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      12,
+      0
+    ],
+    "slotIdx": 2,
+    "turn": 278,
+    "createdAt": "2025-08-25T11:01:45.561Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e3-e594-7844-bbf7-1984ec8a87b0",
+    "blockInfo": "t31r2",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      15,
+      11
+    ],
+    "slotIdx": 1,
+    "turn": 277,
+    "createdAt": "2025-08-25T11:01:28.596Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e3-ca36-71c7-a045-0c738d135617",
+    "createdAt": "2025-08-25T11:01:21.590Z",
+    "exhausted": true,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": false,
+    "turn": 276
+  },
+  {
+    "_id": "0198e0e3-ca28-7409-acc5-b9f24b922cba",
+    "blockInfo": "t20r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      18,
+      15
+    ],
+    "slotIdx": 3,
+    "turn": 275,
+    "createdAt": "2025-08-25T11:01:21.576Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e3-93bf-74be-ba89-4fff585cb92c",
+    "blockInfo": "t20r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      9,
+      8
+    ],
+    "slotIdx": 2,
+    "turn": 274,
+    "createdAt": "2025-08-25T11:01:07.647Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e3-7dce-7f58-b2eb-d1312a31461f",
+    "blockInfo": "t20r1",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      5,
+      19
+    ],
+    "slotIdx": 1,
+    "turn": 273,
+    "createdAt": "2025-08-25T11:01:02.030Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e3-5565-7934-9364-76e4434d91a0",
+    "createdAt": "2025-08-25T11:00:51.686Z",
+    "exhausted": true,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": false,
+    "turn": 272
+  },
+  {
+    "_id": "0198e0e3-5558-7aae-8068-999ff363ad8f",
+    "blockInfo": "t10r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      10,
+      0
+    ],
+    "slotIdx": 3,
+    "turn": 271,
+    "createdAt": "2025-08-25T11:00:51.673Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e2-f4a2-7c93-ba95-56a360f558fb",
+    "blockInfo": "t10r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      11,
+      1
+    ],
+    "slotIdx": 2,
+    "turn": 270,
+    "createdAt": "2025-08-25T11:00:26.914Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e2-d326-72a8-b8ce-cd0f8879624d",
+    "blockInfo": "t10r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      17,
+      13
+    ],
+    "slotIdx": 1,
+    "turn": 269,
+    "createdAt": "2025-08-25T11:00:18.342Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e2-94d5-7437-87dc-e0c2f5e2f35b",
+    "blockInfo": "t10r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      0,
+      13
+    ],
+    "slotIdx": 0,
+    "turn": 268,
+    "createdAt": "2025-08-25T11:00:02.389Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e2-496b-715d-89b8-f8de7d0d3a5b",
+    "blockInfo": "t41r2f",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      3,
+      3
+    ],
+    "slotIdx": 3,
+    "turn": 267,
+    "createdAt": "2025-08-25T10:59:43.083Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e2-21cf-7d60-9e9f-e94c44f9a2dd",
+    "blockInfo": "t58r0f",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      15,
+      1
+    ],
+    "slotIdx": 2,
+    "turn": 266,
+    "createdAt": "2025-08-25T10:59:32.943Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e1-faba-7031-b0b7-704fe338d28a",
+    "blockInfo": "t56r0f",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      15,
+      14
+    ],
+    "slotIdx": 1,
+    "turn": 265,
+    "createdAt": "2025-08-25T10:59:22.939Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e1-d830-7392-8c49-8b54c274a96d",
+    "blockInfo": "t31r2",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      3,
+      0
+    ],
+    "slotIdx": 0,
+    "turn": 264,
+    "createdAt": "2025-08-25T10:59:14.096Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e1-a546-704f-a411-9aa5ad7a5659",
+    "blockInfo": "t5ar1f",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      13,
+      8
+    ],
+    "slotIdx": 3,
+    "turn": 263,
+    "createdAt": "2025-08-25T10:59:01.062Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e1-21d1-7521-b3c4-98b3f7b445ca",
+    "blockInfo": "t41r1",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      12,
+      2
+    ],
+    "slotIdx": 2,
+    "turn": 262,
+    "createdAt": "2025-08-25T10:58:27.409Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e0-6cb9-7b49-9f23-af78ff9881e5",
+    "blockInfo": "t53r2f",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      12,
+      14
+    ],
+    "slotIdx": 1,
+    "turn": 261,
+    "createdAt": "2025-08-25T10:57:41.050Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0e0-1c5c-7806-881f-5f92efcb1ecc",
+    "blockInfo": "t20r1",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      4,
+      4
+    ],
+    "slotIdx": 0,
+    "turn": 260,
+    "createdAt": "2025-08-25T10:57:20.476Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0df-e789-744f-b174-4c66fbf4d670",
+    "blockInfo": "t58r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      12,
+      1
+    ],
+    "slotIdx": 3,
+    "turn": 259,
+    "createdAt": "2025-08-25T10:57:06.953Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0df-bab6-79c6-b9a8-4c33a9df884f",
+    "blockInfo": "t59r2f",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      10,
+      4
+    ],
+    "slotIdx": 2,
+    "turn": 258,
+    "createdAt": "2025-08-25T10:56:55.478Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0df-7c9a-787f-b8b5-946b3782ab4a",
+    "blockInfo": "t5ar0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      10,
+      18
+    ],
+    "slotIdx": 1,
+    "turn": 257,
+    "createdAt": "2025-08-25T10:56:39.578Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0df-6117-7886-b95c-cb6179f2e17c",
+    "blockInfo": "t44r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      0,
+      6
+    ],
+    "slotIdx": 0,
+    "turn": 256,
+    "createdAt": "2025-08-25T10:56:32.535Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0df-3a0b-7537-bda9-9ec817079183",
+    "blockInfo": "t57r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      4,
+      0
+    ],
+    "slotIdx": 3,
+    "turn": 255,
+    "createdAt": "2025-08-25T10:56:22.539Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0df-2392-7dbf-a687-395097ede721",
+    "blockInfo": "t54r1",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      12,
+      6
+    ],
+    "slotIdx": 2,
+    "turn": 254,
+    "createdAt": "2025-08-25T10:56:16.786Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0de-efeb-798d-8def-de7a7ab16b3e",
+    "blockInfo": "t30r1",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      0,
+      15
+    ],
+    "slotIdx": 1,
+    "turn": 253,
+    "createdAt": "2025-08-25T10:56:03.563Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0de-b7f5-7a44-a75e-47c88f375b4e",
+    "blockInfo": "t54r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      1,
+      12
+    ],
+    "slotIdx": 0,
+    "turn": 252,
+    "createdAt": "2025-08-25T10:55:49.237Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0de-9fca-7fed-a310-85e2acfafdd2",
+    "blockInfo": "t5br0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      18,
+      11
+    ],
+    "slotIdx": 3,
+    "turn": 251,
+    "createdAt": "2025-08-25T10:55:43.050Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0de-8177-7be8-9f5f-778a53fff280",
+    "blockInfo": "t57r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      11,
+      11
+    ],
+    "slotIdx": 2,
+    "turn": 250,
+    "createdAt": "2025-08-25T10:55:35.287Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0de-6300-78e5-838b-85c998984222",
+    "blockInfo": "t52r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      7,
+      16
+    ],
+    "slotIdx": 1,
+    "turn": 249,
+    "createdAt": "2025-08-25T10:55:27.488Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0dd-b26b-70f8-bbc4-87c745ae4695",
+    "blockInfo": "t52r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      6,
+      2
+    ],
+    "slotIdx": 0,
+    "turn": 248,
+    "createdAt": "2025-08-25T10:54:42.283Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0dd-60f2-7798-be98-29f30aaa8111",
+    "turn": 247,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T10:54:21.426Z"
+  },
+  {
+    "_id": "0198e0dc-7673-7d46-aa13-cdd100b412c0",
+    "blockInfo": "t52r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      14,
+      17
+    ],
+    "slotIdx": 2,
+    "turn": 246,
+    "createdAt": "2025-08-25T10:53:21.396Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0dc-4a3e-7dc9-bad8-52571a36c3ab",
+    "turn": 245,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T10:53:10.078Z"
+  },
+  {
+    "_id": "0198e0d5-7c1b-7727-8382-a8b0751e5f65",
+    "turn": 244,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T10:45:44.091Z"
+  },
+  {
+    "_id": "0198e0d4-919f-711b-8bfb-a729e8d5327e",
+    "blockInfo": "t30r1",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      7,
+      1
+    ],
+    "slotIdx": 3,
+    "turn": 243,
+    "createdAt": "2025-08-25T10:44:44.063Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0d4-37d2-7ed5-93b0-0999cce24ebd",
+    "blockInfo": "t53r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      0,
+      8
+    ],
+    "slotIdx": 0,
+    "turn": 242,
+    "createdAt": "2025-08-25T10:44:21.074Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0d3-f426-72f1-b132-26903c8fe163",
+    "turn": 241,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T10:44:03.751Z"
+  },
+  {
+    "_id": "0198e0d3-e7e5-7098-b937-8c7873824187",
+    "turn": 240,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T10:44:00.614Z"
+  },
+  {
+    "_id": "0198e0d2-d7df-7c33-93af-69ceebe332fa",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "turn": 239,
+    "createdAt": "2025-08-25T10:42:50.975Z",
+    "exhausted": false,
+    "timeout": true
+  },
+  {
+    "_id": "0198e0d2-c468-7dfa-a819-a8423549124a",
+    "blockInfo": "t57r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      4,
+      10
+    ],
+    "slotIdx": 0,
+    "turn": 238,
+    "createdAt": "2025-08-25T10:42:45.992Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0d2-5c0f-7379-bd5e-c023984f43b2",
+    "blockInfo": "t50r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      17,
+      7
+    ],
+    "slotIdx": 3,
+    "turn": 237,
+    "createdAt": "2025-08-25T10:42:19.280Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0d2-3cf8-7611-a6f9-99d21f1b4310",
+    "turn": 236,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T10:42:11.321Z"
+  },
+  {
+    "_id": "0198e0d1-4f21-7878-9045-cb27108042ee",
+    "turn": 235,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T10:41:10.433Z"
+  },
+  {
+    "_id": "0198e0d0-64a6-7099-b119-20911fb11c48",
+    "turn": 234,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T10:40:10.406Z"
+  },
+  {
+    "_id": "0198e0cf-76d5-7534-bb61-e6446bc0fd9d",
+    "turn": 233,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T10:39:09.525Z"
+  },
+  {
+    "_id": "0198e0ce-8c52-78a0-92c4-7637ff142032",
+    "turn": 232,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T10:38:09.490Z"
+  },
+  {
+    "_id": "0198e0cd-a1de-79f5-b8a8-dec1806f7d1d",
+    "turn": 231,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T10:37:09.470Z"
+  },
+  {
+    "_id": "0198e0cc-b766-7b38-9470-852e808bd99f",
+    "blockInfo": "t56r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      9,
+      4
+    ],
+    "slotIdx": 0,
+    "turn": 230,
+    "createdAt": "2025-08-25T10:36:09.446Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0cc-947f-79c5-8c88-1143333393d5",
+    "turn": 229,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T10:36:00.512Z"
+  },
+  {
+    "_id": "0198e0cc-7e9b-7a37-90e9-c1900abc7bb2",
+    "turn": 228,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T10:35:54.908Z"
+  },
+  {
+    "_id": "0198e0cb-40e4-708a-9f9c-933fed1ae930",
+    "turn": 227,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T10:34:33.572Z"
+  },
+  {
+    "_id": "0198e0ca-5665-74ec-8816-081e982854f8",
+    "blockInfo": "t56r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      15,
+      8
+    ],
+    "slotIdx": 2,
+    "turn": 226,
+    "createdAt": "2025-08-25T10:33:33.541Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0ca-375d-7260-b172-104c8297f98d",
+    "blockInfo": "t44r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      10,
+      2
+    ],
+    "slotIdx": 3,
+    "turn": 225,
+    "createdAt": "2025-08-25T10:33:25.598Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e0ca-1848-7dfc-8049-2030b321883a",
+    "turn": 224,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T10:33:17.641Z"
+  },
+  {
+    "_id": "0198e082-3115-72de-95a8-43342618c24e",
+    "turn": 223,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T09:14:45.397Z"
+  },
+  {
+    "_id": "0198e081-42d3-7200-919c-40bd1fc0b5c6",
+    "turn": 222,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T09:13:44.403Z"
+  },
+  {
+    "_id": "0198e080-548c-7dd7-811a-a46814b6152c",
+    "turn": 221,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T09:12:43.404Z"
+  },
+  {
+    "_id": "0198e07f-6637-74be-856d-12b82428a924",
+    "turn": 220,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T09:11:42.391Z"
+  },
+  {
+    "_id": "0198e07e-77fc-7d1a-bc00-ff59fce26578",
+    "turn": 219,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T09:10:41.404Z"
+  },
+  {
+    "_id": "0198e07d-89aa-7fad-99c3-0a2e251e217d",
+    "turn": 218,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T09:09:40.394Z"
+  },
+  {
+    "_id": "0198e07c-9b6e-7465-990b-7f8b78f0a27a",
+    "turn": 217,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T09:08:39.406Z"
+  },
+  {
+    "_id": "0198e07b-ad17-7200-b389-cafa046357ea",
+    "turn": 216,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T09:07:38.391Z"
+  },
+  {
+    "_id": "0198e07a-bedf-74f2-8c6e-b480275efd58",
+    "turn": 215,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T09:06:37.407Z"
+  },
+  {
+    "_id": "0198e079-d096-73f3-a1de-c487a915a28d",
+    "turn": 214,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T09:05:36.406Z"
+  },
+  {
+    "_id": "0198e078-e248-7cf7-a323-d8ebd265edbf",
+    "turn": 213,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T09:04:35.400Z"
+  },
+  {
+    "_id": "0198e077-f402-7ea4-83ba-22229b4d649d",
+    "turn": 212,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T09:03:34.402Z"
+  },
+  {
+    "_id": "0198e077-05b7-72aa-91cf-4b8d0fec8d88",
+    "turn": 211,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T09:02:33.399Z"
+  },
+  {
+    "_id": "0198e076-1768-7b1a-bf48-49504e79b98d",
+    "turn": 210,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T09:01:32.392Z"
+  },
+  {
+    "_id": "0198e075-2920-76bf-a03c-42a9cd7125ca",
+    "turn": 209,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T09:00:31.392Z"
+  },
+  {
+    "_id": "0198e074-3ae5-7b6c-97e5-bf297d9e1346",
+    "turn": 208,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:59:30.405Z"
+  },
+  {
+    "_id": "0198e073-4c90-78f4-ba1a-5b87a579c972",
+    "turn": 207,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:58:29.392Z"
+  },
+  {
+    "_id": "0198e072-5e50-722f-86ab-625b46340d48",
+    "turn": 206,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:57:28.400Z"
+  },
+  {
+    "_id": "0198e071-700c-720f-87fd-1597d9a2e0ce",
+    "turn": 205,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:56:27.404Z"
+  },
+  {
+    "_id": "0198e070-81c4-7bd5-afbf-70da2a1eca57",
+    "turn": 204,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:55:26.404Z"
+  },
+  {
+    "_id": "0198e06f-9379-74a9-ae7a-27fd3402f19d",
+    "turn": 203,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:54:25.401Z"
+  },
+  {
+    "_id": "0198e06e-a530-71bc-ad84-12f4a037c07a",
+    "turn": 202,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:53:24.400Z"
+  },
+  {
+    "_id": "0198e06d-b6e0-75cd-a35b-37e0b4c65b43",
+    "turn": 201,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:52:23.392Z"
+  },
+  {
+    "_id": "0198e06c-c8c5-73e9-b051-1bed7636291e",
+    "turn": 200,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:51:22.437Z"
+  },
+  {
+    "_id": "0198e06b-de44-7fcc-bd3f-3e7d7b8b5c09",
+    "turn": 199,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:50:22.404Z"
+  },
+  {
+    "_id": "0198e06a-f017-702a-bf03-98f32772b230",
+    "turn": 198,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:49:21.431Z"
+  },
+  {
+    "_id": "0198e06a-059a-7677-8ff9-6f8793806cfd",
+    "turn": 197,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:48:21.402Z"
+  },
+  {
+    "_id": "0198e069-176f-7b6c-b916-46d978e81c29",
+    "turn": 196,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:47:20.431Z"
+  },
+  {
+    "_id": "0198e068-2cf4-76e9-9799-7a42ae5458c9",
+    "turn": 195,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:46:20.404Z"
+  },
+  {
+    "_id": "0198e067-3ee6-70b6-9b04-2ac5a9ed27ee",
+    "turn": 194,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:45:19.462Z"
+  },
+  {
+    "_id": "0198e066-544d-76c4-b777-1b34ec407375",
+    "turn": 193,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:44:19.405Z"
+  },
+  {
+    "_id": "0198e065-6613-7550-8ff3-5da668ce50b3",
+    "turn": 192,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:43:18.419Z"
+  },
+  {
+    "_id": "0198e064-7b97-71bd-9a05-1803611ed281",
+    "turn": 191,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:42:18.391Z"
+  },
+  {
+    "_id": "0198e063-8d6e-783c-9394-c895e9f56996",
+    "turn": 190,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:41:17.422Z"
+  },
+  {
+    "_id": "0198e062-a2f2-796b-9d5a-3aaedd2c1970",
+    "turn": 189,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:40:17.394Z"
+  },
+  {
+    "_id": "0198e061-b4c0-7fae-a1f0-825ae35b2767",
+    "turn": 188,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:39:16.416Z"
+  },
+  {
+    "_id": "0198e060-ca49-7046-851b-968090b9203a",
+    "turn": 187,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:38:16.393Z"
+  },
+  {
+    "_id": "0198e05f-dc24-7ce0-9079-cc5d3f9e29eb",
+    "turn": 186,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:37:15.428Z"
+  },
+  {
+    "_id": "0198e05e-f1ab-7d9f-81fb-32330d8af9be",
+    "turn": 185,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:36:15.403Z"
+  },
+  {
+    "_id": "0198e05e-0382-79e9-adc2-873149d93d8b",
+    "turn": 184,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:35:14.434Z"
+  },
+  {
+    "_id": "0198e05d-1905-73b6-9484-486be43c8ab7",
+    "turn": 183,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:34:14.405Z"
+  },
+  {
+    "_id": "0198e05c-2ac3-7240-b05f-22e167f755cc",
+    "turn": 182,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:33:13.411Z"
+  },
+  {
+    "_id": "0198e05b-4050-7928-b3ac-89b8fa06edb4",
+    "turn": 181,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:32:13.392Z"
+  },
+  {
+    "_id": "0198e05a-521f-7710-b039-6c55b2f4f4d1",
+    "turn": 180,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:31:12.415Z"
+  },
+  {
+    "_id": "0198e059-67ac-721a-931a-613402fa0d26",
+    "turn": 179,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:30:12.396Z"
+  },
+  {
+    "_id": "0198e058-7980-75d4-a2b8-762a1e5a9111",
+    "turn": 178,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:29:11.424Z"
+  },
+  {
+    "_id": "0198e057-8f02-7c10-81fb-9f70d768b359",
+    "turn": 177,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:28:11.394Z"
+  },
+  {
+    "_id": "0198e056-a0da-7996-a462-71b866f3522b",
+    "turn": 176,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:27:10.426Z"
+  },
+  {
+    "_id": "0198e055-b667-73a6-a985-3466d32963bd",
+    "turn": 175,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:26:10.407Z"
+  },
+  {
+    "_id": "0198e054-c836-7b68-9ce5-e58fd5da2cf1",
+    "turn": 174,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:25:09.430Z"
+  },
+  {
+    "_id": "0198e053-ddb8-77fd-9d9d-6fb671726612",
+    "turn": 173,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:24:09.400Z"
+  },
+  {
+    "_id": "0198e052-ef84-70e8-b263-29962c9b0f47",
+    "turn": 172,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:23:08.420Z"
+  },
+  {
+    "_id": "0198e052-0511-7c6e-b547-911eb8aac45d",
+    "turn": 171,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:22:08.401Z"
+  },
+  {
+    "_id": "0198e051-16e8-72ba-aaff-66915b58b11f",
+    "turn": 170,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:21:07.432Z"
+  },
+  {
+    "_id": "0198e050-2c6c-7b7e-beb0-1f5f68428d58",
+    "turn": 169,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:20:07.404Z"
+  },
+  {
+    "_id": "0198e04f-3e3f-7d9b-afd7-10bce74cb228",
+    "turn": 168,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:19:06.431Z"
+  },
+  {
+    "_id": "0198e04e-53c1-79f7-91c9-8e97b30e681a",
+    "turn": 167,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:18:06.401Z"
+  },
+  {
+    "_id": "0198e04d-6871-7a5c-877c-2aa8761686de",
+    "turn": 166,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:17:06.161Z"
+  },
+  {
+    "_id": "0198e04c-7df0-7c2b-a551-55ca143e5813",
+    "turn": 165,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:16:06.128Z"
+  },
+  {
+    "_id": "0198e04b-9379-71a7-babf-2dbac1e03ef5",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "turn": 164,
+    "createdAt": "2025-08-25T08:15:06.105Z",
+    "exhausted": false,
+    "timeout": true
+  },
+  {
+    "_id": "0198e04b-7d67-79a5-af6e-22a6b8c728c5",
+    "turn": 163,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:15:00.456Z"
+  },
+  {
+    "_id": "0198e04a-92e7-7433-80ea-5ebfe6759db8",
+    "turn": 162,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:14:00.423Z"
+  },
+  {
+    "_id": "0198e049-a868-7b5f-b09b-0b59485bfa89",
+    "turn": 161,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:13:00.392Z"
+  },
+  {
+    "_id": "0198e048-bc70-7572-9e9a-e3c96882ee87",
+    "turn": 160,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:11:59.984Z"
+  },
+  {
+    "_id": "0198e047-d1fb-7f4c-b686-85a08d0aa720",
+    "turn": 159,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:10:59.963Z"
+  },
+  {
+    "_id": "0198e046-e77c-7d1e-87e9-9be15c0d0d8f",
+    "turn": 158,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:09:59.932Z"
+  },
+  {
+    "_id": "0198e045-fd02-7a39-b5ae-f9558618b787",
+    "turn": 157,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:08:59.906Z"
+  },
+  {
+    "_id": "0198e045-1289-7e27-b24b-99d20e0bfd67",
+    "turn": 156,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:07:59.881Z"
+  },
+  {
+    "_id": "0198e044-280f-766d-b422-d6141fbaacfe",
+    "turn": 155,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:06:59.855Z"
+  },
+  {
+    "_id": "0198e043-3d9c-7e45-8640-d243c4c55c84",
+    "turn": 154,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:05:59.836Z"
+  },
+  {
+    "_id": "0198e042-5313-72fd-a098-412bda92838b",
+    "turn": 153,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:04:59.795Z"
+  },
+  {
+    "_id": "0198e041-689e-7e80-8b00-322731a09069",
+    "turn": 152,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:03:59.774Z"
+  },
+  {
+    "_id": "0198e040-7e20-7264-8e47-74619807ec4a",
+    "turn": 151,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:02:59.744Z"
+  },
+  {
+    "_id": "0198e03f-93ac-70d3-a113-33869ef79fba",
+    "turn": 150,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:01:59.724Z"
+  },
+  {
+    "_id": "0198e03e-a932-71ce-8bd7-3277aacab989",
+    "turn": 149,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T08:00:59.698Z"
+  },
+  {
+    "_id": "0198e03d-bebe-7b8f-b5c4-a85c9f422017",
+    "turn": 148,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:59:59.678Z"
+  },
+  {
+    "_id": "0198e03c-d443-7fb7-b759-e8340575517d",
+    "turn": 147,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:58:59.651Z"
+  },
+  {
+    "_id": "0198e03b-e9c4-7508-a86d-70d535c563b0",
+    "turn": 146,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:57:59.620Z"
+  },
+  {
+    "_id": "0198e03a-ff49-7c7c-b695-deab9046af15",
+    "turn": 145,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:56:59.593Z"
+  },
+  {
+    "_id": "0198e03a-14cd-7f8c-bf9f-2cc446271ea0",
+    "blockInfo": "t55r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      14,
+      12
+    ],
+    "slotIdx": 2,
+    "turn": 144,
+    "createdAt": "2025-08-25T07:55:59.565Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e03a-050f-7d3b-9126-9b92dc6fced8",
+    "blockInfo": "t54r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      9,
+      14
+    ],
+    "slotIdx": 1,
+    "turn": 143,
+    "createdAt": "2025-08-25T07:55:55.535Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e039-dc37-70fc-9478-83a183fe6158",
+    "blockInfo": "t40r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      17,
+      14
+    ],
+    "slotIdx": 2,
+    "turn": 142,
+    "createdAt": "2025-08-25T07:55:45.080Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e039-b6b3-7bf7-9574-d629c7c94e8b",
+    "turn": 141,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:55:35.476Z"
+  },
+  {
+    "_id": "0198e039-1d3a-7b7c-8dd8-399e8496fa1d",
+    "turn": 140,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:54:56.186Z"
+  },
+  {
+    "_id": "0198e039-0cdd-70fb-88e0-ed95d47271f2",
+    "turn": 139,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:54:51.997Z"
+  },
+  {
+    "_id": "0198e038-f946-76bd-b6a3-07aec40ae568",
+    "turn": 138,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:54:46.982Z"
+  },
+  {
+    "_id": "0198e038-32c1-73a8-af27-74f6d4832202",
+    "turn": 137,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:53:56.161Z"
+  },
+  {
+    "_id": "0198e038-2268-7071-affa-28b7e9c68eea",
+    "turn": 136,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:53:51.976Z"
+  },
+  {
+    "_id": "0198e038-0ecd-7567-a336-bbc5dfb439aa",
+    "turn": 135,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:53:46.958Z"
+  },
+  {
+    "_id": "0198e037-4848-7c66-a8a1-e6b17d9fafc5",
+    "turn": 134,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:52:56.136Z"
+  },
+  {
+    "_id": "0198e037-37f6-7d18-9d10-23c8e66ee4ab",
+    "turn": 133,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:52:51.958Z"
+  },
+  {
+    "_id": "0198e037-244c-7e9c-bdd6-b15420444633",
+    "turn": 132,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:52:46.924Z"
+  },
+  {
+    "_id": "0198e036-5dd5-7f75-88a1-a0635669f102",
+    "turn": 131,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:51:56.117Z"
+  },
+  {
+    "_id": "0198e036-4d84-7a62-8d8e-fffc93a11a27",
+    "turn": 130,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:51:51.940Z"
+  },
+  {
+    "_id": "0198e036-39cd-78f1-add6-eef20ee10332",
+    "turn": 129,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:51:46.893Z"
+  },
+  {
+    "_id": "0198e035-7361-786d-99b0-bf2e2d418772",
+    "turn": 128,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:50:56.097Z"
+  },
+  {
+    "_id": "0198e035-630c-74de-828c-6e18b81536d5",
+    "turn": 127,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:50:51.916Z"
+  },
+  {
+    "_id": "0198e035-4f4d-7e00-97dc-2f353bb653ed",
+    "turn": 126,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:50:46.862Z"
+  },
+  {
+    "_id": "0198e034-88eb-7969-a873-b42619ddbc4e",
+    "turn": 125,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:49:56.075Z"
+  },
+  {
+    "_id": "0198e034-7892-7ec1-b67d-9df5394f4a27",
+    "turn": 124,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:49:51.890Z"
+  },
+  {
+    "_id": "0198e034-64d3-70ba-935a-9caf373d6a98",
+    "turn": 123,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:49:46.835Z"
+  },
+  {
+    "_id": "0198e033-9e78-7203-b1b3-645bb2922222",
+    "turn": 122,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:48:56.056Z"
+  },
+  {
+    "_id": "0198e033-8e1c-77b2-a8e5-4c984d000385",
+    "turn": 121,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:48:51.868Z"
+  },
+  {
+    "_id": "0198e033-7a5f-7a55-94be-783bd61ef390",
+    "turn": 120,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:48:46.815Z"
+  },
+  {
+    "_id": "0198e032-b3fc-7131-a3fb-04a202142305",
+    "turn": 119,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:47:56.029Z"
+  },
+  {
+    "_id": "0198e032-a3ac-74ac-be65-8fe772abbe6f",
+    "turn": 118,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:47:51.852Z"
+  },
+  {
+    "_id": "0198e032-8fed-7971-a1af-ca181a5eb141",
+    "turn": 117,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:47:46.797Z"
+  },
+  {
+    "_id": "0198e031-c988-7463-9595-333c8863220e",
+    "turn": 116,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:46:56.008Z"
+  },
+  {
+    "_id": "0198e031-b937-78dd-8bda-479c845e357f",
+    "turn": 115,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:46:51.832Z"
+  },
+  {
+    "_id": "0198e031-a570-7106-9fb5-79c7f493a063",
+    "turn": 114,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:46:46.768Z"
+  },
+  {
+    "_id": "0198e030-df0d-7a66-9467-52028ad42cec",
+    "turn": 113,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:45:55.981Z"
+  },
+  {
+    "_id": "0198e030-cec0-73bd-935d-21ee965ea020",
+    "turn": 112,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:45:51.808Z"
+  },
+  {
+    "_id": "0198e030-baf2-7826-9a3d-acb3dad7d5dc",
+    "turn": 111,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:45:46.738Z"
+  },
+  {
+    "_id": "0198e02f-f498-7452-96c3-dceb8e9755cb",
+    "turn": 110,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:44:55.960Z"
+  },
+  {
+    "_id": "0198e02f-e443-7b8f-830a-b52ba74abba5",
+    "turn": 109,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:44:51.779Z"
+  },
+  {
+    "_id": "0198e02f-d076-76de-ad74-fb23c61d8e7d",
+    "turn": 108,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:44:46.710Z"
+  },
+  {
+    "_id": "0198e02f-0a1a-7949-b7e6-798c46265dc1",
+    "turn": 107,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:43:55.930Z"
+  },
+  {
+    "_id": "0198e02e-f9c0-7e0a-bfb5-b08a07a1cb7a",
+    "turn": 106,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:43:51.744Z"
+  },
+  {
+    "_id": "0198e02e-e5fe-7059-98fe-49bf84432732",
+    "turn": 105,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:43:46.686Z"
+  },
+  {
+    "_id": "0198e02e-1fa1-7c49-a349-095a3181f6b5",
+    "turn": 104,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:42:55.905Z"
+  },
+  {
+    "_id": "0198e02e-0f4d-7e95-bbbb-62c7be701f22",
+    "turn": 103,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:42:51.726Z"
+  },
+  {
+    "_id": "0198e02d-fb8d-70d5-8fd7-25841903984e",
+    "turn": 102,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:42:46.669Z"
+  },
+  {
+    "_id": "0198e02d-352e-70b7-b112-9db8b24138c4",
+    "turn": 101,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:41:55.886Z"
+  },
+  {
+    "_id": "0198e02d-24d3-7c3e-9b7c-e6e18a15ab52",
+    "turn": 100,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:41:51.699Z"
+  },
+  {
+    "_id": "0198e02d-1117-7eaf-aaab-3d2d2ba166f9",
+    "turn": 99,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:41:46.647Z"
+  },
+  {
+    "_id": "0198e02c-4abe-7388-948e-eeb7106fead8",
+    "turn": 98,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:40:55.870Z"
+  },
+  {
+    "_id": "0198e02c-3a56-7d21-bbe2-1ccbc21eb2bf",
+    "turn": 97,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:40:51.670Z"
+  },
+  {
+    "_id": "0198e02c-26a2-7ab6-b8fa-7b2f4ba3d0d8",
+    "turn": 96,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:40:46.626Z"
+  },
+  {
+    "_id": "0198e02b-6046-77bb-9b9c-eef0991e6e53",
+    "blockInfo": "t51r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      12,
+      4
+    ],
+    "slotIdx": 3,
+    "turn": 95,
+    "createdAt": "2025-08-25T07:39:55.846Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e02b-4fe3-7ddc-90ee-eec4197de157",
+    "blockInfo": "t55r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      11,
+      8
+    ],
+    "slotIdx": 0,
+    "turn": 94,
+    "createdAt": "2025-08-25T07:39:51.651Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e02b-3c2d-7286-8386-cea5546f83da",
+    "blockInfo": "t52r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      14,
+      5
+    ],
+    "slotIdx": 3,
+    "turn": 93,
+    "createdAt": "2025-08-25T07:39:46.605Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e02a-8cd2-7d9b-9fc7-42e5efecaccd",
+    "turn": 92,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:39:01.714Z"
+  },
+  {
+    "_id": "0198e029-a259-734e-bbde-c8936f736718",
+    "turn": 91,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:38:01.689Z"
+  },
+  {
+    "_id": "0198e028-b7e2-7ffb-8017-48b49f771aa3",
+    "turn": 90,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:37:01.666Z"
+  },
+  {
+    "_id": "0198e027-cd67-7bb5-a5f5-6742cff7e3ef",
+    "turn": 89,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:36:01.639Z"
+  },
+  {
+    "_id": "0198e026-e2ea-7d59-8a0e-3c452053195c",
+    "turn": 88,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:35:01.610Z"
+  },
+  {
+    "_id": "0198e025-f865-7a4e-81f2-48d85308a9c4",
+    "turn": 87,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:34:01.573Z"
+  },
+  {
+    "_id": "0198e025-0def-727f-95ce-bebe46c731fd",
+    "turn": 86,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:33:01.551Z"
+  },
+  {
+    "_id": "0198e024-2370-727b-91fc-707850a23d3e",
+    "turn": 85,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:32:01.520Z"
+  },
+  {
+    "_id": "0198e023-38f6-761f-81e1-51bc4215da58",
+    "blockInfo": "t59r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      9,
+      10
+    ],
+    "slotIdx": 0,
+    "turn": 84,
+    "createdAt": "2025-08-25T07:31:01.494Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e022-b30c-756c-9ee0-e447bf4e6326",
+    "turn": 83,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:30:27.214Z"
+  },
+  {
+    "_id": "0198e022-07d9-741c-8833-0d00e8bafea5",
+    "turn": 82,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:29:43.386Z"
+  },
+  {
+    "_id": "0198e021-1d51-7a4a-9a82-7ca6e1c21e44",
+    "turn": 81,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:28:43.346Z"
+  },
+  {
+    "_id": "0198e01f-064a-7559-a1ec-9501be9708ac",
+    "turn": 80,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:26:26.378Z"
+  },
+  {
+    "_id": "0198e01e-f164-7139-ac22-30908f4386d2",
+    "turn": 79,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:26:21.028Z"
+  },
+  {
+    "_id": "0198e01e-dfbe-7fef-a86e-adb941d31760",
+    "turn": 78,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:26:16.510Z"
+  },
+  {
+    "_id": "0198e01e-1bcd-73d8-aa07-76e9e1858fbf",
+    "turn": 77,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:25:26.349Z"
+  },
+  {
+    "_id": "0198e01e-06ec-7e55-bcd2-c888b8e38af0",
+    "turn": 76,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:25:21.004Z"
+  },
+  {
+    "_id": "0198e01d-f543-78d8-9be7-611026c8688b",
+    "turn": 75,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:25:16.483Z"
+  },
+  {
+    "_id": "0198e01d-3157-7028-a85c-85dd7edfbc22",
+    "turn": 74,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:24:26.327Z"
+  },
+  {
+    "_id": "0198e01d-1c7b-76b4-9037-eee62a7b6742",
+    "turn": 73,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:24:20.987Z"
+  },
+  {
+    "_id": "0198e01d-0ac0-74d9-a2ea-a9983aa3cef3",
+    "turn": 72,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:24:16.448Z"
+  },
+  {
+    "_id": "0198e01c-46e6-72d3-a657-f9093b043464",
+    "turn": 71,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:23:26.310Z"
+  },
+  {
+    "_id": "0198e01c-3209-71eb-848f-b02cbce4242b",
+    "turn": 70,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:23:20.969Z"
+  },
+  {
+    "_id": "0198e01c-2048-7984-a008-1113f52a49f4",
+    "turn": 69,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:23:16.424Z"
+  },
+  {
+    "_id": "0198e01b-5c70-76b8-826d-6d42ae02c008",
+    "turn": 68,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:22:26.288Z"
+  },
+  {
+    "_id": "0198e01b-4790-78d7-9cd1-cbd4f17cb482",
+    "turn": 67,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:22:20.944Z"
+  },
+  {
+    "_id": "0198e01b-35d2-7db7-af0d-06bc99ea605e",
+    "turn": 66,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:22:16.402Z"
+  },
+  {
+    "_id": "0198e01a-71f8-74c1-a51c-31c78367ef56",
+    "turn": 65,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:21:26.264Z"
+  },
+  {
+    "_id": "0198e01a-5d1d-7b3c-9891-0da765237b9a",
+    "turn": 64,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:21:20.925Z"
+  },
+  {
+    "_id": "0198e01a-4b59-752e-80d0-a2a3066958ef",
+    "turn": 63,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:21:16.377Z"
+  },
+  {
+    "_id": "0198e019-8787-7e8a-8a54-27e466031ca1",
+    "turn": 62,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:20:26.247Z"
+  },
+  {
+    "_id": "0198e019-72a0-7e2c-b29a-4ff9ed92370e",
+    "turn": 61,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:20:20.897Z"
+  },
+  {
+    "_id": "0198e019-60e9-7403-bb4b-ee6e926c1758",
+    "turn": 60,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:20:16.361Z"
+  },
+  {
+    "_id": "0198e018-9d16-7661-ac04-735f475b0507",
+    "turn": 59,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:19:26.231Z"
+  },
+  {
+    "_id": "0198e018-8825-7e90-9a20-72250ae07117",
+    "turn": 58,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:19:20.869Z"
+  },
+  {
+    "_id": "0198e018-7668-7c07-811c-a2e4e923bb3c",
+    "turn": 57,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:19:16.328Z"
+  },
+  {
+    "_id": "0198e017-b2a7-7d43-930a-cdc7298c7c04",
+    "turn": 56,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:18:26.215Z"
+  },
+  {
+    "_id": "0198e017-9da7-7380-b88c-18e3dc7e958a",
+    "turn": 55,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:18:20.839Z"
+  },
+  {
+    "_id": "0198e017-8bf7-71f2-81a1-02aa76d1cc57",
+    "turn": 54,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:18:16.311Z"
+  },
+  {
+    "_id": "0198e016-c830-7aac-acd2-1fa59aefe6dc",
+    "turn": 53,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:17:26.192Z"
+  },
+  {
+    "_id": "0198e016-b32c-72ea-9b17-8fe5132d9478",
+    "turn": 52,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:17:20.812Z"
+  },
+  {
+    "_id": "0198e016-a179-7a60-b7ff-470bd24a7ff1",
+    "turn": 51,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:17:16.281Z"
+  },
+  {
+    "_id": "0198e015-ddb4-7864-9096-106c7c8a67f9",
+    "turn": 50,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:16:26.164Z"
+  },
+  {
+    "_id": "0198e015-c8bb-7565-a2fb-f0ce7dd433b9",
+    "turn": 49,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:16:20.795Z"
+  },
+  {
+    "_id": "0198e015-b6f7-773a-92de-3da477f0538f",
+    "turn": 48,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:16:16.247Z"
+  },
+  {
+    "_id": "0198e014-f338-77c1-922d-7fe43881bde7",
+    "turn": 47,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:15:26.136Z"
+  },
+  {
+    "_id": "0198e014-de4c-76f0-8ceb-032848e98f5f",
+    "turn": 46,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:15:20.780Z"
+  },
+  {
+    "_id": "0198e014-cc7f-7ffd-9775-8be121c67ce8",
+    "turn": 45,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:15:16.223Z"
+  },
+  {
+    "_id": "0198e014-08c2-7e37-8eb0-19865329ac18",
+    "turn": 44,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:14:26.114Z"
+  },
+  {
+    "_id": "0198e013-f3d8-7eca-89ec-e1feca6e4124",
+    "turn": 43,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:14:20.760Z"
+  },
+  {
+    "_id": "0198e013-e209-7aca-a10b-d22c2003c5ef",
+    "turn": 42,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:14:16.201Z"
+  },
+  {
+    "_id": "0198e013-1e47-7e37-97cb-7d786a2f42a3",
+    "turn": 41,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:13:26.087Z"
+  },
+  {
+    "_id": "0198e013-0960-7896-8f08-562cfb708a51",
+    "turn": 40,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:13:20.736Z"
+  },
+  {
+    "_id": "0198e012-f783-72b4-95c3-832dac04082a",
+    "turn": 39,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:13:16.163Z"
+  },
+  {
+    "_id": "0198e012-33d2-7489-83c0-340364191c8a",
+    "turn": 38,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:12:26.066Z"
+  },
+  {
+    "_id": "0198e012-1ee9-73d5-b062-89ea45f04d22",
+    "turn": 37,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:12:20.713Z"
+  },
+  {
+    "_id": "0198e012-0d0c-7de9-a070-37f85173ab0a",
+    "turn": 36,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:12:16.140Z"
+  },
+  {
+    "_id": "0198e011-4960-7f39-a77b-5abf18b21aa0",
+    "turn": 35,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:11:26.048Z"
+  },
+  {
+    "_id": "0198e011-3470-766a-bfa8-00e70748b7ff",
+    "turn": 34,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:11:20.688Z"
+  },
+  {
+    "_id": "0198e011-228a-7ebc-9a50-b8b34d790bd2",
+    "turn": 33,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:11:16.106Z"
+  },
+  {
+    "_id": "0198e010-5eea-7dc0-a550-6e3fa623b496",
+    "turn": 32,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:10:26.026Z"
+  },
+  {
+    "_id": "0198e010-49f7-7424-a0da-245a666bbbda",
+    "turn": 31,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:10:20.663Z"
+  },
+  {
+    "_id": "0198e010-3811-7b2b-af7a-bcc148c7c8e0",
+    "turn": 30,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:10:16.081Z"
+  },
+  {
+    "_id": "0198e00f-7475-7d90-b240-f36ce8273faa",
+    "turn": 29,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:09:26.005Z"
+  },
+  {
+    "_id": "0198e00f-5f7e-7959-afb3-26293743e03b",
+    "turn": 28,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:09:20.638Z"
+  },
+  {
+    "_id": "0198e00f-4d8e-7088-b03a-22ad2d34a552",
+    "turn": 27,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:09:16.046Z"
+  },
+  {
+    "_id": "0198e00e-8a01-729a-af7f-ca0f139608f0",
+    "turn": 26,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:08:25.986Z"
+  },
+  {
+    "_id": "0198e00e-750b-7a8c-9187-7b1102ec79c2",
+    "turn": 25,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:08:20.619Z"
+  },
+  {
+    "_id": "0198e00e-6315-7a43-89e5-d16201e60043",
+    "turn": 24,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:08:16.021Z"
+  },
+  {
+    "_id": "0198e00d-9f83-7ce7-8d4c-2ce954d0eb7d",
+    "blockInfo": "t43r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      16,
+      3
+    ],
+    "slotIdx": 3,
+    "turn": 23,
+    "createdAt": "2025-08-25T07:07:25.955Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e00d-8a96-70f9-bf5b-fabcefcc40a6",
+    "blockInfo": "t58r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      6,
+      8
+    ],
+    "slotIdx": 0,
+    "turn": 22,
+    "createdAt": "2025-08-25T07:07:20.598Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e00d-789e-7561-bf2c-6956e403e30d",
+    "blockInfo": "t58r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      6,
+      12
+    ],
+    "slotIdx": 1,
+    "turn": 21,
+    "createdAt": "2025-08-25T07:07:15.998Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e00d-6462-7bcf-9eae-a8de49ca5df4",
+    "turn": 20,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:07:10.818Z"
+  },
+  {
+    "_id": "0198e00d-56a0-7f1c-b865-e86ae688ba0d",
+    "turn": 19,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:07:07.297Z"
+  },
+  {
+    "_id": "0198e00c-8b06-724a-9cef-0dedcd686038",
+    "turn": 18,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:06:15.174Z"
+  },
+  {
+    "_id": "0198e00c-7b63-7301-9d99-015dbfd185b4",
+    "turn": 17,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:06:11.171Z"
+  },
+  {
+    "_id": "0198e00c-6946-77d4-b469-c0d960a4b859",
+    "turn": 16,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:06:06.534Z"
+  },
+  {
+    "_id": "0198e00b-a08c-75f1-b024-d9ac57c34922",
+    "turn": 15,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:05:15.148Z"
+  },
+  {
+    "_id": "0198e00b-90ec-7f14-a9b1-0d4326f1868e",
+    "turn": 14,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:05:11.148Z"
+  },
+  {
+    "_id": "0198e00b-7ec8-7ce0-b439-852ca2af0dd0",
+    "turn": 13,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:05:06.504Z"
+  },
+  {
+    "_id": "0198e00a-b610-7925-a5bd-7db4158b6142",
+    "turn": 12,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:04:15.120Z"
+  },
+  {
+    "_id": "0198e00a-a651-7db5-8094-f19d4f2838ff",
+    "turn": 11,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 1,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:04:11.089Z"
+  },
+  {
+    "_id": "0198e00a-9448-7a6c-b50a-4de322285d9e",
+    "turn": 10,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 0,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:04:06.472Z"
+  },
+  {
+    "_id": "0198e009-cb96-740f-9943-9c9f3a97ab61",
+    "blockInfo": "t59r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      5,
+      13
+    ],
+    "slotIdx": 1,
+    "turn": 9,
+    "createdAt": "2025-08-25T07:03:15.094Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e009-bbd2-7bae-a115-d1c77c428e72",
+    "blockInfo": "t5ar0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      3,
+      6
+    ],
+    "slotIdx": 0,
+    "turn": 8,
+    "createdAt": "2025-08-25T07:03:11.058Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e009-a9cf-7804-bfba-f7bae1eaee6c",
+    "turn": 7,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 1,
+    "slotIdx": 3,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:03:06.448Z"
+  },
+  {
+    "_id": "0198e009-9bf0-70df-a723-466edcf2507c",
+    "turn": 6,
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "exhausted": false,
+    "playerIdx": 0,
+    "slotIdx": 2,
+    "timeout": true,
+    "createdAt": "2025-08-25T07:03:02.897Z"
+  },
+  {
+    "_id": "0198e001-e7ef-7b0a-b8df-caf595a9a2f7",
+    "blockInfo": "t5br0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      3,
+      15
+    ],
+    "slotIdx": 1,
+    "turn": 5,
+    "createdAt": "2025-08-25T06:54:38.064Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198e001-c97f-742c-b362-ecd85263fba0",
+    "blockInfo": "t5br0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      1,
+      2
+    ],
+    "slotIdx": 0,
+    "turn": 4,
+    "createdAt": "2025-08-25T06:54:30.272Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198dffb-1645-79ea-95a9-260856c42f6c",
+    "blockInfo": "t56r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      18,
+      0
+    ],
+    "slotIdx": 3,
+    "turn": 3,
+    "createdAt": "2025-08-25T06:47:11.173Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198dffa-f8a1-7c48-b503-6cb443e0fd20",
+    "blockInfo": "t44r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      18,
+      18
+    ],
+    "slotIdx": 2,
+    "turn": 2,
+    "createdAt": "2025-08-25T06:47:03.586Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198dffa-ccdc-7fb7-b512-bd4978072f5b",
+    "blockInfo": "t57r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 1,
+    "position": [
+      0,
+      17
+    ],
+    "slotIdx": 1,
+    "turn": 1,
+    "createdAt": "2025-08-25T06:46:52.381Z",
+    "exhausted": false,
+    "timeout": false
+  },
+  {
+    "_id": "0198dffa-b922-7625-8427-433d39c9a418",
+    "blockInfo": "t51r0",
+    "gameId": "0198dffa-9bd4-7c60-8dda-5f157bcda28e",
+    "playerIdx": 0,
+    "position": [
+      0,
+      0
+    ],
+    "slotIdx": 0,
+    "turn": 0,
+    "createdAt": "2025-08-25T06:46:47.330Z",
+    "exhausted": false,
+    "timeout": false
+  }
+]`);
+
+    if (typeof moves === 'string') throw new Error('move type');
+
+
+    return {
+      playerIdx,
+      room,
+      roomCache,
+      moves: moves.map(move => {
+        if (move.timeout) {
+          return {
+            id: move._id,
+            gameId,
+            playerIdx: move.playerIdx,
+            slotIdx: move.slotIdx,
+            turn: move.turn,
+            timeout: true,
+            exhausted: false,
+            createdAt: new Date(move.createdAt),
+          };
+        }
+        if (move.exhausted) {
+          return {
+            id: move._id,
+            gameId,
+            playerIdx: move.playerIdx,
+            slotIdx: move.slotIdx,
+            turn: move.turn,
+            timeout: false,
+            exhausted: true,
+            createdAt: new Date(move.createdAt),
+          };
+        }
+        return {
+          id: move._id,
+          gameId,
+          blockInfo: convertBlockToObj(move.blockInfo),
+          playerIdx: move.playerIdx,
+          slotIdx: move.slotIdx,
+          position: move.position,
+          turn: move.turn,
+          timeout: false,
+          exhausted: false,
+          createdAt: new Date(move.createdAt),
+        }
+      }).sort((a, b) => a.turn - b.turn) as Move[],
+    };
+  } catch (e) {
+    console.log(3744)
+    // [TODO] handle error
+    console.error(e);
+    if (e instanceof Error) {
+      throw redirect(303, `/rooms?error=${e.message}`);
+    }
+    throw redirect(303, `/rooms?error=unknown_error_occured`);
+  }
+};

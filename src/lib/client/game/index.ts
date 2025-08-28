@@ -75,6 +75,10 @@ export class GameManager {
   startGame() {
     this.eventBus.publish('GameStartRequested', undefined);
   }
+
+  terminate() {
+    this.eventBus.publish('TerminateRequested', undefined);
+  }
 }
 
 export class GameClientFactory {

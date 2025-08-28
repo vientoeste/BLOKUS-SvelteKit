@@ -58,7 +58,7 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
     if (!request.url) throw new Error('request url is empty')
     const url = new URL(`${process.env.ORIGIN}${request.url}`);
 
-    const roomId = url.pathname.replace('/rooms/', '');
+    const roomId = url.pathname.replace('/rooms/', '').replace('/', '');
     if (!roomId) {
       socket.close(1, `unexpected roomId: ${roomId}`);
       throw new Error('unexpected client\'s url');

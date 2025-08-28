@@ -141,6 +141,9 @@ export const insertRoomCache = async (
 
 export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
   const room = await roomCacheRepository.fetch(roomId);
+  console.log('--------');
+  console.log(room, Object.keys(room), !room);
+  console.log('--------');
   if (!room || Object.keys(room).length === 0) {
     throw new CustomError('room cache not found', 404);
   }
@@ -302,16 +305,35 @@ export const updateRoomCacheStartedState = async ({ roomId, isStarted, gameId }:
   });
 };
 
-export const createScoreValidationSequence = async ({ roomId, gameId, playerIdx, score }: {
+export const createScoreValidationSequence = async ({
+  roomId,
+  gameId,
+  playerIdx,
+  score,
+  playerIndices,
+}: {
   roomId: RoomId;
   gameId: GameId;
   score: Score;
-  playerIdx: PlayerIdx,
+  playerIdx: PlayerIdx;
+  playerIndices: PlayerIdx[];
 }) => {
+  const confirmFields = {
+  };
+  playerIndices.forEach((playerIdx) => {
+    Object.defineProperty(confirmFields, `p${playerIdx}_confirm`, {
+      value: false,
+      writable: true,
+      configurable: true,
+      enumerable: true,
+    });
+  });
+  console.log(confirmFields)
   await gameEndSequenceRepository.save(roomId, {
     gameId,
     initiatedAt: new Date(),
     initiatedBy: playerIdx,
     refScore: score.toString(),
+    ...confirmFields,
   });
 };

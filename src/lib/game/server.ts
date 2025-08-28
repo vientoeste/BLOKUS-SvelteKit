@@ -9,13 +9,15 @@ export const generateGameSummary = async (gameId: GameId): Promise<Score> => {
   }) as RegularMove[];
   const board = createNewBoard();
   moves.forEach((move) => {
-    placeBlock({
-      block: getBlockMatrix(move.blockInfo),
-      board,
-      position: move.position,
-      slotIdx: move.slotIdx,
-      turn: move.turn,
-    });
+    if (move.blockInfo !== undefined) {
+      placeBlock({
+        block: getBlockMatrix(move.blockInfo),
+        board,
+        position: move.position,
+        slotIdx: move.slotIdx,
+        turn: move.turn,
+      });
+    }
   });
   // [TODO] add last-monomino-rule
   return Score.fromBoard(board);

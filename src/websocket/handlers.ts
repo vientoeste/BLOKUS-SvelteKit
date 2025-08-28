@@ -228,6 +228,7 @@ export class WebSocketMessageHandler {
       };
     }
 
+    console.log(client.roomId)
     const roomCache = await getRoomCache(client.roomId);
     if (roomCache.started) {
       return {
@@ -320,6 +321,8 @@ export class WebSocketMessageHandler {
       roomId: client.roomId,
       score,
     });
+    console.log('score confirm result: ')
+    console.log(result)
     if (!result.success) {
       const badReqMessage: OutboundBadReqMessage = {
         type: 'BAD_REQ',
@@ -430,7 +433,7 @@ export class WebSocketMessageBroker {
   }
 
   subscribeMessage() {
-    this.subscriber.subscribe('message', (rawMessage) => {
+    this.subscriber.subscribe('message', (rawMessage: string) => {
       const message = parseJson<WebSocketBrokerMessage>(rawMessage);
       if (typeof message === 'string') return;
       const { roomId, payload } = message;
@@ -521,6 +524,7 @@ export class WebSocketConnectionOrchestrator {
       });
     } catch (e) {
       // [TODO] log
+      console.error(e);
     }
   }
 }
