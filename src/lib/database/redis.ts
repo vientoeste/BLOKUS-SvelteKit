@@ -1,5 +1,5 @@
 import { createClient } from 'redis';
-import { Repository, Schema, type SchemaDefinition } from 'redis-om';
+import { Repository, Schema, type Entity, type SchemaDefinition } from 'redis-om';
 
 export const redis = await createClient({ password: import.meta.env.VITE_REDIS_PW }).connect();
 
@@ -28,6 +28,22 @@ type InferSchemaType<T extends CustomSchemaDefinition> = Partial<{
   [K in keyof T]: SchemaTypeMapping[T[K]['type']];
 }>;
 
+export class CustomRepository<T extends Entity> extends Repository<T> {
+  constructor(schema: Schema<T>, client: typeof redis) {
+    super(schema, client);
+    this._schema = schema;
+    this._client = client;
+  }
+
+  private _schema: Schema<T>;
+  private _client: typeof redis;
+
+  async updateField<K extends keyof T>(id: string, field: K, value: T[K]): Promise<void> {
+    const key = `${this._schema.schemaName}:${id}`;
+    await this._client.hSet(key, field as string, String(value));
+  }
+}
+
 // [CHECK] tested repository.save and it worked, but others are not
 // [TODO] force Id
 export const redisModelFactory = {
@@ -38,13 +54,13 @@ export const redisModelFactory = {
    * @example redisModelFactory.create('someKey', { someKeyField1: { type: 'string' as const } });
    * @returns object containing a typed `Repository` and `Schema` with auto-completion support.
    */
-  create: <T extends CustomSchemaDefinition>(name: string, schemaDef: T): { schema: Schema<InferSchemaType<T>>, repository: Repository<InferSchemaType<T>> } => {
+  create: <T extends CustomSchemaDefinition>(name: string, schemaDef: T): { schema: Schema<InferSchemaType<T>>, repository: CustomRepository<InferSchemaType<T>> } => {
     const schema = new Schema<InferSchemaType<T>>(name, schemaDef as SchemaDefinition<InferSchemaType<T>>, {
       dataStructure: 'HASH',
     });
     return {
       schema,
-      repository: new Repository<InferSchemaType<T>>(schema, redis),
+      repository: new CustomRepository<InferSchemaType<T>>(schema, redis),
     };
   },
 };
