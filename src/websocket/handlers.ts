@@ -430,7 +430,7 @@ export class WebSocketMessageBroker {
   }
 
   subscribeMessage() {
-    this.subscriber.subscribe('message', (rawMessage) => {
+    this.subscriber.subscribe('message', (rawMessage: string) => {
       const message = parseJson<WebSocketBrokerMessage>(rawMessage);
       if (typeof message === 'string') return;
       const { roomId, payload } = message;
