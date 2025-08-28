@@ -302,16 +302,34 @@ export const updateRoomCacheStartedState = async ({ roomId, isStarted, gameId }:
   });
 };
 
-export const createScoreValidationSequence = async ({ roomId, gameId, playerIdx, score }: {
+export const createScoreValidationSequence = async ({
+  roomId,
+  gameId,
+  playerIdx,
+  score,
+  playerIndices,
+}: {
   roomId: RoomId;
   gameId: GameId;
   score: Score;
-  playerIdx: PlayerIdx,
+  playerIdx: PlayerIdx;
+  playerIndices: PlayerIdx[];
 }) => {
+  const confirmFields = {
+  };
+  playerIndices.forEach((playerIdx) => {
+    Object.defineProperty(confirmFields, `p${playerIdx}_confirm`, {
+      value: false,
+      writable: true,
+      configurable: true,
+      enumerable: true,
+    });
+  });
   await gameEndSequenceRepository.save(roomId, {
     gameId,
     initiatedAt: new Date(),
     initiatedBy: playerIdx,
     refScore: score.toString(),
+    ...confirmFields,
   });
 };

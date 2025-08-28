@@ -10,11 +10,16 @@ export const initiateGameEndSequence = async ({ playerIdx, roomId }: { roomId: R
     throw new Error('gameId is not set');
   }
   const score = await generateGameSummary(roomCache.gameId);
+  const playerIndices: PlayerIdx[] = [0];
+  if (roomCache.p1_id !== undefined) playerIndices.push(1);
+  if (roomCache.p2_id !== undefined) playerIndices.push(2);
+  if (roomCache.p3_id !== undefined) playerIndices.push(3);
   await createScoreValidationSequence({
     roomId,
     score,
     playerIdx,
     gameId: roomCache.gameId,
+    playerIndices,
   });
   return score;
 };
@@ -33,12 +38,13 @@ export const confirmScore = async ({ roomId, score, playerIdx }: { roomId: RoomI
     };
   }
 
-  sequenceCache[`p${playerIdx}_confirm`] = true;
-  const { p0_confirm, p1_confirm, p2_confirm, p3_confirm, participantCount } = await gameEndSequenceRepository.save(roomId, sequenceCache);
+  await gameEndSequenceRepository.updateField(roomId, `p${playerIdx}_confirm`, 1 as unknown as boolean);
+  // [TODO] use lua to reduce cache fetch
+  const { p0_confirm, p1_confirm, p2_confirm, p3_confirm } = await gameEndSequenceRepository.fetch(roomId);
   return {
     success: true,
     isDone: [p0_confirm, p1_confirm, p2_confirm, p3_confirm]
-      .filter(e => e === true)
-      .length === participantCount
+      .filter(e => e === false)
+      .length === 0
   };
 };
