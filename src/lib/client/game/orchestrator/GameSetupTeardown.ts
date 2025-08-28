@@ -89,5 +89,9 @@ export class GameSetupTeardownOrchestrator {
         lastMoveTimestamp: event.payload.moves[event.payload.moves.length - 1].createdAt,
       });
     });
+
+    this.eventBus.subscribe('TerminateRequested', () => {
+      this.gameLifecycleManager.resetAllGameStates();
+    })
   }
 }

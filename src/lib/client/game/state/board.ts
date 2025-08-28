@@ -3,6 +3,10 @@ import { boardStoreWriter, getBoardFromStore } from "$lib/store";
 import type { Block, BoardMatrix, SlotIdx } from "$types";
 
 export class BoardStateManager {
+  constructor() {
+    boardStoreWriter.set(undefined);
+  }
+
   getBoard(): BoardMatrix | undefined {
     return getBoardFromStore()?.map(e => [...e]);
   }

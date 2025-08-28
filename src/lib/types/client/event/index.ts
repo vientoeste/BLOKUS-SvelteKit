@@ -45,6 +45,7 @@ export interface EventPayloadMap {
   'PlayerReadySubmitted': void,
   'PlayerReadyCancelSubmitted': void,
 
+  'TerminateRequested': void,
   '*': { type: string, payload: unknown },
 }
 
