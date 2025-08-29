@@ -42,7 +42,7 @@ export const updateRoomInfo = async (
   updateRoomDTO: UpdateRoomDTO
 ): Promise<RoomDocumentInf> => {
   const result = await Rooms.findOneAndUpdate({
-    id: roomId,
+    _id: roomId,
     isDeleted: false
   }, {
     $set: {
@@ -78,7 +78,7 @@ export const updateRoomStartedState = async ({ isStarted, roomId }: { roomId: Ro
 
 export const deleteRoomInfo = async (roomId: string): Promise<void> => {
   const result = await Rooms.findOneAndUpdate({
-    id: roomId,
+    _id: roomId,
     isDeleted: false
   }, {
     $set: {
