@@ -90,6 +90,7 @@ export interface InboundScoreConfirmationMessage extends WebSocketMessageBase {
 export interface OutboundStartMessage extends WebSocketMessageBase {
   type: 'START';
   gameId: string;
+  activePlayerCount: 2 | 3 | 4;
 }
 
 export interface OutboundConnectedMessage extends WebSocketMessageBase {

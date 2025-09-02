@@ -239,11 +239,17 @@ export class WebSocketMessageHandler {
       };
     }
     // [TODO] consider the case that number of user is lower than 4
-    const isReadied = roomCache.p0.ready
-      && (roomCache.p1 === undefined || roomCache.p1?.ready)
-      && (roomCache.p2 === undefined || roomCache.p2?.ready)
-      && (roomCache.p3 === undefined || roomCache.p3?.ready);
-    if (!isReadied) {
+    const players = [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3].filter(e => e !== undefined);
+    if (players.length < 2) {
+      return {
+        success: true,
+        actions: [{
+          action: 'reply',
+          payload: { type: 'BAD_REQ', message: 'required at least 2 players' },
+        }],
+      };
+    }
+    if (!players.every(player => player.ready)) {
       return {
         success: true,
         actions: [{
@@ -258,6 +264,7 @@ export class WebSocketMessageHandler {
 
     const startMessage: OutboundStartMessage = {
       type: 'START',
+      activePlayerCount: players.length as 2 | 3 | 4,
       gameId,
     };
     return {
@@ -423,7 +430,7 @@ export class WebSocketMessageBroker {
   }
 
   subscribeMessage() {
-    this.subscriber.subscribe('message', (rawMessage) => {
+    this.subscriber.subscribe('message', (rawMessage: string) => {
       const message = parseJson<WebSocketBrokerMessage>(rawMessage);
       if (typeof message === 'string') return;
       const { roomId, payload } = message;

@@ -1,14 +1,19 @@
 <script lang="ts">
   import { getBlockMatrix } from "$lib/game/core";
-  import type { BlockMatrix, SlotIdx } from "$types";
-  import {
-    dragPositionOffsetStore,
-    movePreviewStore,
-    moveStore,
-  } from "$lib/store";
+  import type { Block, BlockMatrix, SlotIdx } from "$types";
+  import { boardStore, dragPositionOffsetStore, moveStore } from "$lib/store";
   import html2canvas from "html2canvas";
 
-  const { board, relayMove } = $props();
+  const {
+    submitMove,
+  }: {
+    submitMove: (param: {
+      previewUrl: string;
+      position: [number, number];
+      blockInfo: Block;
+      slotIdx: SlotIdx;
+    }) => void;
+  } = $props();
 
   let boardElement: HTMLElement;
 
@@ -60,7 +65,7 @@
     }
   }
 
-  function getPosition({ x, y }: { x: number; y: number }) {
+  function getPosition({ x, y }: { x: number; y: number }): [number, number] {
     const { left: boardLeft, top: boardTop } =
       boardElement.getBoundingClientRect();
     return [
@@ -96,13 +101,13 @@
         throw new Error("missing blockInfo");
       }
 
-      const capturedImage = await capturePartialBoard(
+      const capturedImageURL = await capturePartialBoard(
         getBlockMatrix({ type, rotation, flip }),
         position as [number, number],
         slotIdx,
       );
-      $movePreviewStore = capturedImage;
-      relayMove({
+      submitMove({
+        previewUrl: capturedImageURL,
         position,
         blockInfo: { type, rotation, flip },
         slotIdx,
@@ -168,7 +173,7 @@
 </script>
 
 <div id="board" bind:this={boardElement}>
-  {#each board as boardLine, rowIdx}
+  {#each $boardStore ?? [] as boardLine, rowIdx}
     <div id="boardLine-{rowIdx}" class="boardLine">
       {#each boardLine as cell, colIdx}
         <div class="cell-cover">

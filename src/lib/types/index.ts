@@ -6,3 +6,4 @@ export * from './board';
 export * from './websocket';
 export * from './response';
 export * from './move';
+export * from './client/event';

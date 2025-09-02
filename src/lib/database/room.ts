@@ -42,7 +42,7 @@ export const updateRoomInfo = async (
   updateRoomDTO: UpdateRoomDTO
 ): Promise<RoomDocumentInf> => {
   const result = await Rooms.findOneAndUpdate({
-    id: roomId,
+    _id: roomId,
     isDeleted: false
   }, {
     $set: {
@@ -78,7 +78,7 @@ export const updateRoomStartedState = async ({ isStarted, roomId }: { roomId: Ro
 
 export const deleteRoomInfo = async (roomId: string): Promise<void> => {
   const result = await Rooms.findOneAndUpdate({
-    id: roomId,
+    _id: roomId,
     isDeleted: false
   }, {
     $set: {
@@ -302,16 +302,34 @@ export const updateRoomCacheStartedState = async ({ roomId, isStarted, gameId }:
   });
 };
 
-export const createScoreValidationSequence = async ({ roomId, gameId, playerIdx, score }: {
+export const createScoreValidationSequence = async ({
+  roomId,
+  gameId,
+  playerIdx,
+  score,
+  playerIndices,
+}: {
   roomId: RoomId;
   gameId: GameId;
   score: Score;
-  playerIdx: PlayerIdx,
+  playerIdx: PlayerIdx;
+  playerIndices: PlayerIdx[];
 }) => {
+  const confirmFields = {
+  };
+  playerIndices.forEach((playerIdx) => {
+    Object.defineProperty(confirmFields, `p${playerIdx}_confirm`, {
+      value: false,
+      writable: true,
+      configurable: true,
+      enumerable: true,
+    });
+  });
   await gameEndSequenceRepository.save(roomId, {
     gameId,
     initiatedAt: new Date(),
     initiatedBy: playerIdx,
     refScore: score.toString(),
+    ...confirmFields,
   });
 };

@@ -1,47 +1,22 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
+  import { GameClientFactory, GameManager } from "$lib/client/game";
+  import { blockStore, gameStore, modalStore } from "$lib/store";
   import { goto } from "$app/navigation";
   import Alert from "$lib/components/Alert.svelte";
   import Board from "$lib/components/Board.svelte";
   import Controller from "$lib/components/Controller.svelte";
   import Players from "$lib/components/Players.svelte";
-  import {
-    BlockPlacementValidator,
-    GameManager_Legacy,
-  } from "$lib/game/client.svelte";
-  import {
-    WebSocketMessageDispatcher,
-    WebSocketMessageReceiver,
-  } from "$lib/websocket/client";
-  import { blockStore, gameStore, modalStore } from "$lib/store";
-  import type {
-    BoardMatrix,
-    ParticipantInf,
-    PlayerIdx,
-    Rotation,
-    SubmitMoveDTO,
-  } from "$types";
+  import type { Block, BoardMatrix, PlayerIdx, SlotIdx } from "$types";
   import type { PageData } from "./$types";
-  import { getPlayersSlot } from "$lib/utils";
 
   const { data }: { data: PageData } = $props();
   const { room, playerIdx, roomCache, moves } = data;
 
   let socket: WebSocket;
-  // [TODO] get board from server if started(that means, logics for reconnected is needed)
-  let board: BoardMatrix = Array.from(Array(20), () => {
-    const newArr: (number | false)[] = [];
-    newArr.length = 20;
-    return newArr.fill(false);
-  });
 
   let worker: Worker | null = null;
-  let gameManager: GameManager_Legacy | null = $state(null);
-  let messageReceiver: WebSocketMessageReceiver;
-  let messageDispatcher: WebSocketMessageDispatcher;
-  let blockPlacementValidator: BlockPlacementValidator;
-
-  let players: (ParticipantInf | undefined)[] = $state([]);
+  let gameManager: GameManager;
 
   onDestroy(() => {
     gameStore.set({
@@ -50,9 +25,13 @@
       playerIdx: 0,
       players: [],
       turn: -1,
+      isEnded: false,
     });
     blockStore.set([]);
     socket?.close();
+
+    worker?.terminate();
+    gameManager?.terminate();
   });
 
   onMount(async () => {
@@ -68,15 +47,6 @@
       });
       goto("/rooms");
     }
-    $gameStore.playerIdx = playerIdx as PlayerIdx;
-    $gameStore.players = [
-      roomCache.p0,
-      roomCache.p1,
-      roomCache.p2,
-      roomCache.p3,
-    ];
-    $gameStore.isStarted = room.isStarted;
-    $gameStore.turn = roomCache.turn;
 
     // [TODO] consider reconnect
     const url = new URL(window.location.href);
@@ -93,62 +63,54 @@
       "$lib/workers/checkBlockPlaceability.worker?worker"
     );
     worker = new workerModule.default();
+    const players = [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3];
+    ({ gameManager } = GameClientFactory.create({
+      webWorker: worker,
+      webSocket: socket,
 
-    messageReceiver = new WebSocketMessageReceiver(socket);
-    messageDispatcher = new WebSocketMessageDispatcher(socket);
-    blockPlacementValidator = new BlockPlacementValidator(worker);
-    gameManager = new GameManager_Legacy({
-      board,
-      gameId: roomCache.gameId,
-      turn: roomCache.turn ?? -1,
-      playerIdx: $gameStore.playerIdx,
-      users: [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3],
-      messageReceiver,
-      messageDispatcher,
-      blockPlacementValidator,
-    });
+      context: {
+        playerIdx: playerIdx as PlayerIdx,
+        players,
+      },
+    }));
 
-    players = gameManager.users;
-    if (roomCache.started) {
-      $gameStore.mySlots = getPlayersSlot({
-        playerIdx: $gameStore.playerIdx,
-        players: $gameStore.players,
+    // [TODO] to prevent initializing error, add condition for single player game(prevent to start game)
+    if (roomCache.started && roomCache.gameId !== undefined) {
+      gameManager.restoreGame({
+        turn: roomCache.turn,
+        exhaustedSlots: roomCache.exhausted
+          .map((e, idx) => (e ? idx : undefined))
+          .filter((e) => e !== undefined) as SlotIdx[],
+        gameId: roomCache.gameId,
+        moves,
+        // [TODO] add case that phase is 'CONFIRMING_SCORE'
+        phase: "IN_PROGRESS",
       });
-      gameManager?.restoreGameState(moves);
     }
   });
 
-  onDestroy(() => {
-    worker?.terminate();
-  });
+  const submitMove = (param: {
+    previewUrl: string;
+    position: [number, number];
+    blockInfo: Block;
+    slotIdx: SlotIdx;
+  }) => {
+    gameManager?.submitMove(param);
+  };
+
+  const startGame = () => {
+    gameManager?.startGame();
+  };
 </script>
 
 <Players
-  {players}
   ready={() => {
-    gameManager?.ready();
+    gameManager.submitReady();
   }}
   unready={() => {
-    gameManager?.unready();
+    gameManager.submitCancelReady();
   }}
 ></Players>
-<Board
-  relayMove={({
-    position,
-    blockInfo: { type, rotation, flip },
-    slotIdx,
-  }: SubmitMoveDTO) => {
-    gameManager?.submitMove({
-      blockInfo: {
-        type,
-        flip,
-        rotation: (rotation % 4) as Rotation,
-      },
-      slotIdx,
-      position,
-    });
-  }}
-  board={gameManager?.board}
-/>
+<Board {submitMove} />
 
-<Controller startGame={() => gameManager?.startGame()}></Controller>
+<Controller {startGame}></Controller>

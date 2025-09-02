@@ -194,7 +194,7 @@ export const handleApiError = (e: unknown): Response => {
 export const extractPlayerCountFromCache_LEGACY = (roomCache: RoomCacheInf) => 1 + (+(roomCache.p1 !== undefined)) + (+(roomCache.p2 !== undefined)) + (+(roomCache.p3 !== undefined));
 export const extractPlayerCountFromCache = (roomCache: RoomCacheEntity) => 1 + (+(roomCache.p1_id !== undefined)) + (+(roomCache.p2_id !== undefined)) + (+(roomCache.p3_id !== undefined));
 
-export const isRightTurn = ({ turn, playerIdx, activePlayerCount }: { turn: number, playerIdx: PlayerIdx, activePlayerCount: number }) => ({
+export const isRightTurn = ({ turn, playerIdx, activePlayerCount }: { turn: number, playerIdx: PlayerIdx, activePlayerCount: 2 | 3 | 4 }) => ({
   2: turn % 2 === playerIdx,
   3: turn % 4 === 3 ? (turn % 12) === (playerIdx * 4 + 3) : turn % 4 === playerIdx,
   4: turn % 4 === playerIdx,
@@ -230,6 +230,9 @@ export const convertBoardToArr = (board: string): BoardMatrix =>
     board.slice(i * 20, i * 20 + 20).split('').map(cell => (cell === '4' ? false : parseInt(cell)))
   );
 
+type Flip = 'f' | '';
+export type CompressedMove = `${PlayerIdx}:${BlockType}:${number}:${number}:${Rotation}:${Flip}`;
+
 export const compressMove = ({
   playerIdx,
   type,
@@ -242,15 +245,12 @@ export const compressMove = ({
   position: [number, number],
   rotation: Rotation,
   flip: boolean,
-}) =>
-  `${playerIdx}:${type}[${position[0]},${position[1]}]r${rotation}${flip ? 'f' : ''}`;
+}): CompressedMove =>
+  `${playerIdx}:${type}:${position[0]}:${position[1]}:${rotation}:${flip ? 'f' : ''}`;
 
-export const decompressMove = (compressedMove: string) => {
-  const [playerIdx, ...rest1] = compressedMove.split(':');
-  const [type, ...rest2] = rest1[0].split('[');
-  const [position0, ...rest3] = rest2[0].split(',');
-  const [position1, ...rest4] = rest3[0].split(']');
-  const [, rotation, ...flip] = rest4[0].split('');
+export const decompressMove = (compressedMove: CompressedMove) => {
+  const [playerIdx, type, position0, position1, rotation, flip] = compressedMove.split(':');
+
   return {
     playerIdx: parseInt(playerIdx) as PlayerIdx,
     type: type as BlockType,

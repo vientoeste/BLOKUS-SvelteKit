@@ -1,9 +1,7 @@
 <script lang="ts">
-  import type { BlockType, SlotIdx } from "$types";
+  import type { BlockType } from "$types";
   import { blockStore } from "$lib/store";
   import DraggableBlock from "./DraggableBlock.svelte";
-
-  let { slotIdx }: { slotIdx: SlotIdx } = $props();
 
   /**
    * by update key, force re-rendering of blocks container
@@ -211,14 +209,16 @@
 </script>
 
 <div id="blocks-container">
-  {#each blockStore.getUnusedBlocksBySlot(slotIdx) as block}
-    <DraggableBlock
-      block={preset[block.blockType]}
-      type={block.blockType}
-      {blockState}
-      {slotIdx}
-      isAvailable={block.placeable}
-    />
+  {#each $blockStore as block}
+    {#if !block.isPlaced}
+      <DraggableBlock
+        block={preset[block.blockType]}
+        type={block.blockType}
+        {blockState}
+        slotIdx={block.slotIdx}
+        isAvailable={block.placeable}
+      />
+    {/if}
   {/each}
 </div>
 
