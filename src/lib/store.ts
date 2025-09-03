@@ -200,3 +200,17 @@ export const gamePhaseStore = (() => {
     get: () => get(store),
   };
 })();
+
+/**
+ * @description A store for window's inner height.
+ * It should be managed by scripts like 
+ * `<svelte:window bind:innerHeight={$innerHeightStore} />`
+ */
+export const innerHeightStore = writable(0);
+
+/**
+ * @description A store for block's size calculated by browser's height.
+ * The size of block satisfies following formulas: 
+ * innerHeight - blockSize * 20 - padding * 2 - 21 == 0, 8 <= padding < 18
+ */
+export const blockSizeStore = derived(innerHeightStore, (size) => Math.floor((size - 8) / 20 - 1) - 2);
