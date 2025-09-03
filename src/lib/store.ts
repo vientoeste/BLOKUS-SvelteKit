@@ -185,7 +185,7 @@ export const participantStore = (() => {
 })();
 
 export const { boardStore, boardStoreWriter, getBoardFromStore } = (() => {
-  const { subscribe, update, set } = writable<BoardMatrix | undefined>(undefined);
+  const { subscribe, update, set } = writable<BoardMatrix>(undefined);
   return {
     boardStore: { subscribe },
     boardStoreWriter: { update, set },
