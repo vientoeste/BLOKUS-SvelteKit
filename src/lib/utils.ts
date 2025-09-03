@@ -259,3 +259,15 @@ export const decompressMove = (compressedMove: CompressedMove) => {
     flip: flip.length !== 0,
   };
 };
+
+type ColorValue = "none" | "blue" | "red" | "yellow" | "green" | "spacing";
+type RawColor = false | 0 | 1 | 2 | 3 | -1;
+
+export const colorMapper = (raw: RawColor): ColorValue => {
+  if (raw === -1) return "spacing";
+  if (raw === 0) return "blue";
+  if (raw === 1) return "red";
+  if (raw === 2) return "yellow";
+  if (raw === 3) return "green";
+  return "none";
+};
