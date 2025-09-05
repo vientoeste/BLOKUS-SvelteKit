@@ -1,7 +1,7 @@
-import { preset } from '$lib/game/core';
+import { createNewBoard, preset } from '$lib/game/core';
 import { type ParticipantInf, type BlockType, type PlayerIdx, type Rotation, type SlotIdx, type UserInfo, type BoardMatrix } from '$types';
 import type { Undefinedable } from '$lib/utils';
-import { get, writable } from 'svelte/store';
+import { derived, get, writable } from 'svelte/store';
 import type { Phase } from './client/game/state/game';
 
 export const userStore = writable<Undefinedable<UserInfo>>({
@@ -185,7 +185,7 @@ export const participantStore = (() => {
 })();
 
 export const { boardStore, boardStoreWriter, getBoardFromStore } = (() => {
-  const { subscribe, update, set } = writable<BoardMatrix>(undefined);
+  const { subscribe, update, set } = writable<BoardMatrix>(createNewBoard());
   return {
     boardStore: { subscribe },
     boardStoreWriter: { update, set },

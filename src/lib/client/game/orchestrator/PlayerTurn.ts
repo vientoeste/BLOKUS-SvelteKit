@@ -87,22 +87,28 @@ export class PlayerTurnOrchestrator {
       const ellapsedTime = lastMoveTimestamp !== undefined
         ? new Date().getTime() - lastMoveTimestamp.getTime()
         : undefined;
+      console.log(ellapsedTime)
       if (ellapsedTime && ellapsedTime > 60000) {
+        console.log('ellapsedTime is over 60s')
         this.eventBus.publish('TimeoutOccured', { slotIdx, turn: this.turnManager.getCurrentTurn() });
         return;
       }
       if (ellapsedTime === undefined || ellapsedTime < 60000) {
+        console.log('normal turn start')
         this.alertManager.openTurnStartedModal();
         this.playerTurnTimer.setTurnTimeout({ slotIdx, time: ellapsedTime, turn: this.turnManager.getCurrentTurn() });
         return;
       }
+      console.log('skipped all validations over')
       // [TODO] is modal needed?
     });
 
     this.eventBus.subscribe('TimeoutOccured', (event) => {
+      console.log({ payloadTurn: event.payload.turn, currentTurn: this.turnManager.getCurrentTurn() });
       // there is no logic for cancel timeout, so turn's timeout could affect another turn.
       // Therefore, check payload's turn and current turn and if they're different just skip timeout handler.
       if (event.payload.turn !== this.turnManager.getCurrentTurn()) {
+        console.log('timeout handler is blocked because it\'s prev turn\'s timeout')
         return;
       }
       switch (this.turnState) {
@@ -146,6 +152,7 @@ export class PlayerTurnOrchestrator {
       const { result, reason } = this.moveApplier.checkBlockPlaceability({
         blockInfo, position, slotIdx, turn,
       });
+      console.log({ result, reason })
       if (!result) {
         this.alertManager.openInvalidMoveModal(reason);
         return;

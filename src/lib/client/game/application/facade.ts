@@ -101,6 +101,7 @@ export class GameStateLayer implements
     const restoredBoard = createNewBoard();
     payload.moves.forEach(move => {
       this.moveStateManager.addMoveToHistory(move);
+      console.log(move)
       if (move.exhausted === false && move.timeout === false) {
         placeBlock({
           board: restoredBoard,
@@ -109,6 +110,20 @@ export class GameStateLayer implements
           slotIdx: move.slotIdx,
           turn: move.turn,
         });
+        // if (reason !== undefined) {
+
+        //   console.log('--------------------------')
+        //   console.log('unavailableMove: ', reason)
+        //   console.log(move);
+        //   console.log('--------------------------')
+        // }
+        // placeBlock({
+        //   board: restoredBoard,
+        //   block: getBlockMatrix(move.blockInfo),
+        //   position: move.position,
+        //   slotIdx: move.slotIdx,
+        //   turn: move.turn,
+        // });
         this.blockStateManager.removeBlockFromStore({
           blockType: move.blockInfo.type,
           slotIdx: move.slotIdx,
