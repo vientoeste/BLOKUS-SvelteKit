@@ -119,8 +119,15 @@ export const blockStore = (() => {
     const index = store.findIndex(e => e.slotIdx === slotIdx && e.blockType === blockType);
     if (index !== -1) {
       update(e => {
-        e[index].isPlaced = true;
-        return e;
+        return e.map((e, i) => {
+          if (i === index) {
+            return {
+              ...e,
+              isPlaced: true,
+            };
+          }
+          return e;
+        });
       });
     }
   };
