@@ -209,7 +209,7 @@
 </script>
 
 <div id="blocks-container">
-  {#each $blockStore as block}
+  {#each $blockStore as block (block.slotIdx + block.blockType)}
     {#if !block.isPlaced}
       <DraggableBlock
         block={preset[block.blockType]}

@@ -13,19 +13,6 @@
   import { blockStore, gamePhaseStore, userStore } from "$lib/store";
   import "../app.css";
 
-  let rerenderer = $state(0);
-
-  // [TODO] leave only one subscriber
-  blockStore.subscribe(() => {
-    if ($gamePhaseStore !== "NOT_STARTED") {
-      rerenderer += 1;
-    }
-  });
-  gamePhaseStore.subscribe((phase) => {
-    if (phase !== "NOT_STARTED") {
-      rerenderer += 1;
-    }
-  });
   onMount(() => {
     if (
       $userStore.id !== undefined &&
@@ -54,9 +41,7 @@
   </article>
   <aside>
     <!-- [TODO] need to replace this component: dynamically render the components when sub-pages want to -->
-    {#key rerenderer}
-      <BlocksContainer />
-    {/key}
+    <BlocksContainer />
     {#if $userStore.id === undefined}
       <section id="login"><Login /></section>
     {:else}
