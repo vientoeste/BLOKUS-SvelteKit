@@ -28,8 +28,12 @@ if (process.env.NODE_ENV === 'production') {
   // [CHECK]
   initWebSocketServer(server, redis);
 }
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'qa') {
   const server = app.listen(3000);
   // [CHECK]
   initWebSocketServer(server, redis);
+}
+
+if (process.env.NODE_ENV === 'development') {
+  app.listen(3000);
 }

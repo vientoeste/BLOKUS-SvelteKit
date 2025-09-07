@@ -2,6 +2,7 @@ import type { ApiResponse, Block, BlockType, BoardMatrix, PlayerIdx, RoomCacheIn
 import { json } from "@sveltejs/kit";
 import { CustomError } from "./error";
 import type { RoomCacheEntity } from "./database/redis";
+import { writable, type Writable } from 'svelte/store';
 
 export type Undefinedable<T> = {
   [K in keyof T]: T[K] | undefined;
