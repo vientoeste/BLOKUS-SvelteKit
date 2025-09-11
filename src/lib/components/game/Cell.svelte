@@ -1,13 +1,16 @@
 <script lang="ts">
-  const { color } = $props<{
-    color: "none" | "blue" | "red" | "green" | "yellow" | "spacing";
-  }>();
+  import type { ColorValue } from "$types/client/ui";
+
+  let { color }: { color: ColorValue } = $props();
 </script>
 
-{#if color !== "spacing"}
+{#if color !== "SPACING"}
   <div class="cell-cover">
     <div class="cell-blank">
-      <div class="cell-content" style="background-color: var(--{color});">
+      <div
+        class="cell-content"
+        style="background-color: var(--{color.toLowerCase()});"
+      >
         &nbsp;
       </div>
     </div>
