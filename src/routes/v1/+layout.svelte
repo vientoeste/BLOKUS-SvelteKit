@@ -11,7 +11,7 @@
 
   import { getUserInfoFromLocalStorage } from "$lib/utils";
   import { blockStore, gamePhaseStore, userStore } from "$lib/store";
-  import "../app.css";
+  import "../../app.css";
 
   onMount(() => {
     if (
@@ -55,7 +55,7 @@
   main {
     margin: 50px 0;
     width: 62.5%;
-    height: auto;
+    height: 100dvh;
     gap: 2%;
   }
   article {

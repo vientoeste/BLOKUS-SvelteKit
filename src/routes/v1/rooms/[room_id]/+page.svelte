@@ -52,7 +52,7 @@
     const url = new URL(window.location.href);
 
     socket = new WebSocket(
-      `${url.protocol === "http:" ? "ws" : "wss"}://${url.host}${url.pathname}`,
+      `${url.protocol === "http:" ? "ws" : "wss"}://${url.host}${url.pathname.replace(/v1|v2/, "")}`,
     );
     await new Promise<void>((resolve) => {
       socket.addEventListener("open", () => {

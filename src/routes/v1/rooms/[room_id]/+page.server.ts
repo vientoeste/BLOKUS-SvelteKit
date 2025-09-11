@@ -28,8 +28,8 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
     // [TODO] handle error
     console.error(e);
     if (e instanceof Error) {
-      throw redirect(303, `/rooms?error=${e.message}`);
+      throw redirect(303, `/v1/rooms?error=${e.message}`);
     }
-    throw redirect(303, `/rooms?error=unknown_error_occured`);
+    throw redirect(303, `/v1/rooms?error=unknown_error_occured`);
   }
 };

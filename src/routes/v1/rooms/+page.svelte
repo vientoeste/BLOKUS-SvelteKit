@@ -35,7 +35,7 @@
         title: "failed to get rooms",
         message: "unknown error occured: please try again",
       });
-      return goto("/");
+      return goto("/v1");
     }
 
     const { status, type } = response;
