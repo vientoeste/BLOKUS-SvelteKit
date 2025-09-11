@@ -2,6 +2,7 @@ import type { ApiResponse, Block, BlockType, BoardMatrix, PlayerIdx, RoomCacheIn
 import { json } from "@sveltejs/kit";
 import { CustomError } from "./error";
 import type { RoomCacheEntity } from "./database/redis";
+import type { ColorValue, RawColor } from "$types/client/ui";
 
 export type Undefinedable<T> = {
   [K in keyof T]: T[K] | undefined;
@@ -260,14 +261,11 @@ export const decompressMove = (compressedMove: CompressedMove) => {
   };
 };
 
-type ColorValue = "none" | "blue" | "red" | "yellow" | "green" | "spacing";
-type RawColor = false | 0 | 1 | 2 | 3 | -1;
-
 export const colorMapper = (raw: RawColor): ColorValue => {
-  if (raw === -1) return "spacing";
-  if (raw === 0) return "blue";
-  if (raw === 1) return "red";
-  if (raw === 2) return "yellow";
-  if (raw === 3) return "green";
-  return "none";
+  if (raw === -1) return "SPACING";
+  if (raw === 0) return "BLUE";
+  if (raw === 1) return "RED";
+  if (raw === 2) return "YELLOW";
+  if (raw === 3) return "GREEN";
+  return "NONE";
 };
