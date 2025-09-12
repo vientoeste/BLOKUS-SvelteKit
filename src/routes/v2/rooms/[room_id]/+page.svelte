@@ -1,5 +1,6 @@
 <script>
   import Board from "$lib/components/game/Board.svelte";
+  import Participants from "$lib/components/game/Participants.svelte";
   import TriplePanelLayout from "$lib/components/TriplePanelLayout.svelte";
 </script>
 
@@ -9,7 +10,7 @@
   {#snippet left()}
     <div id="left-container">
       <div id="participant-container">
-        <!-- [TODO] add participants component -->
+        <Participants />
       </div>
       <div id="tmp-container">
         <!-- [TODO] add component -->
