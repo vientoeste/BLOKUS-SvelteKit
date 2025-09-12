@@ -1,4 +1,5 @@
 <script lang="ts">
+  // [TODO] DnD should be added
   import { getBlockMatrix } from "$lib/game/core";
   import ColorMatrixRenderer from "./ColorMatrixRenderer.svelte";
 
