@@ -1,11 +1,16 @@
-<script>
+<script lang="ts">
+  import BlocksContainer from "$lib/components/game/BlocksContainer.svelte";
   import Board from "$lib/components/game/Board.svelte";
   import Participants from "$lib/components/game/Participants.svelte";
   import TriplePanelLayout from "$lib/components/TriplePanelLayout.svelte";
+
+  let boardElement: HTMLElement;
 </script>
 
 <TriplePanelLayout>
-  <Board />
+  <div bind:this={boardElement}>
+    <Board />
+  </div>
 
   {#snippet left()}
     <div id="left-container">
