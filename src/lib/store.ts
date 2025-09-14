@@ -137,6 +137,11 @@ export const blockStore = (() => {
   };
 })();
 
+export const unusedBlockStore = derived(
+  blockStore,
+  (blockStore) => blockStore.filter(block => !block.isPlaced),
+);
+
 export const participantStore = (() => {
   const { set, subscribe, update } = writable<(ParticipantInf | undefined)[]>([]);
   const initialize = (players: (ParticipantInf | undefined)[]) => {
