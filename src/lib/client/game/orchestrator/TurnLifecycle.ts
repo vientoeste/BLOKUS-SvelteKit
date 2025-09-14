@@ -1,4 +1,4 @@
-import type { OutboundMoveMessage, OutboundSkipTurnMessage, PlayerIdx, SlotIdx } from "$types";
+import type { OutboundMoveMessage, OutboundSkipTurnMessage, SlotIdx } from "$types";
 import type { BlockPlaceabilityCalculator } from "../domain/blockPlaceabilityCalculator";
 import type { EventBus } from "../event";
 import type {
