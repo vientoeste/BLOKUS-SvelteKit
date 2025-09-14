@@ -163,7 +163,7 @@ export class GameStateLayer implements
   // [TODO] createdAt should be replaced as server-sent timestamp
   applyRegularMove(move: OutboundMoveMessage): void {
     const { blockInfo, slotIdx } = move;
-    const result = this.gameStateManager.verifyMoveContext(move)
+    const result = this.gameStateManager.verifyMoveContext(move);
     if (!result.isValid) {
       throw new Error("applyRegularMove called with invalid context.");
     }
@@ -176,7 +176,7 @@ export class GameStateLayer implements
 
   // [TODO] createdAt should be replaced as server-sent timestamp
   applySkipMove(skipMove: OutboundSkipTurnMessage): void {
-    const result = this.gameStateManager.verifyMoveContext(skipMove)
+    const result = this.gameStateManager.verifyMoveContext(skipMove);
     if (!result.isValid) {
       throw new Error("applySkipMove called with invalid context.");
     }

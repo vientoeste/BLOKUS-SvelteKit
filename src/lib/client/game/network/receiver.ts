@@ -60,6 +60,6 @@ export class WebSocketMessageReceiver implements MessageReceiver {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.eventBus.publish(messageType as any, payload as any);
       }
-    }
-  }
+    };
+  };
 }

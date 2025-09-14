@@ -36,8 +36,8 @@ describe('isBlockPlaceableAt 내부 로직 검사', () => {
 
     describe('블록이 보드 경계를 넘어가는 경우', () => {
       test('블록이 보드 상하 경계를 넘으면 false를 반환', () => {
-        const upwardTestDTO: PlaceBlockDTO = { block, position: [-1, 0], board, slotIdx: 0, turn: 0 }
-        const downwardTestDTO: PlaceBlockDTO = { block, position: [19, 0], board, slotIdx: 0, turn: 0 }
+        const upwardTestDTO: PlaceBlockDTO = { block, position: [-1, 0], board, slotIdx: 0, turn: 0 };
+        const downwardTestDTO: PlaceBlockDTO = { block, position: [19, 0], board, slotIdx: 0, turn: 0 };
 
         const upwardResult = isWithinBoardBounds(upwardTestDTO);
         const downwardResult = isWithinBoardBounds(downwardTestDTO);
@@ -47,8 +47,8 @@ describe('isBlockPlaceableAt 내부 로직 검사', () => {
       });
 
       test('블록이 보드 좌우 경계를 넘으면 false를 반환', () => {
-        const leftwardTestDTO: PlaceBlockDTO = { block, position: [0, -1], board, slotIdx: 0, turn: 0 }
-        const rightwardTestDTO: PlaceBlockDTO = { block, position: [0, 19], board, slotIdx: 0, turn: 0 }
+        const leftwardTestDTO: PlaceBlockDTO = { block, position: [0, -1], board, slotIdx: 0, turn: 0 };
+        const rightwardTestDTO: PlaceBlockDTO = { block, position: [0, 19], board, slotIdx: 0, turn: 0 };
 
         const leftwardResult = isWithinBoardBounds(leftwardTestDTO);
         const rightwardResult = isWithinBoardBounds(rightwardTestDTO);
@@ -125,7 +125,7 @@ describe('isBlockPlaceableAt 내부 로직 검사', () => {
       });
 
       test('다른 플레이어의 블록과 대각선으로 연결된 경우 false를 반환', () => {
-        placeBlock({ board, block: singleCellBlock, slotIdx: 1, position: [0, 0], turn: 0 })
+        placeBlock({ board, block: singleCellBlock, slotIdx: 1, position: [0, 0], turn: 0 });
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           position: [1, 1],
@@ -140,8 +140,8 @@ describe('isBlockPlaceableAt 내부 로직 검사', () => {
       });
 
       test('대각선이 아닌 방향으로만 블록이 있는 경우 false를 반환', () => {
-        placeBlock({ block: singleCellBlock, position: [0, 1], board, slotIdx: 0, turn: 0 })
-        placeBlock({ block: singleCellBlock, position: [1, 0], board, slotIdx: 0, turn: 0 })
+        placeBlock({ block: singleCellBlock, position: [0, 1], board, slotIdx: 0, turn: 0 });
+        placeBlock({ block: singleCellBlock, position: [1, 0], board, slotIdx: 0, turn: 0 });
         const dto: PlaceBlockDTO = {
           block: singleCellBlock,
           position: [0, 0],
@@ -510,7 +510,7 @@ describe('isBlockPlaceableAt 내부 로직 검사', () => {
 
         const result = hasEdgeConnection(dto);
 
-        expect(result).toBe(false)
+        expect(result).toBe(false);
       });
     });
 

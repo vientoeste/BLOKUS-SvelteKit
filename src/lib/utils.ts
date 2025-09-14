@@ -1,4 +1,4 @@
-import type { ApiResponse, Block, BlockType, BoardMatrix, PlayerIdx, RoomCacheInf, Rotation, SlotIdx } from "$types";
+import type { ApiResponse, Block, BlockType, BoardMatrix, CellValue, PlayerIdx, RoomCacheInf, Rotation, SlotIdx } from "$types";
 import { json } from "@sveltejs/kit";
 import { CustomError } from "./error";
 import type { RoomCacheEntity } from "./database/redis";
@@ -95,10 +95,10 @@ export const validateUsername = (username: string): ValidationResult => {
     return {
       isValid: false,
       message: 'must contain only letters and numbers',
-    }
+    };
   }
 
-  return { isValid: true, message: null }
+  return { isValid: true, message: null };
 };
 
 export const validatePassword = (password: string): ValidationResult => {
@@ -228,7 +228,7 @@ export const convertBoardToStr = (board: BoardMatrix) =>
 
 export const convertBoardToArr = (board: string): BoardMatrix =>
   Array.from({ length: 20 }, (_, i) =>
-    board.slice(i * 20, i * 20 + 20).split('').map(cell => (cell === '4' ? false : parseInt(cell)))
+    board.slice(i * 20, i * 20 + 20).split('').map(cell => (cell === '4' ? false : parseInt(cell)) as CellValue)
   );
 
 type Flip = 'f' | '';

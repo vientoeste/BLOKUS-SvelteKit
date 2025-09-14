@@ -160,13 +160,13 @@ export const getRoomCache = async (roomId: RoomId): Promise<RoomCacheInf> => {
     throw new Error('invalid room cache type');
   }
   if (p1_id !== undefined && (p1_ready === undefined || p1_username === undefined)) {
-    throw new Error('invalid p1 info at room cache')
+    throw new Error('invalid p1 info at room cache');
   }
   if (p2_id !== undefined && (p2_ready === undefined || p2_username === undefined)) {
-    throw new Error('invalid p2 info at room cache')
+    throw new Error('invalid p2 info at room cache');
   }
   if (p3_id !== undefined && (p3_ready === undefined || p3_username === undefined)) {
-    throw new Error('invalid p3 info at room cache')
+    throw new Error('invalid p3 info at room cache');
   }
 
   return {

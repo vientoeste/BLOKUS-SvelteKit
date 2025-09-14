@@ -1,7 +1,7 @@
 import type { Phase } from "$lib/client/game/state/game";
 import type { Block, SlotIdx } from "$types/game";
 import type { Move } from "$types/move";
-import type { GameId, PlayerIdx } from "$types/room";
+import type { GameId } from "$types/room";
 
 export type TurnProgressionTriggeredPayload = {
   turn: number;

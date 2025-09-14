@@ -49,7 +49,7 @@ export const getMovesByGameId = async (gameId: string, options: {
       timeout: false,
       exhausted: false,
       createdAt: new Date(move.createdAt),
-    }
+    };
   });
 };
 
