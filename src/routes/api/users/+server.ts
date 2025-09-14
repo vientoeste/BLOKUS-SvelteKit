@@ -20,7 +20,7 @@ export const POST: RequestHandler = async ({ request }) => {
     type: 'success',
     status: 201,
     data: { id: createdUserId },
-  }
+  };
   return json(response, { status: 201 });
 };
 

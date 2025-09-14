@@ -46,7 +46,7 @@ const createModalStore = () => {
       });
     }
   };
-}
+};
 
 export const modalStore = createModalStore();
 
@@ -113,7 +113,7 @@ export const blockStore = (() => {
       });
       return currentStore;
     });
-  }
+  };
   const updateBlockPlacementStatus = ({ slotIdx, blockType }: { slotIdx: SlotIdx, blockType: BlockType }) => {
     const store = get({ subscribe });
     const index = store.findIndex(e => e.slotIdx === slotIdx && e.blockType === blockType);
@@ -159,7 +159,7 @@ export const participantStore = (() => {
     update((players) => {
       players[playerIdx] = undefined;
       return players;
-    })
+    });
   };
   const setPlayerReadyState = ({
     playerIdx,

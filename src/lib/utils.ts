@@ -94,10 +94,10 @@ export const validateUsername = (username: string): ValidationResult => {
     return {
       isValid: false,
       message: 'must contain only letters and numbers',
-    }
+    };
   }
 
-  return { isValid: true, message: null }
+  return { isValid: true, message: null };
 };
 
 export const validatePassword = (password: string): ValidationResult => {

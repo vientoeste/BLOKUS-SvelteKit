@@ -10,7 +10,7 @@ export class BoardStateManager {
   private _resetBoard() {
     boardStoreWriter.set(
       Array(20).fill(null).map(() => Array(20).fill(false))
-    )
+    );
   }
 
   getBoard(): BoardMatrix {

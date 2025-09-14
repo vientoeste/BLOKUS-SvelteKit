@@ -300,14 +300,14 @@ export const rollbackMove = ({ board, blockInfo, position: [row, col] }: SubmitM
       if (blockCell) {
         board[row + rowIdx][col + colIdx] = false;
       }
-    })
-  })
+    });
+  });
 };
 
 export const putBlockOnBoard = ({ board, blockInfo, position, slotIdx, turn }: PutBlockDTO) => {
   const block = getBlockMatrix(blockInfo);
 
-  const { result, reason } = isBlockPlaceableAt({ block, position, board, slotIdx, turn })
+  const { result, reason } = isBlockPlaceableAt({ block, position, board, slotIdx, turn });
   if (!result) {
     return reason;
   }

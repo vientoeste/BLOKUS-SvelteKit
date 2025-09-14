@@ -55,7 +55,7 @@ export const initWebSocketServer = (server: HttpServer | HttpsServer, redis: Red
   });
 
   wss.on('connection', async (socket: PendingWebSocket, request) => {
-    if (!request.url) throw new Error('request url is empty')
+    if (!request.url) throw new Error('request url is empty');
     const url = new URL(`${process.env.ORIGIN}${request.url}`);
 
     const roomId = url.pathname.replace('/rooms/', '');

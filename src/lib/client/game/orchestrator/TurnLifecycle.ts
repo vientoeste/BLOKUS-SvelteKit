@@ -64,12 +64,12 @@ export class TurnLifecycleOrchestrator {
   }) {
     this.eventBus = eventBus;
     this.blockPlaceabilityCalculator = blockPlaceabilityCalculator;
-    this.turnManager = turnManager
-    this.calculationDataProvider = calculationDataProvider
-    this.calculationResultApplier = calculationResultApplier
-    this.moveApplier = moveApplier
-    this.slotManager = slotManager
-    this.clientInfoReader = clientInfoReader
+    this.turnManager = turnManager;
+    this.calculationDataProvider = calculationDataProvider;
+    this.calculationResultApplier = calculationResultApplier;
+    this.moveApplier = moveApplier;
+    this.slotManager = slotManager;
+    this.clientInfoReader = clientInfoReader;
 
     this.eventBus.subscribe('GameStateInitialized', () => {
       if (this.turnManager.getCurrentTurn() === 0) {
@@ -105,7 +105,7 @@ export class TurnLifecycleOrchestrator {
     if (!result.isValid) {
       switch (result.reason) {
         case 'game is not started':
-          this.eventBus.publish('InvalidGameInitializedState', undefined)
+          this.eventBus.publish('InvalidGameInitializedState', undefined);
           return;
         case 'invalid turn':
           this.eventBus.publish('InvalidTurn', undefined);

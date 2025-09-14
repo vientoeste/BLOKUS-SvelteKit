@@ -92,6 +92,6 @@ export class GameSetupTeardownOrchestrator {
 
     this.eventBus.subscribe('TerminateRequested', () => {
       this.gameLifecycleManager.resetAllGameStates();
-    })
+    });
   }
 }

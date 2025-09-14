@@ -47,7 +47,7 @@ export class SlotStateManager {
         }, {
           owners: [0, 1, 2],
           exhausted: false,
-        }]
+        }];
         break;
 
       case 4:

@@ -34,9 +34,9 @@ export const signIn = async ({ userId, password }: SignInDTO): Promise<{ token: 
   });
 
   return { token, id: user.id, userId, username: user.username };
-}
+};
 
-const extractSessionId = (token: string) => encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
+const extractSessionId = (token: string) => encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 
 export const signOut = async (token: string) => {
   const sessionId = extractSessionId(token);
@@ -44,7 +44,7 @@ export const signOut = async (token: string) => {
   if (!result) {
     throw new CustomError('session id not found', 404);
   }
-}
+};
 
 
 export const generateSessionToken = (): string => {
@@ -66,7 +66,7 @@ export const createSession = async ({ token, id, userId, username }: { token: st
   });
   await redis.expire(`session:${sessionId}`, 2592000);
   return session;
-}
+};
 
 /**
  * @example
@@ -98,9 +98,9 @@ export const validateSessionCookie = async (cookies: Cookies): Promise<UserInfo>
     throw new CustomError('sign in first', 401);
   }
   return validateSessionToken(token);
-}
+};
 
 export const invalidateSession = async (sessionId: string): Promise<boolean> => {
   const isRemoved = await redis.expire(`session:${sessionId}`, 0);
   return isRemoved;
-}
+};

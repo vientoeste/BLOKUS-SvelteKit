@@ -13,5 +13,5 @@ export class WebSocketMessageDispatcher implements MessageDispatcher {
 
   dispatch = (message: InboundWebSocketMessage) => {
     this.webSocket.send(JSON.stringify(message));
-  }
+  };
 }
