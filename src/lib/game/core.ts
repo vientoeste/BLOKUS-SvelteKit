@@ -1,4 +1,4 @@
-import type { Block, BlockMatrix, BlockType, BoardMatrix, PlaceBlockDTO, PutBlockDTO, Rotation, SlotIdx, SubmitMoveDTO } from "../types";
+import type { Block, BlockMatrix, BlockType, BoardMatrix, CellValue, PlaceBlockDTO, PutBlockDTO, Rotation, SlotIdx, SubmitMoveDTO } from "../types";
 
 export const preset: Record<BlockType, BlockMatrix> = {
   '50': [[true, true, true, true, true]],
@@ -81,7 +81,7 @@ export const preset: Record<BlockType, BlockMatrix> = {
 };
 
 export const createNewBoard = (): BoardMatrix => Array.from(Array(20), () => {
-  const newArr: (number | false)[] = [];
+  const newArr: CellValue[] = [];
   newArr.length = 20;
   return newArr.fill(false);
 });

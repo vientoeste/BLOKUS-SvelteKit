@@ -16,7 +16,9 @@ export type Block = {
   flip: boolean;
 }
 
-export type BoardMatrix = (number | false)[][];
+export type CellValue = SlotIdx | false;
+
+export type BoardMatrix = CellValue[][];
 
 export type BlockMatrix = boolean[][];
 
