@@ -3,7 +3,7 @@
   import { getBlockMatrix } from "$lib/game/core";
   import ColorMatrixRenderer from "./ColorMatrixRenderer.svelte";
 
-  const { blockType, slotIdx, rotation, flip } = $props();
+  const { blockType, slotIdx, rotation, flip, placeable } = $props();
 
   const blockMatrix = getBlockMatrix({
     type: blockType,

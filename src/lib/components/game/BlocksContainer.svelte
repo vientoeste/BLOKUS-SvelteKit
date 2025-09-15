@@ -13,6 +13,7 @@
         slotIdx={block.slotIdx}
         rotation={block.rotation}
         flip={block.flip}
+        placeable={block.placeable}
       />
     {/each}
   {/key}
