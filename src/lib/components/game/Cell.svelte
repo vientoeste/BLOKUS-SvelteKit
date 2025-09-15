@@ -10,13 +10,11 @@
       <div
         class="cell-content"
         style="background-color: var(--{color.toLowerCase()});"
-      >
-        &nbsp;
-      </div>
+      ></div>
     </div>
   </div>
 {:else}
-  <div class="spacing-cell">&nbsp;</div>
+  <div class="spacing-cell"></div>
 {/if}
 
 <style>
