@@ -3,7 +3,13 @@
   import type { RawColor } from "$types/client/ui";
   import Cell from "./Cell.svelte";
 
-  let { matrix, id }: { matrix: RawColor[][]; id: string } = $props();
+  let {
+    matrix,
+    id,
+  }: {
+    matrix: RawColor[][];
+    id: string;
+  } = $props();
 </script>
 
 <div {id} class="matrix">
