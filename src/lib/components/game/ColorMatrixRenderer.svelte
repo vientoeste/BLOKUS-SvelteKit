@@ -25,6 +25,7 @@
   .matrix__row {
     display: flex;
     flex-direction: row;
+    pointer-events: none;
   }
   .matrix_cell + .matrix_cell {
     margin-left: -1px;

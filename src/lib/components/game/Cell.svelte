@@ -23,7 +23,7 @@
   .cell-cover {
     background-color: var(--none);
     padding: 1px;
-    pointer-events: auto;
+    pointer-events: none;
   }
 
   .cell-blank {
