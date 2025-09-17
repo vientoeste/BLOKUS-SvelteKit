@@ -82,6 +82,11 @@ export const moveStore = writable<({
 
 export const movePreviewStore = writable<string>('');
 
+export const movePreviewShadowStore = writable<{
+  blockMatrix: RawColor[][];
+  position: [number, number];
+} | null>(null);
+
 export const blockStore = (() => {
   const { set, subscribe, update } = writable<{
     blockType: BlockType,
