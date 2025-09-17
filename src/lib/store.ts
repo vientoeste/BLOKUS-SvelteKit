@@ -3,6 +3,7 @@ import { type ParticipantInf, type BlockType, type PlayerIdx, type Rotation, typ
 import type { Undefinedable } from '$lib/utils';
 import { derived, get, writable } from 'svelte/store';
 import type { Phase } from './client/game/state/game';
+import type { RawColor } from '$types/client/ui';
 
 export const userStore = writable<Undefinedable<UserInfo>>({
   id: undefined,
@@ -71,7 +72,13 @@ export const gameStore = writable<{
  */
 export const dragPositionOffsetStore = writable<[number, number]>([0, 0]);
 
-export const moveStore = writable<({ type: BlockType, rotation: Rotation, flip: boolean, slotIdx: SlotIdx }) | null>(null);
+export const moveStore = writable<({
+  type: BlockType;
+  rotation: Rotation;
+  flip: boolean;
+  slotIdx: SlotIdx;
+  matrix?: RawColor[][];
+}) | null>(null);
 
 export const movePreviewStore = writable<string>('');
 
