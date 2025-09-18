@@ -4,6 +4,7 @@
     blockSizeStore,
     boardStore,
     dragPositionOffsetStore,
+    movePreviewShadowStore,
   } from "$lib/store";
   import ColorMatrixRenderer from "./ColorMatrixRenderer.svelte";
 
@@ -42,3 +43,27 @@
 >
   <ColorMatrixRenderer id="board" matrix={$boardStore}></ColorMatrixRenderer>
 </div>
+
+{#if $movePreviewShadowStore && boardElement}
+  <div
+    id="block-preview-shadow"
+    style:top="{$movePreviewShadowStore.position[0] * ($blockSizeStore + 3) +
+      boardElement.getBoundingClientRect().top}px"
+    style:left="{$movePreviewShadowStore.position[1] * ($blockSizeStore + 3) +
+      boardElement.getBoundingClientRect().left}px"
+  >
+    <ColorMatrixRenderer
+      id="block-preview-matrix"
+      matrix={$movePreviewShadowStore.blockMatrix}
+    ></ColorMatrixRenderer>
+  </div>
+{/if}
+
+<style>
+  #block-preview-shadow {
+    position: absolute;
+    opacity: 0.3;
+    z-index: 100;
+    pointer-events: none;
+  }
+</style>
