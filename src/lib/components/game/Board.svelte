@@ -1,5 +1,4 @@
 <script lang="ts">
-  // [TODO] DnD should be added
   import {
     blockSizeStore,
     boardStore,
@@ -9,6 +8,7 @@
   } from "$lib/store";
   import ColorMatrixRenderer from "./ColorMatrixRenderer.svelte";
 
+  let { submitMove } = $props();
   let boardElement: HTMLElement;
 
   const getPosition = ({
