@@ -95,7 +95,7 @@ export const blockStore = (() => {
     placeable: boolean,
     rotation: Rotation,
     flip: boolean,
-  }[]>();
+  }[]>([]);
 
   const initialize = (slots: SlotIdx[]) => {
     if (slots === undefined) return;
