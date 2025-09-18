@@ -6,12 +6,13 @@
     modalStore,
     moveStore,
   } from "$lib/store";
+  import type { RawColor } from "$types/client/ui";
   import Alert from "../Alert.svelte";
   import ColorMatrixRenderer from "./ColorMatrixRenderer.svelte";
 
   const { blockType, slotIdx, rotation, flip, placeable } = $props();
 
-  const blockMatrix = getBlockMatrix({
+  const blockMatrix: RawColor[][] = getBlockMatrix({
     type: blockType,
     flip,
     rotation,
