@@ -41,12 +41,13 @@
       return;
     }
 
-    moveStore.set({
+    $moveStore = {
       type: blockType,
       flip,
       rotation,
       slotIdx,
-    });
+      matrix: blockMatrix,
+    };
 
     event.dataTransfer.effectAllowed = "move";
 
