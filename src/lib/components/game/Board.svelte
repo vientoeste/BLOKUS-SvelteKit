@@ -5,6 +5,7 @@
     boardStore,
     dragPositionOffsetStore,
     movePreviewShadowStore,
+    moveStore,
   } from "$lib/store";
   import ColorMatrixRenderer from "./ColorMatrixRenderer.svelte";
 
@@ -32,6 +33,30 @@
       ),
     ];
   };
+
+  const handleDrop = (event: DragEvent) => {
+    event.preventDefault();
+
+    const position = getPosition({ x: event.clientX, y: event.clientY });
+    console.log(position);
+    dragPositionOffsetStore.set([0, 0]);
+
+    try {
+      if ($moveStore === null) throw new Error("move store is empty");
+      const { type, rotation, flip, slotIdx } = $moveStore;
+      if (type === undefined || rotation === undefined || flip === undefined) {
+        throw new Error("missing blockInfo");
+      }
+
+      // [TODO] add submitMove function that covers GameManager.submitMove
+    } catch (error) {
+      console.error("DnD(drop):", error);
+    }
+  };
+
+  const handleDragOver = (event: DragEvent) => {
+    event.preventDefault();
+  };
 </script>
 
 <div
@@ -40,6 +65,8 @@
   role="grid"
   tabindex="0"
   aria-label="Game Board of Blokus"
+  ondrop={handleDrop}
+  ondragover={handleDragOver}
 >
   <ColorMatrixRenderer id="board" matrix={$boardStore}></ColorMatrixRenderer>
 </div>
