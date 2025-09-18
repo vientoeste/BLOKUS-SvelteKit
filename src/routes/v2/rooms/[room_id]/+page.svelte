@@ -4,12 +4,10 @@
   import Board from "$lib/components/game/Board.svelte";
   import Participants from "$lib/components/game/Participants.svelte";
   import TriplePanelLayout from "$lib/components/TriplePanelLayout.svelte";
-
-  let boardElement: HTMLElement;
 </script>
 
 <TriplePanelLayout>
-  <div bind:this={boardElement}>
+  <div>
     <Board />
   </div>
 
