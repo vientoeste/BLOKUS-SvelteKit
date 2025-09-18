@@ -56,6 +56,21 @@
 
   const handleDragOver = (event: DragEvent) => {
     event.preventDefault();
+    if ($moveStore === null || $moveStore.matrix === undefined) return;
+
+    const position = getPosition({ x: event.clientX, y: event.clientY });
+    const currentPreview = $movePreviewShadowStore;
+    if (
+      currentPreview?.position[0] === position[0] &&
+      currentPreview?.position[1] === position[1]
+    ) {
+      return;
+    }
+
+    $movePreviewShadowStore = {
+      blockMatrix: $moveStore.matrix,
+      position,
+    };
   };
 </script>
 
