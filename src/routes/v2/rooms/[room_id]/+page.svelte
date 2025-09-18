@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { BoardStateManager } from "$lib/client/game/state";
   import BlocksContainer from "$lib/components/game/BlocksContainer.svelte";
   import Board from "$lib/components/game/Board.svelte";
   import Participants from "$lib/components/game/Participants.svelte";
@@ -26,7 +27,7 @@
   {#snippet right()}
     <div id="right-container">
       <div id="blocks-container">
-        <!-- [TODO] add BlocksContainer component -->
+        <BlocksContainer />
       </div>
     </div>
   {/snippet}
