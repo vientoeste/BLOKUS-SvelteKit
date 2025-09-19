@@ -110,9 +110,7 @@
 
   {#snippet right()}
     <div id="right-container">
-      <div id="blocks-container">
-        <BlocksContainer />
-      </div>
+      <BlocksContainer />
     </div>
   {/snippet}
 </TriplePanelLayout>
