@@ -4,6 +4,12 @@
   import Board from "$lib/components/game/Board.svelte";
   import Participants from "$lib/components/game/Participants.svelte";
   import TriplePanelLayout from "$lib/components/TriplePanelLayout.svelte";
+
+  const createWebSocketUrl = (url: URL) => {
+    const protocol = url.protocol === "http:" ? "ws" : "wss";
+    const basePath = url.pathname.replace(/^\/v\d+\//, "/");
+    return `${protocol}://${url.host}${basePath}`;
+  };
 </script>
 
 <TriplePanelLayout>
