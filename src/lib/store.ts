@@ -68,7 +68,7 @@ export const gameStore = writable<{
 });
 
 /**
- * handles block[0][0]'s center - where center of the block determines the whole block's position on the board
+ * @description difference between center pixel of block[0][0] and cursor
  */
 export const dragPositionOffsetStore = writable<[number, number]>([0, 0]);
 

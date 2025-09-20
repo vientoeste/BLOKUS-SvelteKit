@@ -3,16 +3,18 @@
     title,
     message,
     onClose = $bindable(),
+    // onCancel = $bindable(),
   } = $props<{
     title?: string;
     message?: string;
     onClose?: () => void;
+    // onCancel?: () => void;
   }>();
 </script>
 
 <div class="alert">
   <h2>{title}</h2>
-  <p>{message}</p>
+  <p>{@html message}</p>
   <button onclick={onClose}>확인</button>
 </div>
 

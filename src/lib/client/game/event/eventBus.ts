@@ -6,11 +6,11 @@ export class EventBus {
 
   constructor() {
     this.emitter = new EventEmitter();
-    if (process.env.NODE_ENV === 'development') {
-      this.emitter.on('*', (event) => {
-        // Debug here
-      });
-    }
+    // if (process.env.NODE_ENV === 'development') {
+    this.emitter.on('*', (event) => {
+      console.log('event received: ', event);
+    });
+    // }
   }
 
   subscribe<T extends AppEvent>(

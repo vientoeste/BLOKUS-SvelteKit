@@ -5,8 +5,8 @@
     userStore,
     blockStore,
     dragPositionOffsetStore,
-    movePreviewStore,
     participantStore,
+    gamePhaseStore,
   } from "$lib/store";
 
   let tmp = $state(0);
@@ -16,6 +16,9 @@
   });
 </script>
 
+<div id="phase-monitor" class="monitor">
+  game phase: {$gamePhaseStore}
+</div>
 <div id="game-store-monitor" class="monitor">
   <div>
     turn: {$gameStore.turn}

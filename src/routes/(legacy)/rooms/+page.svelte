@@ -24,7 +24,7 @@
         message: error.replace(/\_/g, " "),
       });
     }
-    const rawResponse = await fetch("/api/rooms", {
+    const rawResponse = await fetch("api/rooms", {
       credentials: "same-origin",
     });
     const response = parseJson<ApiResponse<FetchRoomPreviewsResponse>>(
@@ -35,7 +35,7 @@
         title: "failed to get rooms",
         message: "unknown error occured: please try again",
       });
-      return goto("/v1");
+      return goto("/");
     }
 
     const { status, type } = response;

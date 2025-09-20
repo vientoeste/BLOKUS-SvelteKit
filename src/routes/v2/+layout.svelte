@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { innerHeightStore } from "$lib/store";
+  import { blockSizeStore, innerHeightStore } from "$lib/store";
   import type { Snippet } from "svelte";
   import "../../app.css";
 
@@ -12,4 +12,7 @@
 
 <svelte:window bind:innerHeight={$innerHeightStore} />
 
+<div style="position:absolute; z-index: 0;">
+  {$blockSizeStore}
+</div>
 {@render children()}

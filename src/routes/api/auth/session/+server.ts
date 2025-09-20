@@ -19,7 +19,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
       maxAge: 2592000,
       httpOnly: true,
       sameSite: 'lax',
-      secure: import.meta.env.VITE_NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production',
+      // secure: import.meta.env.VITE_NODE_ENV === 'production',
     });
 
     const response: ApiResponse<SignInResponse> = {

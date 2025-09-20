@@ -46,6 +46,7 @@
   #center-container {
     height: 100%;
     aspect-ratio: 1;
+    /* z-index: 10; */
   }
 
   #left-panel {
@@ -53,6 +54,7 @@
     flex-direction: column;
     height: 100%;
     min-width: calc(var(--block-size) * 5 + 4px);
+    /* z-index: 0; */
   }
 
   #right-panel {
@@ -60,5 +62,6 @@
     flex-direction: column;
     height: 100%;
     min-width: calc(var(--block-size) * 5 + 4px);
+    /* z-index: 0; */
   }
 </style>

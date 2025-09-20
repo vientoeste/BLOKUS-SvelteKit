@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "command": "npm run dev",
+            "command": "node --env-file=.env server.js",
             "name": "dev",
             "request": "launch",
             "type": "node-terminal"

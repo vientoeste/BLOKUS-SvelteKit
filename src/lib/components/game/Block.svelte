@@ -56,6 +56,7 @@
     element.style.opacity = "0.4";
 
     const blockElement = event.target;
+    console.log(blockElement);
     if (blockElement === null) {
       // [TODO] I've never reached this line, but debug will be needed when this line executed during actual game
       console.error("blockelement is null");
