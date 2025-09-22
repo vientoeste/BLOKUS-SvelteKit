@@ -3,8 +3,11 @@
 </script>
 
 <div id="participants">
-  {#each $participantStore as participant}
+  {#each $participantStore as participant, i}
     {#if participant !== undefined}
+      {#if i > 0}
+        <hr />
+      {/if}
       <div class="participant-container">
         <div class="profile-pic-container">
           <!-- [TODO] add actual content -->
