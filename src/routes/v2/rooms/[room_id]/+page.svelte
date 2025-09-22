@@ -1,6 +1,5 @@
 <script lang="ts">
   import { GameClientFactory, GameManager } from "$lib/client/game";
-  import { BoardStateManager } from "$lib/client/game/state";
   import BlocksContainer from "$lib/components/game/BlocksContainer.svelte";
   import Board from "$lib/components/game/Board.svelte";
   import Participants from "$lib/components/game/Participants.svelte";
