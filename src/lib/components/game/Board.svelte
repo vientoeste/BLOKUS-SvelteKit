@@ -9,7 +9,7 @@
   import ColorMatrixRenderer from "./ColorMatrixRenderer.svelte";
 
   let { submitMove } = $props();
-  let boardElement: HTMLElement;
+  let boardElement: HTMLElement | null = $state(null);
 
   const getPosition = ({
     x,
