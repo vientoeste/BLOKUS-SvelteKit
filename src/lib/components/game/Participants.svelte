@@ -89,6 +89,9 @@
   .player-name-container {
     padding-top: 8px;
     font-size: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
   }
 
   .player-win-rate-container {
