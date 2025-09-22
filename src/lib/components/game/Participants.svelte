@@ -44,7 +44,7 @@
 
 <style>
   #participants {
-    min-width: 296px;
+    width: 100%;
     height: fit-content;
     padding: 10px;
     background-color: black;
