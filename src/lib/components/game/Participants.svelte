@@ -76,15 +76,15 @@
 
   .player-info-container {
     height: 100%;
-    width: 180px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    flex: 1;
   }
 
   .player-name-container {
     padding-top: 8px;
     font-size: 20px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
   }
 
   .player-win-rate-container {
