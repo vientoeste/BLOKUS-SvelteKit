@@ -53,6 +53,7 @@
 
   .profile-pic-container {
     height: 100%;
+    aspect-ratio: 1;
     padding: 8px;
     align-items: center;
   }
