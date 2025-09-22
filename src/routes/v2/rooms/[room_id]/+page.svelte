@@ -10,6 +10,7 @@
   import Alert from "$lib/components/Alert.svelte";
   import { goto } from "$app/navigation";
   import type { Block, PlayerIdx, SlotIdx } from "$types";
+  import BlocksFilter from "$lib/components/game/BlocksFilter.svelte";
 
   const { data }: { data: PageData } = $props();
   const { room, playerIdx, roomCache, moves } = data;
@@ -109,6 +110,7 @@
 
   {#snippet right()}
     <div id="right-container">
+      <BlocksFilter />
       <BlocksContainer />
     </div>
   {/snippet}
@@ -116,6 +118,8 @@
 
 <style>
   #right-container {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     height: 100%;
     min-width: calc(var(--block-size) * 5 + 4px);
