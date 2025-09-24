@@ -207,3 +207,12 @@ export const gamePhaseStore = (() => {
     get: () => get(store),
   };
 })();
+
+export const { clientSlotStore, clientSlotStoreWriter, getClientSlots } = (() => {
+  const { set, subscribe, update } = writable<SlotIdx[]>([]);
+  return {
+    clientSlotStore: { subscribe },
+    clientSlotStoreWriter: { update, set },
+    getClientSlots: () => get({ subscribe }),
+  };
+})();
