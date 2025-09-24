@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { clientSlotStore } from "$lib/store";
+  import { colorMapper } from "$lib/utils";
 </script>
 
 <div id="filter-container">
@@ -43,15 +45,13 @@
       </div>
     </div>
     <div class="filter-options-wrapper">
-      <!-- [TODO] set colors by game state(slots)  -->
-      <div class="filter-option">
-        <input type="checkbox" id="color-1" />
-        <label for="color-1">color1</label>
-      </div>
-      <div class="filter-option">
-        <input type="checkbox" id="color-2" />
-        <label for="color-2">color2</label>
-      </div>
+      {#each $clientSlotStore as slotIdx}
+        {@const color = colorMapper(slotIdx).toLowerCase()}
+        <div class="filter-option">
+          <input type="checkbox" id="color-{color}" />
+          <label for="color-{color}">{color}</label>
+        </div>
+      {/each}
     </div>
   </div>
 </div>
