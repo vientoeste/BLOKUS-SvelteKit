@@ -225,6 +225,15 @@ export const gamePhaseStore = (() => {
   };
 })();
 
+export const { clientSlotStore, clientSlotStoreWriter, getClientSlots } = (() => {
+  const { set, subscribe, update } = writable<SlotIdx[]>([]);
+  return {
+    clientSlotStore: { subscribe },
+    clientSlotStoreWriter: { update, set },
+    getClientSlots: () => get({ subscribe }),
+  };
+})();
+
 /**
  * @description A store for window's inner height.
  * It should be managed by scripts like 

@@ -1,11 +1,10 @@
-import { participantStore } from "$lib/store";
+import { clientSlotStoreWriter, getClientSlots, participantStore } from "$lib/store";
 import type { ParticipantInf, PlayerIdx, SlotIdx } from "$types";
 import { get } from "svelte/store";
 import { getPlayersSlot } from "$lib/utils";
 
 export class PlayerStateManager {
   private clientPlayerIdx: PlayerIdx;
-  private clientSlotIndices: SlotIdx[] | undefined = undefined;
 
   constructor({
     players,
@@ -50,13 +49,11 @@ export class PlayerStateManager {
     const clientSlots = getPlayersSlot({
       players, playerIdx: this.clientPlayerIdx,
     });
-    this.clientSlotIndices = clientSlots;
+    clientSlotStoreWriter.set(clientSlots);
   }
 
   getClientSlots(): SlotIdx[] {
-    const slots = this.clientSlotIndices;
-    // [TODO] check this error throwing is necessary: could the length of slot be 0?
-    if (slots === undefined) throw new Error('slot is not initialized');
+    const slots = getClientSlots();
     return [...slots];
   }
 
