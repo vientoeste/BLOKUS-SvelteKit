@@ -1,6 +1,12 @@
 <script lang="ts">
+  import { createFilter } from "$lib/filter.svelte";
   import { clientSlotStore } from "$lib/store";
   import { colorMapper } from "$lib/utils";
+  import type { SlotIdx } from "$types";
+
+  let colorFilter: ReturnType<typeof createFilter<SlotIdx>> = createFilter(
+    () => $clientSlotStore,
+  );
 </script>
 
 <div id="filter-container">
@@ -40,7 +46,13 @@
   <div id="color-filter-group" class="filter-group">
     <div class="filter-select-all">
       <div class="filter-option">
-        <input type="checkbox" id="color-select-all" />
+        <input
+          type="checkbox"
+          id="color-select-all"
+          onclick={colorFilter.toggleAll}
+          checked={colorFilter.allSelected}
+          indeterminate={colorFilter.indeterminate}
+        />
         <label for="color-select-all">Select All</label>
       </div>
     </div>
@@ -48,7 +60,12 @@
       {#each $clientSlotStore as slotIdx}
         {@const color = colorMapper(slotIdx).toLowerCase()}
         <div class="filter-option">
-          <input type="checkbox" id="color-{color}" />
+          <input
+            type="checkbox"
+            id="color-{color}"
+            onchange={() => colorFilter.toggleItem(slotIdx)}
+            checked={colorFilter.selected.includes(slotIdx)}
+          />
           <label for="color-{color}">{color}</label>
         </div>
       {/each}
