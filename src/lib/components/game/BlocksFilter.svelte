@@ -4,6 +4,12 @@
   import { colorMapper } from "$lib/utils";
   import type { SlotIdx } from "$types";
 
+  // [TODO] disable empty filters
+  const quantities = [5, 4, 3, 2, 1];
+
+  let quantityFilter: ReturnType<typeof createFilter<number>> = createFilter(
+    () => quantities,
+  );
   let colorFilter: ReturnType<typeof createFilter<SlotIdx>> = createFilter(
     () => $clientSlotStore,
   );
@@ -13,31 +19,28 @@
   <div id="quantity-filter-group" class="filter-group">
     <div class="filter-select-all">
       <div class="filter-option">
-        <input type="checkbox" id="quantity-select-all" />
+        <input
+          type="checkbox"
+          id="quantity-select-all"
+          onclick={quantityFilter.toggleAll}
+          checked={quantityFilter.allSelected}
+          indeterminate={quantityFilter.indeterminate}
+        />
         <label for="quantity-select-all">Select All</label>
       </div>
     </div>
     <div class="filter-options-wrapper">
-      <div class="filter-option">
-        <input type="checkbox" id="quantity-5" />
-        <label for="quantity-5">5</label>
-      </div>
-      <div class="filter-option">
-        <input type="checkbox" id="quantity-4" />
-        <label for="quantity-4">4</label>
-      </div>
-      <div class="filter-option">
-        <input type="checkbox" id="quantity-3" />
-        <label for="quantity-3">3</label>
-      </div>
-      <div class="filter-option">
-        <input type="checkbox" id="quantity-2" />
-        <label for="quantity-2">2</label>
-      </div>
-      <div class="filter-option">
-        <input type="checkbox" id="quantity-1" />
-        <label for="quantity-1">1</label>
-      </div>
+      {#each quantities as quantity}
+        <div class="filter-option">
+          <input
+            type="checkbox"
+            id="quantity-{quantity}"
+            onchange={() => quantityFilter.toggleItem(quantity)}
+            checked={quantityFilter.selected.includes(quantity)}
+          />
+          <label for="quantity-{quantity}">{quantity}</label>
+        </div>
+      {/each}
     </div>
   </div>
 
