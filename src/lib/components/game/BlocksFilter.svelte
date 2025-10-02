@@ -1,18 +1,20 @@
 <script lang="ts">
-  import { createFilter } from "$lib/filter.svelte";
-  import { clientSlotStore } from "$lib/store";
+  import { colorFilter, quantityFilter } from "$lib/filter";
   import { colorMapper } from "$lib/utils";
-  import type { SlotIdx } from "$types";
 
-  // [TODO] disable empty filters
-  const quantities = [5, 4, 3, 2, 1];
+  const {
+    allSelected: allQuantitiesSelected,
+    indeterminate: indeterminateQuantity,
+    selected: selectedQuantities,
+    items: quantities,
+  } = quantityFilter;
 
-  let quantityFilter: ReturnType<typeof createFilter<number>> = createFilter(
-    () => quantities,
-  );
-  let colorFilter: ReturnType<typeof createFilter<SlotIdx>> = createFilter(
-    () => $clientSlotStore,
-  );
+  const {
+    allSelected: allColorsSelected,
+    indeterminate: indeterminateColor,
+    selected: selectedColors,
+    items: colors,
+  } = colorFilter;
 </script>
 
 <div id="filter-container">
@@ -23,20 +25,20 @@
           type="checkbox"
           id="quantity-select-all"
           onclick={quantityFilter.toggleAll}
-          checked={quantityFilter.allSelected}
-          indeterminate={quantityFilter.indeterminate}
+          checked={$allQuantitiesSelected}
+          indeterminate={$indeterminateQuantity}
         />
         <label for="quantity-select-all">Select All</label>
       </div>
     </div>
     <div class="filter-options-wrapper">
-      {#each quantities as quantity}
+      {#each $quantities as quantity}
         <div class="filter-option">
           <input
             type="checkbox"
             id="quantity-{quantity}"
             onchange={() => quantityFilter.toggleItem(quantity)}
-            checked={quantityFilter.selected.includes(quantity)}
+            checked={$selectedQuantities.includes(quantity)}
           />
           <label for="quantity-{quantity}">{quantity}</label>
         </div>
@@ -53,21 +55,21 @@
           type="checkbox"
           id="color-select-all"
           onclick={colorFilter.toggleAll}
-          checked={colorFilter.allSelected}
-          indeterminate={colorFilter.indeterminate}
+          checked={$allColorsSelected}
+          indeterminate={$indeterminateColor}
         />
         <label for="color-select-all">Select All</label>
       </div>
     </div>
     <div class="filter-options-wrapper">
-      {#each $clientSlotStore as slotIdx}
+      {#each $colors as slotIdx}
         {@const color = colorMapper(slotIdx).toLowerCase()}
         <div class="filter-option">
           <input
             type="checkbox"
             id="color-{color}"
             onchange={() => colorFilter.toggleItem(slotIdx)}
-            checked={colorFilter.selected.includes(slotIdx)}
+            checked={$selectedColors.includes(slotIdx)}
           />
           <label for="color-{color}">{color}</label>
         </div>
