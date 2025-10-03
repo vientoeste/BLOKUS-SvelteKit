@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { colorFilter, quantityFilter } from "$lib/filter";
+  import { getColorFilter, quantityFilter } from "$lib/filter";
   import { colorMapper } from "$lib/utils";
 
   const {
@@ -14,7 +14,9 @@
     indeterminate: indeterminateColor,
     selected: selectedColors,
     items: colors,
-  } = colorFilter;
+    toggleAll: toggleAllColors,
+    toggleItem: toggleColor,
+  } = getColorFilter();
 </script>
 
 <div id="filter-container">
@@ -54,7 +56,7 @@
         <input
           type="checkbox"
           id="color-select-all"
-          onclick={colorFilter.toggleAll}
+          onclick={toggleAllColors}
           checked={$allColorsSelected}
           indeterminate={$indeterminateColor}
         />
@@ -68,7 +70,7 @@
           <input
             type="checkbox"
             id="color-{color}"
-            onchange={() => colorFilter.toggleItem(slotIdx)}
+            onchange={() => toggleColor(slotIdx)}
             checked={$selectedColors.includes(slotIdx)}
           />
           <label for="color-{color}">{color}</label>
