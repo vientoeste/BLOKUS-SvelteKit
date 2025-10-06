@@ -1,12 +1,10 @@
 <script lang="ts">
   import { unusedBlockStore } from "$lib/store";
   import Block from "./Block.svelte";
-
-  let rerenderer = $state(0);
 </script>
 
 <div id="blocks-container">
-  {#key rerenderer}
+  <div id="blocks">
     {#each $unusedBlockStore as block (block.slotIdx + block.blockType)}
       <Block
         blockType={block.blockType}
@@ -16,7 +14,7 @@
         placeable={block.placeable}
       />
     {/each}
-  {/key}
+  </div>
 </div>
 
 <style>
