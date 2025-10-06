@@ -19,12 +19,24 @@
 
 <style>
   #blocks-container {
-    width: 300px;
-    min-width: 296px;
-    height: 100%;
-    overflow-y: scroll;
+    width: 100%;
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: var(--yellow);
+    min-height: 0;
+  }
+
+  #blocks {
+    background-color: var(--background);
     gap: 5px;
+    padding: 5px;
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
+    min-height: 0;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 </style>
