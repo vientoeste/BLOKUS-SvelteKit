@@ -53,13 +53,13 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    min-width: calc(var(--block-size) * 5 + 4px);
+    width: calc((var(--block-size) + 4px) * 5 + 30px);
   }
 
   #right-panel {
     display: flex;
     flex-direction: column;
     height: 100%;
-    min-width: calc(var(--block-size) * 5 + 4px);
+    width: calc((var(--block-size) + 4px) * 5 + 30px);
   }
 </style>
