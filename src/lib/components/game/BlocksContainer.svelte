@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { unusedBlockStore } from "$lib/store";
+  import { filteredBlockStore } from "$lib/store";
   import Block from "./Block.svelte";
 </script>
 
 <div id="blocks-container">
   <div id="blocks">
-    {#each $unusedBlockStore as block (block.slotIdx + block.blockType)}
+    {#each $filteredBlockStore as block (block.slotIdx + block.blockType)}
       <Block
         blockType={block.blockType}
         slotIdx={block.slotIdx}
