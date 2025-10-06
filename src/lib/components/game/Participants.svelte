@@ -101,8 +101,4 @@
   .player-rating-container {
     font-size: 8px;
   }
-
-  .participant-container + .participant-container {
-    margin-top: 1px;
-  }
 </style>
