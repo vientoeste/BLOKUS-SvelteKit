@@ -41,6 +41,7 @@
     justify-content: center;
     align-items: center;
     height: calc((var(--block-size) + 4px) * 20 - 19px);
+    gap: 16px;
   }
 
   #center-container {
