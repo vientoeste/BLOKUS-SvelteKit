@@ -50,7 +50,7 @@
     width: 100%;
     height: fit-content;
     padding: 10px;
-    background-color: black;
+    background-color: var(--blue);
     border-radius: 10px;
   }
 
