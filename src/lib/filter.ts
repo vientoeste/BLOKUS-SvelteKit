@@ -57,7 +57,7 @@ export const createFilter = <T>(itemStore: Readable<T[]>) => {
     if (get(allSelected)) {
       selected.set([]);
     } else {
-      selected.set(get(items));
+      selected.set([...get(items)]);
     }
   };
 
