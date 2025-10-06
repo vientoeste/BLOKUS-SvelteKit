@@ -269,3 +269,5 @@ export const colorMapper = (raw: RawColor): ColorValue => {
   if (raw === 3) return "GREEN";
   return "NONE";
 };
+
+export const getBlockSize = (blockType: BlockType) => parseInt(blockType[0]);
