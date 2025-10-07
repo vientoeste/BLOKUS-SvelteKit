@@ -30,7 +30,7 @@ import { derived, get, writable, type Readable } from "svelte/store";
  * - `toggleAll`: Function to toggle selection of all items for props `onclick` of checkbox `select all`.
  */
 export const createFilter = <T>(itemStore: Readable<T[]>) => {
-  const selected = writable(get(itemStore));
+  const selected = writable([...get(itemStore)]);
   const items = derived(itemStore, (s) => s);
   itemStore.subscribe((store) => {
     selected.set([...store]);
