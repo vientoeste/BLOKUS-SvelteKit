@@ -90,11 +90,7 @@
 
 <TriplePanelLayout>
   <div>
-    <Board
-      submitMove={() => {
-        // [TODO] call GameManager.submitMove here
-      }}
-    />
+    <Board {submitMove} />
   </div>
 
   {#snippet left()}
