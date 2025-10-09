@@ -11,6 +11,7 @@
   import { goto } from "$app/navigation";
   import type { Block, PlayerIdx, SlotIdx } from "$types";
   import BlocksFilter from "$lib/components/game/BlocksFilter.svelte";
+  import PregameOverlay from "$lib/components/game/PregameOverlay.svelte";
 
   const { data }: { data: PageData } = $props();
   const { room, playerIdx, roomCache, moves } = data;
@@ -89,8 +90,9 @@
 </script>
 
 <TriplePanelLayout>
-  <div>
+  <div style="position: relative;">
     <Board {submitMove} />
+    <PregameOverlay />
   </div>
 
   {#snippet left()}
