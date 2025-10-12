@@ -89,10 +89,8 @@
 {#if $movePreviewShadowStore && boardElement}
   <div
     id="block-preview-shadow"
-    style:top="{$movePreviewShadowStore.position[0] * ($blockSizeStore + 3) +
-      boardElement.getBoundingClientRect().top}px"
-    style:left="{$movePreviewShadowStore.position[1] * ($blockSizeStore + 3) +
-      boardElement.getBoundingClientRect().left}px"
+    style:top="{$movePreviewShadowStore.position[0] * ($blockSizeStore + 3)}px"
+    style:left="{$movePreviewShadowStore.position[1] * ($blockSizeStore + 3)}px"
   >
     <ColorMatrixRenderer
       id="block-preview-matrix"
