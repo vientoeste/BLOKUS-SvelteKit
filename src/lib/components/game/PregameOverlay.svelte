@@ -1,13 +1,15 @@
 <script lang="ts">
-  import { blockSizeStore } from "$lib/store";
+  import { blockSizeStore, gamePhaseStore } from "$lib/store";
 </script>
 
-<div
-  class="pregame-overlay-container"
-  style:width="{($blockSizeStore + 3) * 20 + 1}px"
->
-  <!-- [TODO] add ready/unready buttons and start button here -->
-</div>
+{#if $gamePhaseStore === "NOT_STARTED"}
+  <div
+    class="pregame-overlay-container"
+    style:width="{($blockSizeStore + 3) * 20 + 1}px"
+  >
+    <!-- [TODO] add ready/unready buttons and start button here -->
+  </div>
+{/if}
 
 <style>
   .pregame-overlay-container {
