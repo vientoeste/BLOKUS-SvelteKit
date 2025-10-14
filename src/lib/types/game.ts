@@ -50,3 +50,7 @@ export type Chat = {
   content: string;
   timestamp: Date;
 };
+
+export type ChatMessageViewModel = Chat & {
+  isSenderChanged: boolean;
+}
