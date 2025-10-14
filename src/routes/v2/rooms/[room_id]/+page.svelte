@@ -12,6 +12,7 @@
   import type { Block, PlayerIdx, SlotIdx } from "$types";
   import BlocksFilter from "$lib/components/game/BlocksFilter.svelte";
   import PregameOverlay from "$lib/components/game/PregameOverlay.svelte";
+  import ChatContainer from "$lib/components/game/chat/Container.svelte";
 
   const { data }: { data: PageData } = $props();
   const { room, playerIdx, roomCache, moves } = data;
@@ -97,12 +98,8 @@
 
   {#snippet left()}
     <div id="left-container">
-      <div id="participant-container">
-        <Participants />
-      </div>
-      <div id="tmp-container">
-        <!-- [TODO] add component -->
-      </div>
+      <Participants />
+      <ChatContainer />
     </div>
   {/snippet}
 
