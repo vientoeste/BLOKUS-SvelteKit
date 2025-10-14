@@ -88,6 +88,14 @@
   const startGame = () => {
     gameManager?.startGame();
   };
+
+  const ready = () => {
+    gameManager?.submitReady();
+  };
+
+  const unready = () => {
+    gameManager?.submitCancelReady();
+  };
 </script>
 
 <TriplePanelLayout>
