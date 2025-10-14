@@ -1,5 +1,5 @@
 import { preset } from '$lib/game/core';
-import { type ParticipantInf, type BlockType, type PlayerIdx, type Rotation, type SlotIdx, type UserInfo, type BoardMatrix } from '$types';
+import { type ParticipantInf, type BlockType, type PlayerIdx, type Rotation, type SlotIdx, type UserInfo, type BoardMatrix, type Chat } from '$types';
 import { getBlockSize, type Undefinedable } from '$lib/utils';
 import { derived, get, writable } from 'svelte/store';
 import type { Phase } from './client/game/state/game';
@@ -248,3 +248,5 @@ export const filteredBlockStore = derived(
   [blockStore, quantityFilter.selected, getColorFilter().selected],
   ([$blockStore, $quantityFilter, $colorFilter]) => $blockStore.filter((block) => $colorFilter.includes(block.slotIdx) && $quantityFilter.includes(getBlockSize(block.blockType)))
 );
+
+export const chatStore = writable<Chat[]>([]);

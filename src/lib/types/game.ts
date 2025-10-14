@@ -42,3 +42,11 @@ export type GameClientContext = {
   playerIdx: PlayerIdx;
   players: (ParticipantInf | undefined)[];
 };
+
+export type Chat = {
+  id: string;
+  isSystemMessage: boolean;
+  publisher: string;
+  content: string;
+  timestamp: Date;
+};
