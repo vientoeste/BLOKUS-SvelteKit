@@ -9,7 +9,9 @@
     {#if message.isSenderChanged}
       {`${message.publisher}: ${message.content}`}:
     {:else}
-      {message.content}
+      <span>
+        {message.content}
+      </span>
     {/if}
   </p>
 </div>
@@ -27,6 +29,10 @@
     white-space: normal;
   }
 
+  .chat span {
+    padding-left: 4px;
+  }
+
   .player-chat {
     padding: 2px;
     background-color: #d9d9d9;
@@ -40,9 +46,5 @@
     color: #fff;
     font-size: 16px;
     justify-content: center;
-  }
-
-  .chat-content {
-    padding-left: 4px;
   }
 </style>
