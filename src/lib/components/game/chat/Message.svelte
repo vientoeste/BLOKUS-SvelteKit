@@ -5,10 +5,13 @@
 </script>
 
 <div class="chat {message.isSystemMessage ? 'system-chat' : 'player-chat'}">
-  {#if message.isSenderChanged}
-    <div class="chat-publisher">{message.publisher}:</div>
-  {/if}
-  <div class="chat-content">{message.content}</div>
+  <p>
+    {#if message.isSenderChanged}
+      {`${message.publisher}: ${message.content}`}:
+    {:else}
+      {message.content}
+    {/if}
+  </p>
 </div>
 
 <style>
@@ -17,6 +20,11 @@
     flex-direction: row;
     width: 100%;
     padding-left: 2px;
+  }
+
+  .chat p {
+    width: 100%;
+    white-space: normal;
   }
 
   .player-chat {
