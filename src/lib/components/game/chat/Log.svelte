@@ -19,14 +19,15 @@
 <style>
   #chat-log-container {
     flex: 1;
-    height: 100%;
     padding: 10px;
     border-radius: 10px;
     background-color: var(--green);
+    min-height: 0;
   }
 
   #chat-log {
-    height: 100%;
+    max-height: 100%;
     background-color: #d9d9d9;
+    overflow-y: auto;
   }
 </style>
