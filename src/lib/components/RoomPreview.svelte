@@ -40,7 +40,7 @@
       clearLocalStorageAuthStatus(localStorage);
     }
     if (type === "success") {
-      goto(`rooms/${id}`);
+      goto(`/v2/rooms/${id}`);
     }
   }}
 >
