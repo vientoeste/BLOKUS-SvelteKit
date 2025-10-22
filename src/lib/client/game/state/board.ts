@@ -68,7 +68,7 @@ export class BoardStateManager {
           }
         });
       });
-      return board;
+      return [...board.map(r => [...r])];
     });
   }
 }
