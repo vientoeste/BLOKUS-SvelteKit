@@ -24,7 +24,7 @@
         message: error.replace(/\_/g, " "),
       });
     }
-    const rawResponse = await fetch("api/rooms", {
+    const rawResponse = await fetch("/api/rooms", {
       credentials: "same-origin",
     });
     const response = parseJson<ApiResponse<FetchRoomPreviewsResponse>>(
