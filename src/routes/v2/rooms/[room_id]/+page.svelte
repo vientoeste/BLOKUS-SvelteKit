@@ -85,9 +85,12 @@
     gameManager?.submitMove(param);
   };
 
-  const startGame = () => {
-    gameManager?.startGame();
-  };
+  const startGame =
+    playerIdx === 0
+      ? () => {
+          gameManager?.startGame();
+        }
+      : undefined;
 
   const ready = () => {
     gameManager?.submitReady();
@@ -101,7 +104,7 @@
 <TriplePanelLayout>
   <div style="position: relative;">
     <Board {submitMove} />
-    <PregameOverlay />
+    <PregameOverlay {ready} {unready} {startGame} />
   </div>
 
   {#snippet left()}

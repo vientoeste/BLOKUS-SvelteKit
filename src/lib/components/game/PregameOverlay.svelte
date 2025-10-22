@@ -1,5 +1,15 @@
 <script lang="ts">
   import { blockSizeStore, gamePhaseStore } from "$lib/store";
+
+  let {
+    startGame,
+    ready,
+    unready,
+  }: {
+    startGame: undefined | (() => void);
+    ready: () => void;
+    unready: () => void;
+  } = $props();
 </script>
 
 {#if $gamePhaseStore === "NOT_STARTED"}
@@ -7,7 +17,17 @@
     class="pregame-overlay-container"
     style:width="{($blockSizeStore + 3) * 20 + 1}px"
   >
-    <!-- [TODO] add ready/unready buttons and start button here -->
+    <div id="start-game-button-container">
+      {#if startGame !== undefined}
+        <button onclick={startGame}>start</button>
+      {/if}
+    </div>
+    <div id="ready-button-container">
+      <button onclick={ready}>ready</button>
+    </div>
+    <div id="unready-button-container">
+      <button onclick={unready}>cancel</button>
+    </div>
   </div>
 {/if}
 
