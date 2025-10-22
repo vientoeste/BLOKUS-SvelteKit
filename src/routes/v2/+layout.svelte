@@ -12,4 +12,5 @@
 
 <svelte:window bind:innerHeight={$innerHeightStore} />
 
+<Modal />
 {@render children()}
