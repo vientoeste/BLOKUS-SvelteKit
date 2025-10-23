@@ -2,6 +2,7 @@
   import { innerHeightStore } from "$lib/store";
   import type { Snippet } from "svelte";
   import "../../app.css";
+  import Modal from "$lib/components/Modal.svelte";
 
   let {
     children,
