@@ -246,7 +246,7 @@ export const blockSizeStore = derived(innerHeightStore, (size) => Math.floor((si
 
 export const filteredBlockStore = derived(
   [blockStore, quantityFilter.selected, getColorFilter().selected],
-  ([$blockStore, $quantityFilter, $colorFilter]) => $blockStore.filter((block) => $colorFilter.includes(block.slotIdx) && $quantityFilter.includes(getBlockSize(block.blockType)))
+  ([$blockStore, $quantityFilter, $colorFilter]) => $blockStore.filter((block) => !block.isPlaced && $colorFilter.includes(block.slotIdx) && $quantityFilter.includes(getBlockSize(block.blockType)))
 );
 
 export const chatStore = writable<Chat[]>([]);
