@@ -52,8 +52,7 @@
 
     event.dataTransfer.effectAllowed = "move";
 
-    const element = event.target as HTMLElement;
-    element.style.opacity = "0.4";
+    isDragging = true;
 
     const blockElement = event.target;
     if (blockElement === null) {
@@ -70,14 +69,17 @@
   };
 
   function handleDragEnd(event: DragEvent) {
-    const element = event.target as HTMLElement;
-    element.style.opacity = "1";
+    isDragging = false;
     // [TODO] clear highlightedCells
   }
+
+  let isDragging = $state(false);
 </script>
 
 <div
-  class="block"
+  class="block {placeable ? 'placeable' : 'unplaceable'} {isDragging
+    ? 'dragging'
+    : ''}"
   ondragstart={handleDragStart}
   ondragend={handleDragEnd}
   draggable="true"
@@ -88,3 +90,17 @@
   <ColorMatrixRenderer id={`block-${blockType}`} matrix={blockMatrix}
   ></ColorMatrixRenderer>
 </div>
+
+<style>
+  .placeable {
+    opacity: 1;
+  }
+
+  .unplaceable {
+    opacity: 0.2;
+  }
+
+  .dragging {
+    opacity: 0.4;
+  }
+</style>
