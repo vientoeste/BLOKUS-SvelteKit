@@ -48,7 +48,11 @@
         throw new Error("missing blockInfo");
       }
 
-      // [TODO] add submitMove function that covers GameManager.submitMove
+      submitMove({
+        position,
+        blockInfo: { type, rotation, flip },
+        slotIdx,
+      });
     } catch (error) {
       console.error("DnD(drop):", error);
     }
