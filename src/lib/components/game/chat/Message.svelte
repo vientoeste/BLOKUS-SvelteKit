@@ -41,7 +41,6 @@
   }
 
   .system-chat {
-    padding: 2px;
     background-color: #989898;
     color: #fff;
     font-size: 16px;
