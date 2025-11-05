@@ -25,6 +25,8 @@ import {
 } from "./state";
 import type { Phase } from "./state/game";
 import { AlertManager, ConfirmManager, InputManager } from "./ui";
+import { TimerStateManager } from "./state/timer";
+import { Vsync } from "$lib/vsync";
 
 export class GameManager {
   private eventBus: EventBus;
@@ -96,6 +98,8 @@ export class GameClientFactory {
   }) {
     const eventBus = new EventBus();
 
+    const vsync = Vsync.getInstance();
+
     const blockStateManager = new BlockStateManager();
     const boardStateManager = new BoardStateManager();
     const gameStateManager = new GameStateManager();
@@ -113,9 +117,10 @@ export class GameClientFactory {
       moveStateManager,
       slotStateManager,
     });
+    const timerStateManager = new TimerStateManager();
 
     const turnSequencer = new TurnSequencer();
-    const turnTimer = new PlayerTurnTimer({ eventBus });
+    const turnTimer = new PlayerTurnTimer({ eventBus, timerStateManager, vsync });
 
     const messageDispatcher = new WebSocketMessageDispatcher(webSocket);
     const messageReceiver = new WebSocketMessageReceiver({
