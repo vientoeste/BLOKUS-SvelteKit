@@ -250,3 +250,8 @@ export const filteredBlockStore = derived(
 );
 
 export const chatStore = writable<Chat[]>([]);
+
+/**
+ * @description Progression of the turn timer, represented by 0.00 ~ 1.00.
+ */
+export const turnTimerProgress = writable<number>(0);
