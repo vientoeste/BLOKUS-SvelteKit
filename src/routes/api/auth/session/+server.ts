@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import type { ApiResponse, SignInResponse } from '$types';
 import { signIn, signOut } from '$lib/auth';
 import { CustomError } from '$lib/error';
-import { handleApiError } from '$lib/utils';
+import { handleApiError } from '$lib/server/utils';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
   try {

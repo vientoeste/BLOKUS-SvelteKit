@@ -1,7 +1,7 @@
 import { validateSessionCookie } from "$lib/auth";
 import { addUserToRoomCache } from "$lib/database/room";
 import { CustomError } from "$lib/error";
-import { handleApiError } from "$lib/utils";
+import { handleApiError } from "$lib/server/utils";
 import type { ApiResponse, PlayerIdx } from "$types";
 import { json, type RequestHandler } from "@sveltejs/kit";
 

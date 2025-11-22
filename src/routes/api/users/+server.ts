@@ -4,7 +4,7 @@ import { signUp, validateSessionCookie } from '$lib/auth';
 import { deleteUserInfo, updateUserInfo } from '$lib/database/user';
 import { CustomError } from '$lib/error';
 import type { ApiResponse, CreateUserResponse } from '$types';
-import { handleApiError } from '$lib/utils';
+import { handleApiError } from '$lib/server/utils';
 
 export const POST: RequestHandler = async ({ request }) => {
   const data = await request.formData();
