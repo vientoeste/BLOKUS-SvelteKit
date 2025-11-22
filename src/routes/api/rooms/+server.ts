@@ -4,7 +4,7 @@ import type { RequestHandler } from "./$types";
 import { validateSessionCookie } from "$lib/auth";
 import type { ApiResponse, CreateRoomRequestDTO, CreateRoomResponse, FetchRoomPreviewsResponse } from "$types";
 import { createRoom, getRoomsFromLastObj } from "$lib/room";
-import { handleApiError } from "$lib/utils";
+import { handleApiError } from "$lib/server/utils";
 
 export const GET: RequestHandler = async ({ url, cookies }) => {
   try {
