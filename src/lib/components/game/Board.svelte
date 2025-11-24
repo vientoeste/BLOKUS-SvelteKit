@@ -38,7 +38,6 @@
     event.preventDefault();
 
     const position = getPosition({ x: event.clientX, y: event.clientY });
-    console.log(position);
     dragPositionOffsetStore.set([0, 0]);
 
     try {

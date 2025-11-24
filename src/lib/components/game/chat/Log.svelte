@@ -22,7 +22,6 @@
 
   const scrollToBottom = () => {
     if (chatLogElement) {
-      console.log("scroll to bottom");
       chatLogElement.scrollTo({
         top: chatLogElement.scrollHeight,
         behavior: "smooth",

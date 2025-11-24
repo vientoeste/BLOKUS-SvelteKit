@@ -1,5 +1,4 @@
-import type { ApiResponse, Block, BlockType, BoardMatrix, CellValue, PlayerIdx, RoomCacheInf, Rotation, SlotIdx } from "$types";
-import { json } from "@sveltejs/kit";
+import type { Block, BlockType, BoardMatrix, CellValue, PlayerIdx, RoomCacheInf, Rotation, SlotIdx } from "$types";
 import { CustomError } from "./error";
 import type { RoomCacheEntity } from "./database/redis";
 import type { ColorValue, RawColor } from "$types/client/ui";
@@ -167,29 +166,6 @@ export const parseJson = <T>(str: string): T | string => {
     }
     throw new CustomError('parse failed', 500);
   }
-};
-
-const createApiResponse = {
-  failure: (status: number, message: string): ApiResponse => ({
-    type: 'failure',
-    status,
-    error: { message }
-  })
-};
-
-/**
- * handles catched errors on API
- * @param e catched error object
- * @returns Response object containing ApiResponse
- */
-export const handleApiError = (e: unknown): Response => {
-  console.error(e);
-
-  const response = e instanceof CustomError
-    ? createApiResponse.failure(e.status ?? 500, e.message)
-    : createApiResponse.failure(500, 'internal error');
-
-  return json(response, { status: response.status });
 };
 
 export const extractPlayerCountFromCache_LEGACY = (roomCache: RoomCacheInf) => 1 + (+(roomCache.p1 !== undefined)) + (+(roomCache.p2 !== undefined)) + (+(roomCache.p3 !== undefined));
