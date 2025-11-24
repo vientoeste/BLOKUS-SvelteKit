@@ -47,6 +47,8 @@
       if (type === undefined || rotation === undefined || flip === undefined) {
         throw new Error("missing blockInfo");
       }
+      $moveStore = null;
+      $movePreviewShadowStore = null;
 
       submitMove({
         position,
