@@ -184,6 +184,6 @@ export class GameClientFactory {
 
     const gameManager = new GameManager({ eventBus });
 
-    return { gameManager };
+    return { gameManager, stateLayer };
   }
 }
