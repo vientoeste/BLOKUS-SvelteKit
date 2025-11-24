@@ -81,6 +81,8 @@ export const moveStore = writable<({
   matrix?: RawColor[][];
 }) | null>(null);
 
+export const isDraggingBlock = derived(moveStore, (store) => store !== null);
+
 export const movePreviewStore = writable<string>('');
 
 export const movePreviewShadowStore = writable<{
