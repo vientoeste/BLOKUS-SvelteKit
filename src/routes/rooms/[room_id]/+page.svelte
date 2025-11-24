@@ -9,6 +9,7 @@
   import Players from "$lib/components/Players.svelte";
   import type { Block, BoardMatrix, PlayerIdx, SlotIdx } from "$types";
   import type { PageData } from "./$types";
+  import { createGameContext } from "$lib/client/game/context";
 
   const { data }: { data: PageData } = $props();
   const { room, playerIdx, roomCache, moves } = data;
@@ -17,6 +18,7 @@
 
   let worker: Worker | null = null;
   let gameManager: GameManager;
+  const gameContext = createGameContext();
 
   onDestroy(() => {
     gameStore.set({
@@ -64,7 +66,7 @@
     );
     worker = new workerModule.default();
     const players = [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3];
-    ({ gameManager } = GameClientFactory.create({
+    const { stateLayer } = ({ gameManager } = GameClientFactory.create({
       webWorker: worker,
       webSocket: socket,
 
@@ -73,6 +75,7 @@
         players,
       },
     }));
+    gameContext.initialize({ state: stateLayer, actions: gameManager });
 
     // [TODO] to prevent initializing error, add condition for single player game(prevent to start game)
     if (roomCache.started && roomCache.gameId !== undefined) {
