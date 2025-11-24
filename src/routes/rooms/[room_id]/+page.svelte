@@ -19,6 +19,7 @@
   let worker: Worker | null = null;
   let gameManager: GameManager;
   const gameContext = createGameContext();
+  let isGameInitialized = $state(false);
 
   onDestroy(() => {
     gameStore.set({
@@ -76,6 +77,7 @@
       },
     }));
     gameContext.initialize({ state: stateLayer, actions: gameManager });
+    isGameInitialized = true;
 
     // [TODO] to prevent initializing error, add condition for single player game(prevent to start game)
     if (roomCache.started && roomCache.gameId !== undefined) {
@@ -106,14 +108,16 @@
   };
 </script>
 
-<Players
-  ready={() => {
-    gameManager.submitReady();
-  }}
-  unready={() => {
-    gameManager.submitCancelReady();
-  }}
-></Players>
-<Board {submitMove} />
+{#if isGameInitialized}
+  <Players
+    ready={() => {
+      gameManager.submitReady();
+    }}
+    unready={() => {
+      gameManager.submitCancelReady();
+    }}
+  ></Players>
+  <Board {submitMove} />
 
-<Controller {startGame}></Controller>
+  <Controller {startGame}></Controller>
+{/if}
