@@ -191,14 +191,6 @@ export const participantStore = (() => {
   };
 })();
 
-export const gamePhaseStore = (() => {
-  const store = writable<Phase>();
-  return {
-    ...store,
-    get: () => get(store),
-  };
-})();
-
 export const { clientSlotStore, clientSlotStoreWriter, getClientSlots } = (() => {
   const { set, subscribe, update } = writable<SlotIdx[]>([]);
   return {
