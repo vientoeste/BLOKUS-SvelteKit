@@ -1,5 +1,5 @@
 import type { BlockType, Rotation, SlotIdx } from "$types";
-import { get, writable, type Writable } from "svelte/store";
+import { get, writable, type Readable, type Writable } from "svelte/store";
 
 const preset: Record<
   BlockType,
@@ -195,21 +195,25 @@ const preset: Record<
   ],
 };
 
+interface Block {
+  blockType: BlockType;
+  slotIdx: SlotIdx;
+  isPlaced: boolean;
+  placeable: boolean;
+  rotation: Rotation;
+  flip: boolean;
+}
+
 export class BlockStateManager {
-  private blockStore: Writable<{
-    blockType: BlockType,
-    slotIdx: SlotIdx,
-    isPlaced: boolean,
-    placeable: boolean,
-    rotation: Rotation,
-    flip: boolean,
-  }[]>;
+  private blockStore: Writable<Block[]>;
 
   constructor() {
     this.blockStore = writable([]);
   }
 
-  get blocks() { return { subscribe: this.blockStore.subscribe }; }
+  get blocks(): Readable<Block[]> {
+    return { subscribe: this.blockStore.subscribe };
+  }
 
   initialize(slots: SlotIdx[]) {
     if (slots === undefined) return;

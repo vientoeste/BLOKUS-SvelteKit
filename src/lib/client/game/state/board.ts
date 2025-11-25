@@ -1,6 +1,6 @@
 import { getBlockMatrix, isBlockPlaceableAt } from "$lib/game/core";
 import type { Block, BoardMatrix, SlotIdx } from "$types";
-import { get, writable, type Writable } from "svelte/store";
+import { get, writable, type Readable, type Writable } from "svelte/store";
 
 export class BoardStateManager {
   private _board: Writable<BoardMatrix>;
@@ -10,7 +10,7 @@ export class BoardStateManager {
     this._resetBoard();
   }
 
-  get matrix() {
+  get matrix(): Readable<BoardMatrix> {
     return { subscribe: this._board.subscribe };
   }
 
