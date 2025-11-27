@@ -13,21 +13,25 @@ export type MoveContextVerificationResult = {
 export type Phase = 'NOT_STARTED' | 'IN_PROGRESS' | 'CONFIRMING_SCORE';
 
 export class GameStateManager {
-  private turn: number;
   private gameId: GameId | null;
   private activePlayerCount: 2 | 3 | 4 | undefined;
   private score?: Score;
 
   private _phase: Writable<Phase>;
+  private _turn: Writable<number>;
 
   constructor() {
-    this.turn = -1;
+    this._turn = writable(-1);
     this.gameId = null;
     this._phase = writable('NOT_STARTED');
   }
 
+  get turn(): Readable<number> {
+    return { subscribe: this._turn.subscribe };
+  }
+
   initializeNewGame({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
-    this.turn = 0;
+    this._turn.set(0);
     this.gameId = gameId;
     this.setPhase('IN_PROGRESS');
     this.activePlayerCount = activePlayerCount;
@@ -38,7 +42,7 @@ export class GameStateManager {
   }
 
   reset() {
-    this.turn = -1;
+    this._turn.set(-1);
     this.gameId = null;
     this.setPhase('NOT_STARTED');
   }
@@ -61,7 +65,7 @@ export class GameStateManager {
     if (this.getPhase() !== 'IN_PROGRESS') {
       return { isValid: false, reason: 'game is not started' };
     }
-    if (turn !== this.turn) {
+    if (turn !== this.getCurrentTurn()) {
       return { isValid: false, reason: 'invalid turn' };
     }
     if (!this.gameId) {
@@ -84,7 +88,7 @@ export class GameStateManager {
     phase: Phase;
     activePlayerCount: 2 | 3 | 4;
   }) {
-    this.turn = turn;
+    this._turn.set(turn);
     this.gameId = gameId;
     this.setPhase(phase);
     this.activePlayerCount = activePlayerCount;
@@ -94,12 +98,12 @@ export class GameStateManager {
     if (this.getPhase() !== 'IN_PROGRESS') {
       return -1;
     }
-    this.turn += 1;
-    return this.turn;
+    this._turn.update(turn => turn += 1);
+    return this.getCurrentTurn();
   }
 
   getCurrentTurn() {
-    return this.turn;
+    return get(this._turn);
   }
 
   getActivePlayerCount() {
