@@ -1,6 +1,6 @@
 import type { Score } from "$lib/domain/score";
 import type { GameId, SlotIdx } from "$types";
-import { get, writable, type Readable, type Writable } from "svelte/store";
+import { derived, get, writable, type Readable, type Writable } from "svelte/store";
 
 export type MoveContextVerificationResult = {
   isValid: true;
@@ -19,15 +19,21 @@ export class GameStateManager {
 
   private _phase: Writable<Phase>;
   private _turn: Writable<number>;
+  private _currentSlotIdx: Readable<SlotIdx>;
 
   constructor() {
     this._turn = writable(-1);
     this.gameId = null;
     this._phase = writable('NOT_STARTED');
+    this._currentSlotIdx = derived(this._turn, (store) => store % 4 as SlotIdx);
   }
 
   get turn(): Readable<number> {
     return { subscribe: this._turn.subscribe };
+  }
+
+  get currentSlotIdx() {
+    return this._currentSlotIdx;
   }
 
   initializeNewGame({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
