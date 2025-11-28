@@ -5,8 +5,12 @@ type SlotState = {
   owners: PlayerIdx[];
 }
 
+type TypeSafeSlots = [SlotState, SlotState, SlotState, SlotState];
+
+type Slots = TypeSafeSlots | [];
+
 export class SlotStateManager {
-  private slots: [SlotState, SlotState, SlotState, SlotState] | [];
+  private slots: Slots;
 
   constructor() {
     this.slots = [];
