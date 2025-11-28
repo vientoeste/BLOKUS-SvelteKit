@@ -7,7 +7,6 @@
   import Modal from "$lib/components/Modal.svelte";
   import UserInfo from "$lib/components/UserInfo.svelte";
   import BlocksContainer from "$lib/components/BlocksContainer.svelte";
-  import DebugPanel from "$lib/components/DebugPanel.svelte";
 
   import { getUserInfoFromLocalStorage } from "$lib/utils";
   import { blockStore, gamePhaseStore, userStore } from "$lib/store";
@@ -34,9 +33,6 @@
 <Modal />
 <main class="row-layout">
   <article>
-    {#if process.env.NODE_ENV === "development"}
-      <DebugPanel />
-    {/if}
     {@render children()}
   </article>
   <aside>
