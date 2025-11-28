@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ParticipantInf } from "$types";
-  import { participantStore, userStore } from "$lib/store";
+  import { userStore } from "$lib/store";
+  import { useGame } from "$lib/client/game/context";
 
   let {
     ready,
@@ -9,6 +10,9 @@
     ready: () => void;
     unready: () => void;
   } = $props();
+
+  const { state } = useGame();
+  const participantStore = $state?.player.players;
 </script>
 
 {#snippet player(playerInfo: ParticipantInf | undefined)}

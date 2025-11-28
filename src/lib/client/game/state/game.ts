@@ -1,6 +1,6 @@
 import type { Score } from "$lib/domain/score";
-import { gamePhaseStore } from "$lib/store";
 import type { GameId, SlotIdx } from "$types";
+import { derived, get, writable, type Readable, type Writable } from "svelte/store";
 
 export type MoveContextVerificationResult = {
   isValid: true;
@@ -13,22 +13,53 @@ export type MoveContextVerificationResult = {
 export type Phase = 'NOT_STARTED' | 'IN_PROGRESS' | 'CONFIRMING_SCORE';
 
 export class GameStateManager {
-  private turn: number;
-  private gameId: GameId | null;
-  private activePlayerCount: 2 | 3 | 4 | undefined;
-  private score?: Score;
+  private _phase: Writable<Phase>;
+  private _turn: Writable<number>;
+  private _currentSlotIdx: Readable<SlotIdx>;
+  private _score: Writable<Score | undefined>;
+  private _gameId: Writable<GameId | null>;
+  private _activePlayerCount: Writable<2 | 3 | 4 | undefined>;
 
   constructor() {
-    this.turn = -1;
-    this.gameId = null;
-    this.setPhase('NOT_STARTED');
+    this._turn = writable(-1);
+    this._phase = writable('NOT_STARTED');
+    this._currentSlotIdx = derived(this._turn, (store) => {
+      if (store === -1) return 0;
+      return store % 4 as SlotIdx;
+    });
+    this._score = writable(undefined);
+    this._gameId = writable(null);
+    this._activePlayerCount = writable(undefined);
+  }
+
+  get turn(): Readable<number> {
+    return { subscribe: this._turn.subscribe };
+  }
+
+  get currentSlotIdx() {
+    return this._currentSlotIdx;
+  }
+
+  // Activate this getter if needed.
+  // get score(): Readable<Score | undefined> {
+  //   return { subscribe: this._score.subscribe };
+  // }
+  // get gameId(): Readable<GameId | null> {
+  //   return { subscribe: this._gameId.subscribe };
+  // }
+  // get activePlayerCount(): Readable<2 | 3 | 4 | undefined> {
+  //   return { subscribe: this._activePlayerCount.subscribe };
+  // }
+
+  getCurrentSlotIdx() {
+    return get(this._currentSlotIdx);
   }
 
   initializeNewGame({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
-    this.turn = 0;
-    this.gameId = gameId;
+    this._turn.set(0);
+    this._gameId.set(gameId);
     this.setPhase('IN_PROGRESS');
-    this.activePlayerCount = activePlayerCount;
+    this._activePlayerCount.set(activePlayerCount);
   }
 
   initiateScoreConfirmation() {
@@ -36,9 +67,13 @@ export class GameStateManager {
   }
 
   reset() {
-    this.turn = -1;
-    this.gameId = null;
+    this._turn.set(-1);
+    this._gameId.set(null);
     this.setPhase('NOT_STARTED');
+  }
+
+  getGameId() {
+    return get(this._gameId);
   }
 
   /**
@@ -59,16 +94,17 @@ export class GameStateManager {
     if (this.getPhase() !== 'IN_PROGRESS') {
       return { isValid: false, reason: 'game is not started' };
     }
-    if (turn !== this.turn) {
+    if (turn !== this.getCurrentTurn()) {
       return { isValid: false, reason: 'invalid turn' };
     }
-    if (!this.gameId) {
+    const gameId = this.getGameId();
+    if (!gameId) {
       return { isValid: false, reason: 'gameId is missing' };
     }
-    if (slotIdx !== turn % 4) {
+    if (slotIdx !== this.getCurrentSlotIdx()) {
       return { isValid: false, reason: 'wrong turn: try make move of your other slot' };
     }
-    return { isValid: true, gameId: this.gameId };
+    return { isValid: true, gameId };
   }
 
   restoreGameState({
@@ -82,45 +118,50 @@ export class GameStateManager {
     phase: Phase;
     activePlayerCount: 2 | 3 | 4;
   }) {
-    this.turn = turn;
-    this.gameId = gameId;
+    this._turn.set(turn);
+    this._gameId.set(gameId);
     this.setPhase(phase);
-    this.activePlayerCount = activePlayerCount;
+    this._activePlayerCount.set(activePlayerCount);
   }
 
   advanceTurn() {
     if (this.getPhase() !== 'IN_PROGRESS') {
       return -1;
     }
-    this.turn += 1;
-    return this.turn;
+    this._turn.update(turn => turn += 1);
+    return this.getCurrentTurn();
   }
 
   getCurrentTurn() {
-    return this.turn;
+    return get(this._turn);
   }
 
   getActivePlayerCount() {
-    if (this.activePlayerCount === undefined) {
+    const activePlayerCount = get(this._activePlayerCount);
+    if (activePlayerCount === undefined) {
       // [TODO] request to server for missing infos again
       throw new Error('GameStateManager.activePlayerCount is missing');
     }
-    return this.activePlayerCount;
+    return activePlayerCount;
+  }
+
+  get phase(): Readable<Phase> {
+    return { subscribe: this._phase.subscribe };
   }
 
   getPhase() {
-    return gamePhaseStore.get();
+    return get(this._phase);
   }
 
   setPhase(phase: Phase) {
-    gamePhaseStore.set(phase);
+    this._phase.set(phase);
   }
 
   setScore(score: Score) {
-    this.score = score;
+    this._score.set(score);
   }
 
   getScore() {
-    return this.score;
+    return get(this._score);
   }
 }

@@ -57,6 +57,14 @@ export class GameStateLayer implements
     this.slotStateManager = slotStateManager;
   }
 
+  // ------------------------ Getters for Context API ------------------------
+  get block() { return this.blockStateManager; }
+  get board() { return this.boardStateManager; }
+  get progress() { return this.gameStateManager; }
+  get move() { return this.moveStateManager; }
+  get player() { return this.playerStateManager; }
+  get slot() { return this.slotStateManager; }
+
   // -------------------------- GameLifecycleManager -------------------------
   initializeNewGame(payload: { gameId: GameId; activePlayerCount: 2 | 3 | 4; }): void {
     this.gameStateManager.initializeNewGame(payload);
@@ -109,7 +117,7 @@ export class GameStateLayer implements
           slotIdx: move.slotIdx,
           turn: move.turn,
         });
-        this.blockStateManager.removeBlockFromStore({
+        this.blockStateManager.markAsPlaced({
           blockType: move.blockInfo.type,
           slotIdx: move.slotIdx,
         });
@@ -170,7 +178,7 @@ export class GameStateLayer implements
     const { gameId } = result;
 
     this.boardStateManager.placeBlock(move);
-    this.blockStateManager.removeBlockFromStore({ blockType: blockInfo.type, slotIdx });
+    this.blockStateManager.markAsPlaced({ blockType: blockInfo.type, slotIdx });
     this.moveStateManager.addMoveToHistory({ ...move, gameId, createdAt: new Date(), timeout: false, exhausted: false });
   }
 

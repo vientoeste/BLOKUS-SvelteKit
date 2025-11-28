@@ -1,10 +1,11 @@
-import { clientSlotStoreWriter, getClientSlots, participantStore } from "$lib/store";
 import type { ParticipantInf, PlayerIdx, SlotIdx } from "$types";
-import { get } from "svelte/store";
+import { get, writable, type Readable, type Writable } from "svelte/store";
 import { getPlayersSlot } from "$lib/utils";
 
 export class PlayerStateManager {
-  private clientPlayerIdx: PlayerIdx;
+  private _clientPlayerIdx: Writable<PlayerIdx>;
+  private _participants: Writable<(ParticipantInf | undefined)[]>;
+  private _clientSlots: Writable<SlotIdx[]>;
 
   constructor({
     players,
@@ -13,28 +14,48 @@ export class PlayerStateManager {
     players: (ParticipantInf | undefined)[],
     playerIdx: PlayerIdx;
   }) {
-    this.clientPlayerIdx = playerIdx;
-    participantStore.initialize(players);
+    this._clientPlayerIdx = writable(playerIdx);
+    this._participants = writable(players);
+    this._clientSlots = writable([]);
   }
 
+  get players(): Readable<(ParticipantInf | undefined)[]> {
+    return { subscribe: this._participants.subscribe };
+  }
+
+  get clientPlayerIdx(): Readable<PlayerIdx> {
+    return { subscribe: this._clientPlayerIdx.subscribe };
+  }
+
+  // Activate this getter if needed.
+  // get clientSlots(): Readable<SlotIdx[]> {
+  //   return { subscribe: this._clientSlots.subscribe };
+  // }
+
   getPlayers() {
-    return get(participantStore);
+    return get(this._participants);
   }
 
   addPlayer({ id, playerIdx, username }: ParticipantInf & { playerIdx: PlayerIdx }) {
-    participantStore.addPlayer({
-      id, playerIdx, username, ready: false,
+    this._participants.update(store => {
+      store[playerIdx] = {
+        id, ready: false, username
+      };
+      return store;
     });
   }
 
   removePlayerByIdx(playerIdx: PlayerIdx) {
-    participantStore.removePlayerByIdx(playerIdx);
+    this._participants.update(store => {
+      store[playerIdx] = undefined;
+      return store;
+    });
   }
 
   updateReadyState({ playerIdx, ready }: { playerIdx: PlayerIdx, ready: boolean }) {
-    participantStore.setPlayerReadyState({
-      playerIdx,
-      ready,
+    this._participants.update(store => {
+      if (store[playerIdx] !== undefined) store[playerIdx].ready = ready;
+      return store;
     });
   }
 
@@ -45,19 +66,19 @@ export class PlayerStateManager {
   }
 
   initializeClientSlots() {
-    const players = this.getPlayers();
     const clientSlots = getPlayersSlot({
-      players, playerIdx: this.clientPlayerIdx,
+      players: this.getPlayers(),
+      playerIdx: this.getClientPlayerIdx(),
     });
-    clientSlotStoreWriter.set(clientSlots);
+    this._clientSlots.set(clientSlots);
   }
 
   getClientSlots(): SlotIdx[] {
-    const slots = getClientSlots();
+    const slots = get(this._clientSlots);
     return [...slots];
   }
 
   getClientPlayerIdx() {
-    return this.clientPlayerIdx;
+    return get(this._clientPlayerIdx);
   }
 }

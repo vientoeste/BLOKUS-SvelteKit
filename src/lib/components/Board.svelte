@@ -1,8 +1,9 @@
 <script lang="ts">
   import { getBlockMatrix } from "$lib/game/core";
   import type { Block, BlockMatrix, SlotIdx } from "$types";
-  import { boardStore, dragPositionOffsetStore, moveStore } from "$lib/store";
+  import { dragPositionOffsetStore, moveStore } from "$lib/store";
   import html2canvas from "html2canvas";
+  import { useGame } from "$lib/client/game/context";
 
   const {
     submitMove,
@@ -14,6 +15,9 @@
       slotIdx: SlotIdx;
     }) => void;
   } = $props();
+
+  const { state } = useGame();
+  const boardStore = $state?.board.matrix;
 
   let boardElement: HTMLElement;
 

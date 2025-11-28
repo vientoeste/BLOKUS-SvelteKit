@@ -1,5 +1,5 @@
 import { preset } from '$lib/game/core';
-import { type ParticipantInf, type BlockType, type PlayerIdx, type Rotation, type SlotIdx, type UserInfo, type BoardMatrix } from '$types';
+import { type ParticipantInf, type BlockType, type PlayerIdx, type Rotation, type SlotIdx, type UserInfo } from '$types';
 import type { Undefinedable } from '$lib/utils';
 import { get, writable } from 'svelte/store';
 import type { Phase } from './client/game/state/game';
@@ -50,22 +50,6 @@ const createModalStore = () => {
 
 export const modalStore = createModalStore();
 
-export const gameStore = writable<{
-  turn: number,
-  playerIdx: PlayerIdx,
-  players: ({ id: string, username: string, ready: boolean } | undefined)[],
-  isStarted: boolean,
-  mySlots: SlotIdx[],
-  isEnded: boolean,
-}>({
-  isEnded: false,
-  turn: -1,
-  playerIdx: 0,
-  players: [],
-  isStarted: false,
-  mySlots: [],
-});
-
 /**
  * handles block[0][0]'s center - where center of the block determines the whole block's position on the board
  */
@@ -75,6 +59,7 @@ export const moveStore = writable<({ type: BlockType, rotation: Rotation, flip: 
 
 export const movePreviewStore = writable<string>('');
 
+// [TODO] remove this store with applying refactoring of BlockStateManager & BlocksContainer
 export const blockStore = (() => {
   const { set, subscribe, update } = writable<{
     blockType: BlockType,
@@ -134,85 +119,5 @@ export const blockStore = (() => {
   return {
     set, subscribe, update,
     initialize, getBlocksBySlot, getUnusedBlocks, getUnusedBlocksBySlot, getAvailableBlocks, getAvailableBlocksBySlot, updateUnavailableBlocks, updateBlockPlacementStatus,
-  };
-})();
-
-export const participantStore = (() => {
-  const { set, subscribe, update } = writable<(ParticipantInf | undefined)[]>([]);
-  const initialize = (players: (ParticipantInf | undefined)[]) => {
-    set(players);
-  };
-  const addPlayer = ({
-    id,
-    ready,
-    username,
-    playerIdx,
-  }: ParticipantInf & { playerIdx: PlayerIdx }) => {
-    update((players) => {
-      players[playerIdx] = {
-        id, ready, username,
-      };
-      return players;
-    });
-  };
-  const removePlayerByIdx = (playerIdx: PlayerIdx) => {
-    update((players) => {
-      players[playerIdx] = undefined;
-      return players;
-    });
-  };
-  const setPlayerReadyState = ({
-    playerIdx,
-    ready,
-  }: {
-    playerIdx: PlayerIdx,
-    ready: boolean,
-  }) => {
-    update((players) => {
-      /**
-       * @description when I update parameter and return the original arr it the component updated without re-rendering but idk why it does work.
-       * If it doesn't work just recover with comments under here
-       * 2025-07-09 worked on Ubuntu 24.04, Node.js v22.12.0
-       * 2025-07-10 worked on Windows 10 WSL2 Ubuntu 24.04, Node.js v.20.15.1, v24.0.2
-       */
-      if (players[playerIdx] !== undefined) players[playerIdx].ready = ready;
-      return players;
-      // const newPlayersArr = [...players];
-      // if (newPlayersArr[playerIdx] === undefined) {
-      //   return players;
-      // }
-      // newPlayersArr[playerIdx].ready = ready;
-      // return newPlayersArr;
-    });
-  };
-  return {
-    subscribe,
-    initialize, addPlayer, removePlayerByIdx, setPlayerReadyState,
-  };
-})();
-
-export const { boardStore, boardStoreWriter, getBoardFromStore } = (() => {
-  const { subscribe, update, set } = writable<BoardMatrix>(undefined);
-  return {
-    boardStore: { subscribe },
-    boardStoreWriter: { update, set },
-    getBoardFromStore: () => get({ subscribe }),
-  };
-})();
-
-export const gamePhaseStore = (() => {
-  const store = writable<Phase>();
-  return {
-    ...store,
-    get: () => get(store),
-  };
-})();
-
-export const { clientSlotStore, clientSlotStoreWriter, getClientSlots } = (() => {
-  const { set, subscribe, update } = writable<SlotIdx[]>([]);
-  return {
-    clientSlotStore: { subscribe },
-    clientSlotStoreWriter: { update, set },
-    getClientSlots: () => get({ subscribe }),
   };
 })();
