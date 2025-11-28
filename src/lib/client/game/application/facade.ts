@@ -12,7 +12,7 @@ import type { MoveStateManager } from '../state/move';
 import type { PlayerStateManager } from '../state/player';
 import type { SlotStateManager } from '../state/slot';
 import { createNewBoard, getBlockMatrix, placeBlock } from '$lib/game/core';
-import type { IGameResultManager } from './ports';
+import type { IGameResultManager } from './ports/game-result.ports';
 import type { Score } from '$lib/domain/score';
 import type { IGameResultReader } from './ports/game-result-reader.ports';
 
