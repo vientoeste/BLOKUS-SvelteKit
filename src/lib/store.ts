@@ -50,22 +50,6 @@ const createModalStore = () => {
 
 export const modalStore = createModalStore();
 
-export const gameStore = writable<{
-  turn: number,
-  playerIdx: PlayerIdx,
-  players: ({ id: string, username: string, ready: boolean } | undefined)[],
-  isStarted: boolean,
-  mySlots: SlotIdx[],
-  isEnded: boolean,
-}>({
-  isEnded: false,
-  turn: -1,
-  playerIdx: 0,
-  players: [],
-  isStarted: false,
-  mySlots: [],
-});
-
 /**
  * handles block[0][0]'s center - where center of the block determines the whole block's position on the board
  */
