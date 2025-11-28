@@ -1,3 +1,4 @@
+import { blockStore } from "$lib/store";
 import type { BlockType, Rotation, SlotIdx } from "$types";
 import { get, writable, type Readable, type Writable } from "svelte/store";
 
@@ -209,6 +210,9 @@ export class BlockStateManager {
 
   constructor() {
     this.blockStore = writable([]);
+    this.blockStore.subscribe((store) => {
+      blockStore.set(store);
+    });
   }
 
   get blocks(): Readable<Block[]> {
