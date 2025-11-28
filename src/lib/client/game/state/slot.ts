@@ -1,4 +1,5 @@
 import type { PlayerIdx, SlotIdx } from "$types";
+import { get, writable, type Readable, type Writable } from "svelte/store";
 
 type SlotState = {
   exhausted: boolean;
@@ -10,10 +11,22 @@ type TypeSafeSlots = [SlotState, SlotState, SlotState, SlotState];
 type Slots = TypeSafeSlots | [];
 
 export class SlotStateManager {
-  private slots: Slots;
+  private _slots: Writable<Slots>;
 
   constructor() {
-    this.slots = [];
+    this._slots = writable([]);
+  }
+
+  get slots(): Readable<Slots> {
+    return { subscribe: this._slots.subscribe };
+  }
+
+  getSlots() {
+    return get(this._slots);
+  }
+
+  getSlot(idx: SlotIdx) {
+    return get(this._slots)[idx];
   }
 
   /**
@@ -23,7 +36,7 @@ export class SlotStateManager {
   initialize(count: number) {
     switch (count) {
       case 2:
-        this.slots = [{
+        this._slots.set([{
           owners: [0],
           exhausted: false,
         }, {
@@ -35,11 +48,11 @@ export class SlotStateManager {
         }, {
           owners: [1],
           exhausted: false,
-        }];
+        }]);
         break;
 
       case 3:
-        this.slots = [{
+        this._slots.set([{
           owners: [0],
           exhausted: false,
         }, {
@@ -51,11 +64,11 @@ export class SlotStateManager {
         }, {
           owners: [0, 1, 2],
           exhausted: false,
-        }];
+        }]);
         break;
 
       case 4:
-        this.slots = [{
+        this._slots.set([{
           owners: [0],
           exhausted: false,
         }, {
@@ -67,7 +80,7 @@ export class SlotStateManager {
         }, {
           owners: [3],
           exhausted: false,
-        }];
+        }]);
         break;
 
       default:
@@ -79,21 +92,25 @@ export class SlotStateManager {
    * @description set slot state to exhausted directically
    * @param slotState slot state object, not index of slot to avoid dup null-check
    */
-  private _setExhausted(slotState: SlotState) {
-    slotState.exhausted = true;
+  private _setExhausted(slotIdx: SlotIdx) {
+    this._slots.update(store => {
+      const slots = [...store] as TypeSafeSlots;
+      slots[slotIdx] = { ...slots[slotIdx], exhausted: true };
+      return slots;
+    });
   }
 
   /**
    * @description mark one of my slot as exhausted return whether the slot is newly exhausted or not.
    */
   markAsExhausted(slotIdx: SlotIdx): { result: 'ALREADY_EXHAUSTED' | 'NEWLY_EXHAUSTED' } {
-    const slotState = this.slots[slotIdx];
+    const slotState = this.getSlot(slotIdx);
     if (slotState === undefined) throw new Error('');
 
     if (slotState.exhausted) {
       return { result: 'ALREADY_EXHAUSTED' };
     }
-    this._setExhausted(slotState);
+    this._setExhausted(slotIdx);
     return { result: 'NEWLY_EXHAUSTED' };
   }
 
@@ -101,22 +118,22 @@ export class SlotStateManager {
    * @description mark a slot as exhausted and **don't dispatch** it
    */
   applyExhaustedState(slotIdx: SlotIdx) {
-    const slotState = this.slots[slotIdx];
+    const slotState = this.getSlot(slotIdx);
     if (slotState === undefined) return;
-    this._setExhausted(slotState);
+    this._setExhausted(slotIdx);
   }
 
   getExhaustedSlots() {
-    return this.slots.filter(slot => slot.exhausted === true).map((_, idx) => idx);
+    return this.getSlots().filter(slot => slot.exhausted === true).map((_, idx) => idx);
   }
 
   isSlotExhausted(slotIdx: SlotIdx) {
-    const slot = this.slots[slotIdx];
+    const slot = this.getSlot(slotIdx);
     if (slot === undefined) throw new Error('slot is empty');
     return slot.exhausted;
   }
 
   reset() {
-    this.slots = [];
+    this._slots.set([]);
   }
 }
