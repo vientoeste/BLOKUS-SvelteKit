@@ -1,4 +1,3 @@
-import { clientSlotStoreWriter, getClientSlots } from "$lib/store";
 import type { ParticipantInf, PlayerIdx, SlotIdx } from "$types";
 import { get, writable, type Readable, type Writable } from "svelte/store";
 import { getPlayersSlot } from "$lib/utils";
@@ -6,6 +5,7 @@ import { getPlayersSlot } from "$lib/utils";
 export class PlayerStateManager {
   private _clientPlayerIdx: Writable<PlayerIdx>;
   private _participants: Writable<(ParticipantInf | undefined)[]>;
+  private _clientSlots: Writable<SlotIdx[]>;
 
   constructor({
     players,
@@ -16,6 +16,7 @@ export class PlayerStateManager {
   }) {
     this._clientPlayerIdx = writable(playerIdx);
     this._participants = writable(players);
+    this._clientSlots = writable([]);
   }
 
   get players(): Readable<(ParticipantInf | undefined)[]> {
@@ -25,6 +26,9 @@ export class PlayerStateManager {
   // Activate this getter if needed.
   // get clientPlayerIdx(): Readable<PlayerIdx> {
   //   return { subscribe: this._clientPlayerIdx.subscribe };
+  // }
+  // get clientSlots(): Readable<SlotIdx[]> {
+  //   return { subscribe: this._clientSlots.subscribe };
   // }
 
   getPlayers() {
@@ -61,15 +65,15 @@ export class PlayerStateManager {
   }
 
   initializeClientSlots() {
-    const players = this.getPlayers();
     const clientSlots = getPlayersSlot({
-      players, playerIdx: this.getClientPlayerIdx(),
+      players: this.getPlayers(),
+      playerIdx: this.getClientPlayerIdx(),
     });
-    clientSlotStoreWriter.set(clientSlots);
+    this._clientSlots.set(clientSlots);
   }
 
   getClientSlots(): SlotIdx[] {
-    const slots = getClientSlots();
+    const slots = get(this._clientSlots);
     return [...slots];
   }
 
