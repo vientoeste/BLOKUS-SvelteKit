@@ -59,6 +59,7 @@ export const moveStore = writable<({ type: BlockType, rotation: Rotation, flip: 
 
 export const movePreviewStore = writable<string>('');
 
+// [TODO] remove this store with applying refactoring of BlockStateManager & BlocksContainer
 export const blockStore = (() => {
   const { set, subscribe, update } = writable<{
     blockType: BlockType,
