@@ -231,7 +231,7 @@ export class BlockStateManager {
     }))).flat());
   }
 
-  removeBlockFromStore({ blockType, slotIdx }: { blockType: BlockType, slotIdx: SlotIdx }) {
+  markAsPlaced({ blockType, slotIdx }: { blockType: BlockType, slotIdx: SlotIdx }) {
     const store = get(this.blockStore);
     const index = store.findIndex(e => e.slotIdx === slotIdx && e.blockType === blockType);
     if (index !== -1) {

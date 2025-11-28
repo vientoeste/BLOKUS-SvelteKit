@@ -117,7 +117,7 @@ export class GameStateLayer implements
           slotIdx: move.slotIdx,
           turn: move.turn,
         });
-        this.blockStateManager.removeBlockFromStore({
+        this.blockStateManager.markAsPlaced({
           blockType: move.blockInfo.type,
           slotIdx: move.slotIdx,
         });
@@ -178,7 +178,7 @@ export class GameStateLayer implements
     const { gameId } = result;
 
     this.boardStateManager.placeBlock(move);
-    this.blockStateManager.removeBlockFromStore({ blockType: blockInfo.type, slotIdx });
+    this.blockStateManager.markAsPlaced({ blockType: blockInfo.type, slotIdx });
     this.moveStateManager.addMoveToHistory({ ...move, gameId, createdAt: new Date(), timeout: false, exhausted: false });
   }
 
