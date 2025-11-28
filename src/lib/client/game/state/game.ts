@@ -51,6 +51,10 @@ export class GameStateManager {
   //   return { subscribe: this._activePlayerCount.subscribe };
   // }
 
+  getCurrentSlotIdx() {
+    return get(this._currentSlotIdx);
+  }
+
   initializeNewGame({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
     this._turn.set(0);
     this._gameId.set(gameId);
@@ -97,7 +101,7 @@ export class GameStateManager {
     if (!gameId) {
       return { isValid: false, reason: 'gameId is missing' };
     }
-    if (slotIdx !== turn % 4) {
+    if (slotIdx !== this.getCurrentSlotIdx()) {
       return { isValid: false, reason: 'wrong turn: try make move of your other slot' };
     }
     return { isValid: true, gameId };
