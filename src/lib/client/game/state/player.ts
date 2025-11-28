@@ -23,10 +23,11 @@ export class PlayerStateManager {
     return { subscribe: this._participants.subscribe };
   }
 
+  get clientPlayerIdx(): Readable<PlayerIdx> {
+    return { subscribe: this._clientPlayerIdx.subscribe };
+  }
+
   // Activate this getter if needed.
-  // get clientPlayerIdx(): Readable<PlayerIdx> {
-  //   return { subscribe: this._clientPlayerIdx.subscribe };
-  // }
   // get clientSlots(): Readable<SlotIdx[]> {
   //   return { subscribe: this._clientSlots.subscribe };
   // }
