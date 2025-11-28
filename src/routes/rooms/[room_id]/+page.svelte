@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
   import { GameClientFactory, GameManager } from "$lib/client/game";
-  import { blockStore, gameStore, modalStore } from "$lib/store";
+  import { blockStore, modalStore } from "$lib/store";
   import { goto } from "$app/navigation";
   import Alert from "$lib/components/Alert.svelte";
   import Board from "$lib/components/Board.svelte";
