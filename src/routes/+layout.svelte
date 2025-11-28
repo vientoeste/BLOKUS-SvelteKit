@@ -9,7 +9,7 @@
   import BlocksContainer from "$lib/components/BlocksContainer.svelte";
 
   import { getUserInfoFromLocalStorage } from "$lib/utils";
-  import { blockStore, gamePhaseStore, userStore } from "$lib/store";
+  import { userStore } from "$lib/store";
   import "../app.css";
 
   onMount(() => {
