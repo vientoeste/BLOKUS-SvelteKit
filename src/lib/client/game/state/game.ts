@@ -23,7 +23,10 @@ export class GameStateManager {
   constructor() {
     this._turn = writable(-1);
     this._phase = writable('NOT_STARTED');
-    this._currentSlotIdx = derived(this._turn, (store) => store % 4 as SlotIdx);
+    this._currentSlotIdx = derived(this._turn, (store) => {
+      if (store === -1) return 0;
+      return store % 4 as SlotIdx;
+    });
     this._score = writable(undefined);
     this._gameId = writable(null);
     this._activePlayerCount = writable(undefined);
