@@ -1,10 +1,11 @@
-import { clientSlotStoreWriter, getClientSlots, participantStore } from "$lib/store";
+import { clientSlotStoreWriter, getClientSlots } from "$lib/store";
 import type { ParticipantInf, PlayerIdx, SlotIdx } from "$types";
-import { get } from "svelte/store";
+import { get, writable, type Readable, type Writable } from "svelte/store";
 import { getPlayersSlot } from "$lib/utils";
 
 export class PlayerStateManager {
   private clientPlayerIdx: PlayerIdx;
+  private _participants: Writable<(ParticipantInf | undefined)[]>;
 
   constructor({
     players,
@@ -14,27 +15,37 @@ export class PlayerStateManager {
     playerIdx: PlayerIdx;
   }) {
     this.clientPlayerIdx = playerIdx;
-    participantStore.initialize(players);
+    this._participants = writable(players);
+  }
+
+  get players(): Readable<(ParticipantInf | undefined)[]> {
+    return { subscribe: this._participants.subscribe };
   }
 
   getPlayers() {
-    return get(participantStore);
+    return get(this._participants);
   }
 
   addPlayer({ id, playerIdx, username }: ParticipantInf & { playerIdx: PlayerIdx }) {
-    participantStore.addPlayer({
-      id, playerIdx, username, ready: false,
+    this._participants.update(store => {
+      store[playerIdx] = {
+        id, ready: false, username
+      };
+      return store;
     });
   }
 
   removePlayerByIdx(playerIdx: PlayerIdx) {
-    participantStore.removePlayerByIdx(playerIdx);
+    this._participants.update(store => {
+      store[playerIdx] = undefined;
+      return store;
+    });
   }
 
   updateReadyState({ playerIdx, ready }: { playerIdx: PlayerIdx, ready: boolean }) {
-    participantStore.setPlayerReadyState({
-      playerIdx,
-      ready,
+    this._participants.update(store => {
+      if (store[playerIdx] !== undefined) store[playerIdx].ready = ready;
+      return store;
     });
   }
 
