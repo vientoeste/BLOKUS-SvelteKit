@@ -15,17 +15,18 @@ export type Phase = 'NOT_STARTED' | 'IN_PROGRESS' | 'CONFIRMING_SCORE';
 export class GameStateManager {
   private gameId: GameId | null;
   private activePlayerCount: 2 | 3 | 4 | undefined;
-  private score?: Score;
 
   private _phase: Writable<Phase>;
   private _turn: Writable<number>;
   private _currentSlotIdx: Readable<SlotIdx>;
+  private _score: Writable<Score | undefined>;
 
   constructor() {
     this._turn = writable(-1);
     this.gameId = null;
     this._phase = writable('NOT_STARTED');
     this._currentSlotIdx = derived(this._turn, (store) => store % 4 as SlotIdx);
+    this._score = writable(undefined);
   }
 
   get turn(): Readable<number> {
@@ -35,6 +36,11 @@ export class GameStateManager {
   get currentSlotIdx() {
     return this._currentSlotIdx;
   }
+
+  // Activate this getter if needed.
+  // get score(): Readable<Score | undefined> {
+  //   return { subscribe: this._score.subscribe };
+  // }
 
   initializeNewGame({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
     this._turn.set(0);
@@ -133,10 +139,10 @@ export class GameStateManager {
   }
 
   setScore(score: Score) {
-    this.score = score;
+    this._score.set(score);
   }
 
   getScore() {
-    return this.score;
+    return get(this._score);
   }
 }
