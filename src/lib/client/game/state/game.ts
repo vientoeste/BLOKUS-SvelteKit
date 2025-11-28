@@ -13,20 +13,20 @@ export type MoveContextVerificationResult = {
 export type Phase = 'NOT_STARTED' | 'IN_PROGRESS' | 'CONFIRMING_SCORE';
 
 export class GameStateManager {
-  private gameId: GameId | null;
   private activePlayerCount: 2 | 3 | 4 | undefined;
 
   private _phase: Writable<Phase>;
   private _turn: Writable<number>;
   private _currentSlotIdx: Readable<SlotIdx>;
   private _score: Writable<Score | undefined>;
+  private _gameId: Writable<GameId | null>;
 
   constructor() {
     this._turn = writable(-1);
-    this.gameId = null;
     this._phase = writable('NOT_STARTED');
     this._currentSlotIdx = derived(this._turn, (store) => store % 4 as SlotIdx);
     this._score = writable(undefined);
+    this._gameId = writable(null);
   }
 
   get turn(): Readable<number> {
@@ -41,10 +41,13 @@ export class GameStateManager {
   // get score(): Readable<Score | undefined> {
   //   return { subscribe: this._score.subscribe };
   // }
+  // get gameId(): Readable<GameId | null> {
+  //   return { subscribe: this._gameId.subscribe };
+  // }
 
   initializeNewGame({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
     this._turn.set(0);
-    this.gameId = gameId;
+    this._gameId.set(gameId);
     this.setPhase('IN_PROGRESS');
     this.activePlayerCount = activePlayerCount;
   }
@@ -55,8 +58,12 @@ export class GameStateManager {
 
   reset() {
     this._turn.set(-1);
-    this.gameId = null;
+    this._gameId.set(null);
     this.setPhase('NOT_STARTED');
+  }
+
+  getGameId() {
+    return get(this._gameId);
   }
 
   /**
@@ -80,13 +87,14 @@ export class GameStateManager {
     if (turn !== this.getCurrentTurn()) {
       return { isValid: false, reason: 'invalid turn' };
     }
-    if (!this.gameId) {
+    const gameId = this.getGameId();
+    if (!gameId) {
       return { isValid: false, reason: 'gameId is missing' };
     }
     if (slotIdx !== turn % 4) {
       return { isValid: false, reason: 'wrong turn: try make move of your other slot' };
     }
-    return { isValid: true, gameId: this.gameId };
+    return { isValid: true, gameId };
   }
 
   restoreGameState({
@@ -101,7 +109,7 @@ export class GameStateManager {
     activePlayerCount: 2 | 3 | 4;
   }) {
     this._turn.set(turn);
-    this.gameId = gameId;
+    this._gameId.set(gameId);
     this.setPhase(phase);
     this.activePlayerCount = activePlayerCount;
   }
