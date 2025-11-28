@@ -13,13 +13,12 @@ export type MoveContextVerificationResult = {
 export type Phase = 'NOT_STARTED' | 'IN_PROGRESS' | 'CONFIRMING_SCORE';
 
 export class GameStateManager {
-  private activePlayerCount: 2 | 3 | 4 | undefined;
-
   private _phase: Writable<Phase>;
   private _turn: Writable<number>;
   private _currentSlotIdx: Readable<SlotIdx>;
   private _score: Writable<Score | undefined>;
   private _gameId: Writable<GameId | null>;
+  private _activePlayerCount: Writable<2 | 3 | 4 | undefined>;
 
   constructor() {
     this._turn = writable(-1);
@@ -27,6 +26,7 @@ export class GameStateManager {
     this._currentSlotIdx = derived(this._turn, (store) => store % 4 as SlotIdx);
     this._score = writable(undefined);
     this._gameId = writable(null);
+    this._activePlayerCount = writable(undefined);
   }
 
   get turn(): Readable<number> {
@@ -44,12 +44,15 @@ export class GameStateManager {
   // get gameId(): Readable<GameId | null> {
   //   return { subscribe: this._gameId.subscribe };
   // }
+  // get activePlayerCount(): Readable<2 | 3 | 4 | undefined> {
+  //   return { subscribe: this._activePlayerCount.subscribe };
+  // }
 
   initializeNewGame({ gameId, activePlayerCount }: { gameId: GameId, activePlayerCount: 2 | 3 | 4 }) {
     this._turn.set(0);
     this._gameId.set(gameId);
     this.setPhase('IN_PROGRESS');
-    this.activePlayerCount = activePlayerCount;
+    this._activePlayerCount.set(activePlayerCount);
   }
 
   initiateScoreConfirmation() {
@@ -111,7 +114,7 @@ export class GameStateManager {
     this._turn.set(turn);
     this._gameId.set(gameId);
     this.setPhase(phase);
-    this.activePlayerCount = activePlayerCount;
+    this._activePlayerCount.set(activePlayerCount);
   }
 
   advanceTurn() {
@@ -127,11 +130,12 @@ export class GameStateManager {
   }
 
   getActivePlayerCount() {
-    if (this.activePlayerCount === undefined) {
+    const activePlayerCount = get(this._activePlayerCount);
+    if (activePlayerCount === undefined) {
       // [TODO] request to server for missing infos again
       throw new Error('GameStateManager.activePlayerCount is missing');
     }
-    return this.activePlayerCount;
+    return activePlayerCount;
   }
 
   get phase(): Readable<Phase> {
