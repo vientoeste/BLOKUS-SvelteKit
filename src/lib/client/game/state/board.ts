@@ -1,20 +1,27 @@
 import { getBlockMatrix, isBlockPlaceableAt } from "$lib/game/core";
-import { boardStoreWriter, getBoardFromStore } from "$lib/store";
 import type { Block, BoardMatrix, SlotIdx } from "$types";
+import { get, writable, type Readable, type Writable } from "svelte/store";
 
 export class BoardStateManager {
+  private _board: Writable<BoardMatrix>;
+
   constructor() {
+    this._board = writable();
     this._resetBoard();
   }
 
+  get matrix(): Readable<BoardMatrix> {
+    return { subscribe: this._board.subscribe };
+  }
+
   private _resetBoard() {
-    boardStoreWriter.set(
+    this._board.set(
       Array(20).fill(null).map(() => Array(20).fill(false))
     );
   }
 
   getBoard(): BoardMatrix {
-    return getBoardFromStore()?.map(e => [...e]);
+    return get(this._board).map(e => [...e]);
   }
 
   initializeBoard(board?: BoardMatrix) {
@@ -22,7 +29,7 @@ export class BoardStateManager {
       this._resetBoard();
       return;
     }
-    boardStoreWriter.set(board);
+    this._board.set(board);
   }
 
   destroyBoard() {
@@ -60,7 +67,7 @@ export class BoardStateManager {
   }) {
     const [row, col] = position;
     const block = getBlockMatrix(blockInfo);
-    boardStoreWriter.update((board) => {
+    this._board.update((board) => {
       block.forEach((blockLine, rowIdx) => {
         blockLine.forEach((blockCell, colIdx) => {
           if (blockCell) {

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
   import { GameClientFactory, GameManager } from "$lib/client/game";
-  import { blockStore, gameStore, modalStore } from "$lib/store";
+  import { modalStore } from "$lib/store";
   import { goto } from "$app/navigation";
   import Alert from "$lib/components/Alert.svelte";
   import Board from "$lib/components/Board.svelte";
@@ -9,6 +9,7 @@
   import Players from "$lib/components/Players.svelte";
   import type { Block, BoardMatrix, PlayerIdx, SlotIdx } from "$types";
   import type { PageData } from "./$types";
+  import { createGameContext } from "$lib/client/game/context";
 
   const { data }: { data: PageData } = $props();
   const { room, playerIdx, roomCache, moves } = data;
@@ -17,17 +18,10 @@
 
   let worker: Worker | null = null;
   let gameManager: GameManager;
+  const gameContext = createGameContext();
+  let isGameInitialized = $state(false);
 
   onDestroy(() => {
-    gameStore.set({
-      isStarted: false,
-      mySlots: [],
-      playerIdx: 0,
-      players: [],
-      turn: -1,
-      isEnded: false,
-    });
-    blockStore.set([]);
     socket?.close();
 
     worker?.terminate();
@@ -64,7 +58,7 @@
     );
     worker = new workerModule.default();
     const players = [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3];
-    ({ gameManager } = GameClientFactory.create({
+    const { stateLayer } = ({ gameManager } = GameClientFactory.create({
       webWorker: worker,
       webSocket: socket,
 
@@ -73,6 +67,8 @@
         players,
       },
     }));
+    gameContext.initialize({ state: stateLayer, actions: gameManager });
+    isGameInitialized = true;
 
     // [TODO] to prevent initializing error, add condition for single player game(prevent to start game)
     if (roomCache.started && roomCache.gameId !== undefined) {
@@ -103,14 +99,16 @@
   };
 </script>
 
-<Players
-  ready={() => {
-    gameManager.submitReady();
-  }}
-  unready={() => {
-    gameManager.submitCancelReady();
-  }}
-></Players>
-<Board {submitMove} />
+{#if isGameInitialized}
+  <Players
+    ready={() => {
+      gameManager.submitReady();
+    }}
+    unready={() => {
+      gameManager.submitCancelReady();
+    }}
+  ></Players>
+  <Board {submitMove} />
 
-<Controller {startGame}></Controller>
+  <Controller {startGame}></Controller>
+{/if}

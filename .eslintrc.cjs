@@ -6,7 +6,8 @@ module.exports = {
 	ignorePatterns: [
 		'*.cjs',
 		"websocket/**/*",
-		"build/**/*"
+		"build/**/*",
+		"dist/**/*"
 	],
 	settings: {
 		'svelte3/typescript': () => require('typescript')

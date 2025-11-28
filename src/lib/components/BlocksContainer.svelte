@@ -206,6 +206,10 @@
       ],
     ],
   };
+
+  // [TODO] apply this when component BlocksContainer is moved to page instead of layout
+  // const { state: gameState } = useGame();
+  // const blockStore = $gameState?.block.blocks;
 </script>
 
 <div id="blocks-container">

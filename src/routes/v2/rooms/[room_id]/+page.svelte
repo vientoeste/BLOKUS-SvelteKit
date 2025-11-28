@@ -13,6 +13,7 @@
   import BlocksFilter from "$lib/components/game/BlocksFilter.svelte";
   import PregameOverlay from "$lib/components/game/PregameOverlay.svelte";
   import ChatContainer from "$lib/components/game/chat/Container.svelte";
+  import { createGameContext } from "$lib/client/game/context";
 
   const { data }: { data: PageData } = $props();
   const { room, playerIdx, roomCache, moves } = data;
@@ -27,6 +28,9 @@
     const basePath = url.pathname.replace(/^\/v\d+\//, "/");
     return `${protocol}://${url.host}${basePath}`;
   };
+
+  const gameContext = createGameContext();
+  let isGameInitialized = $state(false);
 
   onMount(async () => {
     if (
@@ -51,7 +55,7 @@
     );
     worker = new workerModule.default();
     const players = [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3];
-    ({ gameManager } = GameClientFactory.create({
+    const { stateLayer } = ({ gameManager } = GameClientFactory.create({
       webWorker: worker,
       webSocket: socket,
 
@@ -60,6 +64,8 @@
         players,
       },
     }));
+    gameContext.initialize({ state: stateLayer, actions: gameManager });
+    isGameInitialized = true;
 
     // [TODO] to prevent initializing error, add condition for single player game(prevent to start game)
     if (roomCache.started && roomCache.gameId !== undefined) {
@@ -101,26 +107,28 @@
   };
 </script>
 
-<TriplePanelLayout>
-  <div style="position: relative;">
-    <Board {submitMove} />
-    <PregameOverlay {ready} {unready} {startGame} />
-  </div>
-
-  {#snippet left()}
-    <div id="left-container">
-      <Participants />
-      <ChatContainer />
+{#if isGameInitialized}
+  <TriplePanelLayout>
+    <div style="position: relative;">
+      <Board {submitMove} />
+      <PregameOverlay {ready} {unready} {startGame} />
     </div>
-  {/snippet}
 
-  {#snippet right()}
-    <div id="right-container">
-      <BlocksFilter />
-      <BlocksContainer />
-    </div>
-  {/snippet}
-</TriplePanelLayout>
+    {#snippet left()}
+      <div id="left-container">
+        <Participants />
+        <ChatContainer />
+      </div>
+    {/snippet}
+
+    {#snippet right()}
+      <div id="right-container">
+        <BlocksFilter />
+        <BlocksContainer />
+      </div>
+    {/snippet}
+  </TriplePanelLayout>
+{/if}
 
 <style>
   #right-container {

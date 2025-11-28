@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { blockSizeStore, gamePhaseStore } from "$lib/store";
+  import { useGame } from "$lib/client/game/context";
+  import { blockSizeStore } from "$lib/store";
 
   let {
     startGame,
@@ -10,9 +11,12 @@
     ready: () => void;
     unready: () => void;
   } = $props();
+
+  const { state } = useGame();
+  const gamePhaseStore = $state?.progress.phase;
 </script>
 
-{#if $gamePhaseStore === "NOT_STARTED"}
+{#if $gamePhaseStore === "NOT_STARTED" || $gamePhaseStore === undefined}
   <div
     class="pregame-overlay-container"
     style:width="{($blockSizeStore + 3) * 20 + 1}px"

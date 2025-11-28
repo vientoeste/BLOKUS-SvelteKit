@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { useGame } from "$lib/client/game/context";
   import {
     blockSizeStore,
-    boardStore,
     dragPositionOffsetStore,
     movePreviewShadowStore,
     moveStore,
@@ -77,6 +77,9 @@
       position,
     };
   };
+
+  const { state: gameState } = useGame();
+  const boardStore = $gameState?.board.matrix;
 </script>
 
 <div
@@ -88,7 +91,9 @@
   ondrop={handleDrop}
   ondragover={handleDragOver}
 >
-  <ColorMatrixRenderer id="board" matrix={$boardStore}></ColorMatrixRenderer>
+  {#if $boardStore !== undefined}
+    <ColorMatrixRenderer id="board" matrix={$boardStore}></ColorMatrixRenderer>
+  {/if}
 </div>
 
 {#if $movePreviewShadowStore && boardElement}
