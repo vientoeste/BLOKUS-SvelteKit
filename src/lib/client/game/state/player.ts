@@ -1,6 +1,6 @@
 import type { ParticipantInf, PlayerIdx, SlotIdx } from "$types";
 import { get, writable, type Readable, type Writable } from "svelte/store";
-import { getPlayersSlot } from "$lib/utils";
+import { determinePlayerSlots } from "$lib/utils";
 
 export class PlayerStateManager {
   private _clientPlayerIdx: Writable<PlayerIdx>;
@@ -66,7 +66,7 @@ export class PlayerStateManager {
   }
 
   initializeClientSlots() {
-    const clientSlots = getPlayersSlot({
+    const clientSlots = determinePlayerSlots({
       players: this.getPlayers(),
       playerIdx: this.getClientPlayerIdx(),
     });

@@ -201,7 +201,7 @@ export const isRightTurn = ({ turn, playerIdx, activePlayerCount }: { turn: numb
 }[activePlayerCount]);
 
 // [TODO] in 2p game, fix playerIdx to 0/1
-export const getPlayersSlot = ({
+export const determinePlayerSlots = ({
   players, playerIdx
 }: {
   players: ({ id: string; username: string; } | undefined)[], playerIdx: PlayerIdx,
