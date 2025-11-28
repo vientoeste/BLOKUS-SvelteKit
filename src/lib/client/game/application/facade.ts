@@ -60,7 +60,7 @@ export class GameStateLayer implements
   // ------------------------ Getters for Context API ------------------------
   get block() { return this.blockStateManager; }
   get board() { return this.boardStateManager; }
-  get state() { return this.gameStateManager; }
+  get progress() { return this.gameStateManager; }
   get move() { return this.moveStateManager; }
   get player() { return this.playerStateManager; }
   get slot() { return this.slotStateManager; }

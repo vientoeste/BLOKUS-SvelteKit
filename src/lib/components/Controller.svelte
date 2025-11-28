@@ -3,7 +3,7 @@
 
   const { startGame } = $props();
   const { state } = useGame();
-  const turnStore = $state?.state.turn;
+  const turnStore = $state?.progress.turn;
   const playerIdxStore = $state?.player.clientPlayerIdx;
 </script>
 
