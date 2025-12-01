@@ -16,6 +16,7 @@ import type { IGameResultManager } from './ports/game-result.ports';
 import type { Score } from '$lib/domain/score';
 import type { IGameResultReader } from './ports/game-result-reader.ports';
 import type { BlockPresentationManager } from '../ui/presentation';
+import type { BlockFilterStateManager } from '../state/filter';
 
 export class GameStateLayer implements
   IGameLifecycleManager,
@@ -34,6 +35,7 @@ export class GameStateLayer implements
   private moveStateManager: MoveStateManager;
   private playerStateManager: PlayerStateManager;
   private slotStateManager: SlotStateManager;
+  private blockFilterStateManager: BlockFilterStateManager;
 
   constructor({
     blockStateManager,
@@ -42,6 +44,7 @@ export class GameStateLayer implements
     moveStateManager,
     playerStateManager,
     slotStateManager,
+    blockFilterStateManager,
   }: {
     blockStateManager: BlockStateManager,
     boardStateManager: BoardStateManager,
@@ -49,6 +52,7 @@ export class GameStateLayer implements
     moveStateManager: MoveStateManager,
     playerStateManager: PlayerStateManager,
     slotStateManager: SlotStateManager,
+    blockFilterStateManager: BlockFilterStateManager,
   }) {
     this.blockStateManager = blockStateManager;
     this.boardStateManager = boardStateManager;
@@ -56,6 +60,8 @@ export class GameStateLayer implements
     this.moveStateManager = moveStateManager;
     this.playerStateManager = playerStateManager;
     this.slotStateManager = slotStateManager;
+    // [TODO] Decide whether expose this manager directly or make public methods
+    this.blockFilterStateManager = blockFilterStateManager;
   }
 
   // ------------------------ Getters for Context API ------------------------
@@ -65,14 +71,17 @@ export class GameStateLayer implements
   get move() { return this.moveStateManager; }
   get player() { return this.playerStateManager; }
   get slot() { return this.slotStateManager; }
+  get filter() { return this.blockFilterStateManager; }
 
   // -------------------------- GameLifecycleManager -------------------------
   initializeNewGame(payload: { gameId: GameId; activePlayerCount: 2 | 3 | 4; }): void {
     this.gameStateManager.initializeNewGame(payload);
     this.playerStateManager.initializeClientSlots();
-    this.blockStateManager.initialize(this.playerStateManager.getClientSlots());
+    const slots = this.playerStateManager.getClientSlots();
+    this.blockStateManager.initialize(slots);
     this.boardStateManager.initializeBoard();
     this.slotStateManager.initialize(payload.activePlayerCount);
+    this.blockFilterStateManager.initialize(slots);
   }
 
   resetAllGameStates(): void {
@@ -100,7 +109,9 @@ export class GameStateLayer implements
       gameId: payload.gameId,
       phase: payload.phase,
     });
-    this.blockStateManager.initialize(this.playerStateManager.getClientSlots());
+    const slots = this.playerStateManager.getClientSlots();
+    this.blockStateManager.initialize(slots);
+    this.blockFilterStateManager.initialize(slots);
 
     payload.exhaustedSlots.forEach(slotIdx => {
       // [TODO] if one of the slot is players', disable remaining blocks
