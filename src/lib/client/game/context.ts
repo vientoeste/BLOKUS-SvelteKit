@@ -1,9 +1,15 @@
 import { setContext, getContext } from 'svelte';
 import type { GamePresentationLayer, GameStateLayer } from './application/facade';
 import type { GameManager } from './index';
-import { writable } from 'svelte/store';
+import { get, readonly, writable, type Readable } from 'svelte/store';
 
 const GAME_CTX_KEY = Symbol('GAME_CTX');
+
+export interface GameContext {
+  state: Readable<GameStateLayer>;
+  actions: Readable<GameManager>;
+  presentation: Readable<GamePresentationLayer>;
+}
 
 export class GameContextContainer {
   state = writable<GameStateLayer | undefined>(undefined);
@@ -31,10 +37,22 @@ export const createGameContext = () => {
   return container;
 };
 
-export const useGame = () => {
+export const useGame = (): GameContext => {
   const container = getContext<GameContextContainer>(GAME_CTX_KEY);
   if (!container) {
     throw new Error('useGame must be used within createGameContext scope');
   }
-  return container;
+  const { actions, presentation, state } = container;
+  if (
+    get(actions) === undefined
+    || get(presentation) === undefined
+    || get(state) === undefined
+  ) {
+    throw new Error('Hook useGame is called before initialization');
+  }
+  return {
+    actions: readonly(actions),
+    presentation: readonly(presentation),
+    state: readonly(state),
+  } as GameContext;
 };
