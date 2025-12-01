@@ -2,7 +2,7 @@
   import { useGame } from "$lib/client/game/context";
 
   const { state } = useGame();
-  const participantStore = $state?.player.players;
+  const participantStore = $state.player.players;
 </script>
 
 <div id="participants">

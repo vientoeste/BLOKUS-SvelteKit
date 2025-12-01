@@ -13,7 +13,7 @@
   } = $props();
 
   const { state } = useGame();
-  const gamePhaseStore = $state?.progress.phase;
+  const gamePhaseStore = $state.progress.phase;
 </script>
 
 {#if $gamePhaseStore === "NOT_STARTED" || $gamePhaseStore === undefined}

@@ -17,7 +17,7 @@
   } = $props();
 
   const { state } = useGame();
-  const boardStore = $state?.board.matrix;
+  const boardStore = $state.board.matrix;
 
   let boardElement: HTMLElement;
 
