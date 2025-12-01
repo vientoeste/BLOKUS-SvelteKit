@@ -9,7 +9,7 @@
   const startGame = $actions.startGame;
 </script>
 
-{#if $gamePhaseStore === "NOT_STARTED" || $gamePhaseStore === undefined}
+{#if $gamePhaseStore === "NOT_STARTED"}
   <div
     class="pregame-overlay-container"
     style:width="{($blockSizeStore + 3) * 20 + 1}px"

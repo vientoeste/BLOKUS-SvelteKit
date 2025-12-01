@@ -92,9 +92,7 @@
   ondrop={handleDrop}
   ondragover={handleDragOver}
 >
-  {#if $boardStore !== undefined}
-    <ColorMatrixRenderer id="board" matrix={$boardStore}></ColorMatrixRenderer>
-  {/if}
+  <ColorMatrixRenderer id="board" matrix={$boardStore}></ColorMatrixRenderer>
 </div>
 
 {#if $movePreviewShadowStore && boardElement}
