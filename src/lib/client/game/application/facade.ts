@@ -90,6 +90,7 @@ export class GameStateLayer implements
     this.blockStateManager.reset();
     this.slotStateManager.reset();
     this.moveStateManager.clearHistory();
+    this.blockFilterStateManager.reset();
   }
 
   restoreGame(payload: {

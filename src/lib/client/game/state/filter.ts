@@ -22,4 +22,10 @@ export class BlockFilterStateManager {
   initialize(clientSlots: SlotIdx[]) {
     this.colorSource.set(clientSlots);
   }
+
+  reset() {
+    this.quantitySource.set([1, 2, 3, 4, 5]);
+    this.quantity.selected.set([1, 2, 3, 4, 5]);
+    this.colorSource.set([]);
+  }
 }
