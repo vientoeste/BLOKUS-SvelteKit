@@ -86,21 +86,12 @@
       });
     }
   });
-
-  const submitMove = (param: {
-    previewUrl: string;
-    position: [number, number];
-    blockInfo: Block;
-    slotIdx: SlotIdx;
-  }) => {
-    gameManager?.submitMove(param);
-  };
 </script>
 
 {#if isGameInitialized}
   <TriplePanelLayout>
     <div style="position: relative;">
-      <Board {submitMove} />
+      <Board />
       <PregameOverlay />
     </div>
 
