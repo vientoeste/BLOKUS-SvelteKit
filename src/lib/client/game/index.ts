@@ -43,17 +43,17 @@ export class GameManager {
   }
 
   // [TODO] 'phase' info should be depend on 'isStarted' and redis' score confirmation keys
-  restoreGame(restoreGamePayload: {
+  restoreGame = (restoreGamePayload: {
     turn: number;
     gameId: GameId;
     phase: Phase;
     exhaustedSlots: SlotIdx[];
     moves: Move[];
-  }) {
+  }) => {
     this.eventBus.publish('GameRestoreRequested', restoreGamePayload);
-  }
+  };
 
-  submitMove({
+  submitMove = ({
     previewUrl,
     position,
     blockInfo,
@@ -63,27 +63,27 @@ export class GameManager {
     position: [number, number];
     blockInfo: Block;
     slotIdx: SlotIdx;
-  }) {
+  }) => {
     this.eventBus.publish('PlayerMoveSubmitted', {
       previewUrl, position, blockInfo, slotIdx,
     });
-  }
+  };
 
-  submitReady() {
+  submitReady = () => {
     this.eventBus.publish('PlayerReadySubmitted', undefined);
-  }
+  };
 
-  submitCancelReady() {
+  submitCancelReady = () => {
     this.eventBus.publish('PlayerReadyCancelSubmitted', undefined);
-  }
+  };
 
-  startGame() {
+  startGame = () => {
     this.eventBus.publish('GameStartRequested', undefined);
-  }
+  };
 
-  terminate() {
+  terminate = () => {
     this.eventBus.publish('TerminateRequested', undefined);
-  }
+  };
 }
 
 export class GameClientFactory {
