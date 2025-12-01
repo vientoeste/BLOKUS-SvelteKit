@@ -58,16 +58,21 @@
     );
     worker = new workerModule.default();
     const players = [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3];
-    const { stateLayer } = ({ gameManager } = GameClientFactory.create({
-      webWorker: worker,
-      webSocket: socket,
+    const { stateLayer, presentationLayer } = ({ gameManager } =
+      GameClientFactory.create({
+        webWorker: worker,
+        webSocket: socket,
 
-      context: {
-        playerIdx: playerIdx as PlayerIdx,
-        players,
-      },
-    }));
-    gameContext.initialize({ state: stateLayer, actions: gameManager });
+        context: {
+          playerIdx: playerIdx as PlayerIdx,
+          players,
+        },
+      }));
+    gameContext.initialize({
+      state: stateLayer,
+      actions: gameManager,
+      presentation: presentationLayer,
+    });
     isGameInitialized = true;
 
     // [TODO] to prevent initializing error, add condition for single player game(prevent to start game)

@@ -8,7 +8,6 @@
   } from "$lib/store";
   import ColorMatrixRenderer from "./ColorMatrixRenderer.svelte";
 
-  let { submitMove } = $props();
   let boardElement: HTMLElement | null = $state(null);
 
   const getPosition = ({
@@ -53,6 +52,7 @@
         position,
         blockInfo: { type, rotation, flip },
         slotIdx,
+        previewUrl: "",
       });
     } catch (error) {
       console.error("DnD(drop):", error);
@@ -78,8 +78,9 @@
     };
   };
 
-  const { state: gameState } = useGame();
+  const { state: gameState, actions } = useGame();
   const boardStore = $gameState?.board.matrix;
+  const submitMove = $actions.submitMove;
 </script>
 
 <div

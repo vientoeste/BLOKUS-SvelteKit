@@ -1,22 +1,20 @@
 <script lang="ts">
-  import { getColorFilter, quantityFilter } from "$lib/filter";
+  import { useGame } from "$lib/client/game/context";
   import { colorMapper } from "$lib/utils";
 
-  const {
-    allSelected: allQuantitiesSelected,
-    indeterminate: indeterminateQuantity,
-    selected: selectedQuantities,
-    items: quantities,
-  } = quantityFilter;
+  const { state } = useGame();
+  const quantityFilter = $state.filter.quantity;
+  const colorFilter = $state.filter.color;
 
-  const {
-    allSelected: allColorsSelected,
-    indeterminate: indeterminateColor,
-    selected: selectedColors,
-    items: colors,
-    toggleAll: toggleAllColors,
-    toggleItem: toggleColor,
-  } = getColorFilter();
+  const allQuantitiesSelected = quantityFilter.allSelected;
+  const indeterminateQuantity = quantityFilter.indeterminate;
+  const quantities = quantityFilter.items;
+  const selectedQuantities = quantityFilter.selected;
+
+  const allColorsSelected = colorFilter.allSelected;
+  const indeterminateColor = colorFilter.indeterminate;
+  const colors = colorFilter.items;
+  const selectedColors = colorFilter.selected;
 </script>
 
 <div id="filter-container">
@@ -56,7 +54,7 @@
         <input
           type="checkbox"
           id="color-select-all"
-          onclick={toggleAllColors}
+          onclick={colorFilter.toggleAll}
           checked={$allColorsSelected}
           indeterminate={$indeterminateColor}
         />
@@ -70,7 +68,7 @@
           <input
             type="checkbox"
             id="color-{color}"
-            onchange={() => toggleColor(slotIdx)}
+            onchange={() => colorFilter.toggleItem(slotIdx)}
             checked={$selectedColors.includes(slotIdx)}
           />
           <label for="color-{color}">{color}</label>

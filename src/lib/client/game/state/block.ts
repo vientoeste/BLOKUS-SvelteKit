@@ -196,7 +196,7 @@ const preset: Record<
   ],
 };
 
-interface Block {
+export interface BlockState {
   blockType: BlockType;
   slotIdx: SlotIdx;
   isPlaced: boolean;
@@ -206,7 +206,7 @@ interface Block {
 }
 
 export class BlockStateManager {
-  private blockStore: Writable<Block[]>;
+  private blockStore: Writable<BlockState[]>;
 
   constructor() {
     this.blockStore = writable([]);
@@ -215,7 +215,7 @@ export class BlockStateManager {
     });
   }
 
-  get blocks(): Readable<Block[]> {
+  get blocks(): Readable<BlockState[]> {
     return { subscribe: this.blockStore.subscribe };
   }
 

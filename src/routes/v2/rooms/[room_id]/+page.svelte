@@ -55,16 +55,21 @@
     );
     worker = new workerModule.default();
     const players = [roomCache.p0, roomCache.p1, roomCache.p2, roomCache.p3];
-    const { stateLayer } = ({ gameManager } = GameClientFactory.create({
-      webWorker: worker,
-      webSocket: socket,
+    const { stateLayer, presentationLayer } = ({ gameManager } =
+      GameClientFactory.create({
+        webWorker: worker,
+        webSocket: socket,
 
-      context: {
-        playerIdx: playerIdx as PlayerIdx,
-        players,
-      },
-    }));
-    gameContext.initialize({ state: stateLayer, actions: gameManager });
+        context: {
+          playerIdx: playerIdx as PlayerIdx,
+          players,
+        },
+      }));
+    gameContext.initialize({
+      state: stateLayer,
+      actions: gameManager,
+      presentation: presentationLayer,
+    });
     isGameInitialized = true;
 
     // [TODO] to prevent initializing error, add condition for single player game(prevent to start game)
@@ -81,37 +86,13 @@
       });
     }
   });
-
-  const submitMove = (param: {
-    previewUrl: string;
-    position: [number, number];
-    blockInfo: Block;
-    slotIdx: SlotIdx;
-  }) => {
-    gameManager?.submitMove(param);
-  };
-
-  const startGame =
-    playerIdx === 0
-      ? () => {
-          gameManager?.startGame();
-        }
-      : undefined;
-
-  const ready = () => {
-    gameManager?.submitReady();
-  };
-
-  const unready = () => {
-    gameManager?.submitCancelReady();
-  };
 </script>
 
 {#if isGameInitialized}
   <TriplePanelLayout>
     <div style="position: relative;">
-      <Board {submitMove} />
-      <PregameOverlay {ready} {unready} {startGame} />
+      <Board />
+      <PregameOverlay />
     </div>
 
     {#snippet left()}

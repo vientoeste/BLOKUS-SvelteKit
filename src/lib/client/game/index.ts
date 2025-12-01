@@ -27,6 +27,9 @@ import type { Phase } from "./state/game";
 import { AlertManager, ConfirmManager, InputManager } from "./ui";
 import { TimerStateManager } from "./state/timer";
 import { Vsync } from "$lib/vsync";
+import { BlockPresentationManager } from "./ui/presentation/Block";
+import { BlockFilterStateManager } from "./state/filter";
+import { GamePresentationLayer } from "./application/facade";
 
 export class GameManager {
   private eventBus: EventBus;
@@ -40,17 +43,17 @@ export class GameManager {
   }
 
   // [TODO] 'phase' info should be depend on 'isStarted' and redis' score confirmation keys
-  restoreGame(restoreGamePayload: {
+  restoreGame = (restoreGamePayload: {
     turn: number;
     gameId: GameId;
     phase: Phase;
     exhaustedSlots: SlotIdx[];
     moves: Move[];
-  }) {
+  }) => {
     this.eventBus.publish('GameRestoreRequested', restoreGamePayload);
-  }
+  };
 
-  submitMove({
+  submitMove = ({
     previewUrl,
     position,
     blockInfo,
@@ -60,27 +63,27 @@ export class GameManager {
     position: [number, number];
     blockInfo: Block;
     slotIdx: SlotIdx;
-  }) {
+  }) => {
     this.eventBus.publish('PlayerMoveSubmitted', {
       previewUrl, position, blockInfo, slotIdx,
     });
-  }
+  };
 
-  submitReady() {
+  submitReady = () => {
     this.eventBus.publish('PlayerReadySubmitted', undefined);
-  }
+  };
 
-  submitCancelReady() {
+  submitCancelReady = () => {
     this.eventBus.publish('PlayerReadyCancelSubmitted', undefined);
-  }
+  };
 
-  startGame() {
+  startGame = () => {
     this.eventBus.publish('GameStartRequested', undefined);
-  }
+  };
 
-  terminate() {
+  terminate = () => {
     this.eventBus.publish('TerminateRequested', undefined);
-  }
+  };
 }
 
 export class GameClientFactory {
@@ -109,6 +112,8 @@ export class GameClientFactory {
       playerIdx,
     });
     const slotStateManager = new SlotStateManager();
+    const blockFilterStateManager = new BlockFilterStateManager();
+    const timerStateManager = new TimerStateManager();
     const stateLayer = new GameStateLayer({
       gameStateManager,
       playerStateManager,
@@ -116,8 +121,8 @@ export class GameClientFactory {
       blockStateManager,
       moveStateManager,
       slotStateManager,
+      blockFilterStateManager
     });
-    const timerStateManager = new TimerStateManager();
 
     const turnSequencer = new TurnSequencer();
     const turnTimer = new PlayerTurnTimer({ eventBus, timerStateManager, vsync });
@@ -139,6 +144,12 @@ export class GameClientFactory {
     const alertManager = new AlertManager();
     const confirmManager = new ConfirmManager();
     const inputManager = new InputManager();
+
+    const blockPresentationManager = new BlockPresentationManager({
+      blockState: blockStateManager,
+      filterState: blockFilterStateManager,
+    });
+    const presentationLayer = new GamePresentationLayer({ block: blockPresentationManager });
 
     new GameResultOrchestrator({
       eventBus,
@@ -189,6 +200,6 @@ export class GameClientFactory {
 
     const gameManager = new GameManager({ eventBus });
 
-    return { gameManager, stateLayer };
+    return { gameManager, stateLayer, presentationLayer };
   }
 }

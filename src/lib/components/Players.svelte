@@ -12,7 +12,7 @@
   } = $props();
 
   const { state } = useGame();
-  const participantStore = $state?.player.players;
+  const participantStore = $state.player.players;
 </script>
 
 {#snippet player(playerInfo: ParticipantInf | undefined)}
