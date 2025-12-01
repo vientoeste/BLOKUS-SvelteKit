@@ -27,6 +27,9 @@ import type { Phase } from "./state/game";
 import { AlertManager, ConfirmManager, InputManager } from "./ui";
 import { TimerStateManager } from "./state/timer";
 import { Vsync } from "$lib/vsync";
+import { BlockPresentationManager } from "./ui/presentation/Block";
+import { BlockFilterStateManager } from "./state/filter";
+import { GamePresentationLayer } from "./application/facade";
 
 export class GameManager {
   private eventBus: EventBus;
@@ -109,6 +112,8 @@ export class GameClientFactory {
       playerIdx,
     });
     const slotStateManager = new SlotStateManager();
+    const blockFilterStateManager = new BlockFilterStateManager();
+    const timerStateManager = new TimerStateManager();
     const stateLayer = new GameStateLayer({
       gameStateManager,
       playerStateManager,
@@ -116,8 +121,8 @@ export class GameClientFactory {
       blockStateManager,
       moveStateManager,
       slotStateManager,
+      blockFilterStateManager
     });
-    const timerStateManager = new TimerStateManager();
 
     const turnSequencer = new TurnSequencer();
     const turnTimer = new PlayerTurnTimer({ eventBus, timerStateManager, vsync });
@@ -139,6 +144,12 @@ export class GameClientFactory {
     const alertManager = new AlertManager();
     const confirmManager = new ConfirmManager();
     const inputManager = new InputManager();
+
+    const blockPresentationManager = new BlockPresentationManager({
+      blockState: blockStateManager,
+      filterState: blockFilterStateManager,
+    });
+    const presentationLayer = new GamePresentationLayer({ block: blockPresentationManager });
 
     new GameResultOrchestrator({
       eventBus,
@@ -189,6 +200,6 @@ export class GameClientFactory {
 
     const gameManager = new GameManager({ eventBus });
 
-    return { gameManager, stateLayer };
+    return { gameManager, stateLayer, presentationLayer };
   }
 }
