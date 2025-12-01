@@ -95,28 +95,13 @@
   }) => {
     gameManager?.submitMove(param);
   };
-
-  const startGame =
-    playerIdx === 0
-      ? () => {
-          gameManager?.startGame();
-        }
-      : undefined;
-
-  const ready = () => {
-    gameManager?.submitReady();
-  };
-
-  const unready = () => {
-    gameManager?.submitCancelReady();
-  };
 </script>
 
 {#if isGameInitialized}
   <TriplePanelLayout>
     <div style="position: relative;">
       <Board {submitMove} />
-      <PregameOverlay {ready} {unready} {startGame} />
+      <PregameOverlay />
     </div>
 
     {#snippet left()}

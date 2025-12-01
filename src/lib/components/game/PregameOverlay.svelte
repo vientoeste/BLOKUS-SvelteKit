@@ -2,18 +2,11 @@
   import { useGame } from "$lib/client/game/context";
   import { blockSizeStore } from "$lib/store";
 
-  let {
-    startGame,
-    ready,
-    unready,
-  }: {
-    startGame: undefined | (() => void);
-    ready: () => void;
-    unready: () => void;
-  } = $props();
-
-  const { state } = useGame();
+  const { state, actions } = useGame();
   const gamePhaseStore = $state.progress.phase;
+  const ready = $actions.submitReady;
+  const unready = $actions.submitCancelReady;
+  const startGame = $actions.startGame;
 </script>
 
 {#if $gamePhaseStore === "NOT_STARTED" || $gamePhaseStore === undefined}
