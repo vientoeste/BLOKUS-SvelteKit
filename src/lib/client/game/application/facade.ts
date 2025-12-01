@@ -15,6 +15,7 @@ import { createNewBoard, getBlockMatrix, placeBlock } from '$lib/game/core';
 import type { IGameResultManager } from './ports/game-result.ports';
 import type { Score } from '$lib/domain/score';
 import type { IGameResultReader } from './ports/game-result-reader.ports';
+import type { BlockPresentationManager } from '../ui/presentation';
 
 export class GameStateLayer implements
   IGameLifecycleManager,
@@ -277,4 +278,18 @@ export class GameStateLayer implements
     return this.gameStateManager.getScore();
   }
   // ------------------------------------------------------------------------
+}
+
+export class GamePresentationLayer {
+  private _block: BlockPresentationManager;
+
+  constructor({
+    block,
+  }: {
+    block: BlockPresentationManager;
+  }) {
+    this._block = block;
+  }
+
+  get block() { return this._block; }
 }
