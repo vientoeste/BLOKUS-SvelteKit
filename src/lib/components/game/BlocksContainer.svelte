@@ -1,11 +1,14 @@
 <script lang="ts">
-  import { filteredBlockStore } from "$lib/store";
+  import { useGame } from "$lib/client/game/context";
   import Block from "./Block.svelte";
+
+  const { presentation } = useGame();
+  const blocks = $presentation.block.visibleBlocks;
 </script>
 
 <div id="blocks-container">
   <div id="blocks">
-    {#each $filteredBlockStore as block (block.slotIdx + block.blockType)}
+    {#each $blocks as block (block.slotIdx + block.blockType)}
       <Block
         blockType={block.blockType}
         slotIdx={block.slotIdx}
