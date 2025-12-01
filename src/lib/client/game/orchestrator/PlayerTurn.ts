@@ -40,6 +40,7 @@ export class PlayerTurnOrchestrator {
     turnManager,
     moveApplier,
     clientInfoReader,
+    boardReader,
   }: {
     eventBus: EventBus;
     playerTurnTimer: PlayerTurnTimer;
@@ -49,7 +50,7 @@ export class PlayerTurnOrchestrator {
     turnManager: ITurnManager;
     moveApplier: IMoveApplier;
     clientInfoReader: IClientInfoReader;
-
+    boardReader: IBoardReader;
   }) {
     this.eventBus = eventBus;
     this.playerTurnTimer = playerTurnTimer;
@@ -59,6 +60,7 @@ export class PlayerTurnOrchestrator {
     this.turnManager = turnManager;
     this.moveApplier = moveApplier;
     this.clientInfoReader = clientInfoReader;
+    this.boardReader = boardReader;
 
     this.eventBus.subscribe('PlayerTurnStarted', (event) => {
       const { slotIdx, lastMoveTimestamp } = event.payload;

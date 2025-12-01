@@ -156,6 +156,7 @@ export class GameClientFactory {
       moveApplier: stateLayer,
       slotManager: stateLayer,
       turnManager: stateLayer,
+      boardReader: stateLayer,
     });
     new PregameOrchestrator({
       eventBus,
