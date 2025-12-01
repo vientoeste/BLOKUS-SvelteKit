@@ -4,7 +4,6 @@ import { getBlockSize, type Undefinedable } from '$lib/utils';
 import { derived, get, writable } from 'svelte/store';
 import type { Phase } from './client/game/state/game';
 import type { RawColor } from '$types/client/ui';
-import { getColorFilter, quantityFilter } from './filter';
 
 export const userStore = writable<Undefinedable<UserInfo>>({
   id: undefined,
@@ -159,11 +158,6 @@ export const innerHeightStore = writable(0);
  * innerHeight - blockSize * 20 - padding * 2 - 21 == 0, 8 <= padding < 18
  */
 export const blockSizeStore = derived(innerHeightStore, (size) => Math.floor((size - 8) / 20 - 1) - 2);
-
-export const filteredBlockStore = derived(
-  [blockStore, quantityFilter.selected, getColorFilter().selected],
-  ([$blockStore, $quantityFilter, $colorFilter]) => $blockStore.filter((block) => !block.isPlaced && $colorFilter.includes(block.slotIdx) && $quantityFilter.includes(getBlockSize(block.blockType)))
-);
 
 export const chatStore = writable<Chat[]>([]);
 

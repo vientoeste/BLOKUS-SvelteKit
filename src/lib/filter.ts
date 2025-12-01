@@ -1,6 +1,4 @@
 // [TODO] move this function to proper position
-import type { SlotIdx } from "$types";
-import { clientSlotStore } from "./store";
 import { derived, get, writable, type Readable } from "svelte/store";
 
 /**
@@ -69,18 +67,4 @@ export const createFilter = <T>(itemStore: Readable<T[]>) => {
     toggleItem,
     toggleAll
   };
-};
-
-// [TODO] disable empty filters
-export const quantityStore = writable([1, 2, 3, 4, 5]);
-
-export const quantityFilter = createFilter(quantityStore);
-
-let colorFilter: ReturnType<typeof createFilter<SlotIdx>> | null = null;
-
-export const getColorFilter = () => {
-  if (colorFilter === null) {
-    colorFilter = createFilter(clientSlotStore);
-  }
-  return colorFilter;
 };
