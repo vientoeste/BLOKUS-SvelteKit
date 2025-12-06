@@ -1,5 +1,6 @@
 import type { InboundMoveMessage, InboundSkipTurnMessage, SubmitMoveDTO } from "$types";
 import type { IClientInfoReader, IMoveApplier, ISlotManager, ITurnManager } from "../application/ports";
+import type { IBoardReader } from "../application/ports/board-reader.ports";
 import type { EventBus } from "../event";
 import type { PlayerTurnTimer } from "../sequence/timer";
 import type { AlertManager, ConfirmManager } from "../ui/handler/Dialog";
@@ -28,6 +29,7 @@ export class PlayerTurnOrchestrator {
   private turnManager: ITurnManager;
   private moveApplier: IMoveApplier;
   private clientInfoReader: IClientInfoReader;
+  private boardReader: IBoardReader;
 
   private turnState: TurnState = 'NOT_PLAYER_TURN';
 
