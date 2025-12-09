@@ -45,9 +45,11 @@
   function highlightCells({
     block,
     position,
+    boardElement,
   }: {
     block: BlockMatrix;
     position: number[];
+    boardElement: HTMLElement;
   }) {
     unhighlightCells();
     if (
@@ -69,7 +71,15 @@
     }
   }
 
-  function getPosition({ x, y }: { x: number; y: number }): [number, number] {
+  function getPosition({
+    x,
+    y,
+    boardElement,
+  }: {
+    x: number;
+    y: number;
+    boardElement: HTMLElement;
+  }): [number, number] {
     const { left: boardLeft, top: boardTop } =
       boardElement.getBoundingClientRect();
     return [
@@ -78,19 +88,20 @@
     ];
   }
 
-  function handleDragOver(e: DragEvent, rowIdx: number, colIdx: number) {
+  function handleDragOver(e: DragEvent, boardElement: HTMLElement) {
     e.preventDefault();
     if ($moveStore === null) return;
     highlightCells({
       block: getBlockMatrix($moveStore),
-      position: getPosition({ x: e.clientX, y: e.clientY }),
+      position: getPosition({ x: e.clientX, y: e.clientY, boardElement }),
+      boardElement,
     });
   }
 
-  async function handleDrop(e: DragEvent, rowIdx: number, colIdx: number) {
+  async function handleDrop(e: DragEvent, boardElement: HTMLElement) {
     e.preventDefault();
 
-    const position = getPosition({ x: e.clientX, y: e.clientY });
+    const position = getPosition({ x: e.clientX, y: e.clientY, boardElement });
 
     dragPositionOffsetStore.set([0, 0]);
     highlightedCells.forEach((e) => {
@@ -109,6 +120,7 @@
         getBlockMatrix({ type, rotation, flip }),
         position as [number, number],
         slotIdx,
+        boardElement,
       );
       submitMove({
         previewUrl: capturedImageURL,
@@ -126,6 +138,7 @@
     block: BlockMatrix,
     position: [number, number],
     slotIdx: SlotIdx,
+    boardElement: HTMLElement,
   ): Promise<string> {
     const blockHeight = block.length;
     const blockWidth = block[0].length;
@@ -187,10 +200,10 @@
             role="button"
             tabindex="0"
             ondragover={(e) => {
-              handleDragOver(e, rowIdx, colIdx);
+              handleDragOver(e, boardElement);
             }}
             ondrop={(e) => {
-              handleDrop(e, rowIdx, colIdx);
+              handleDrop(e, boardElement);
             }}
           ></div>
         </div>
