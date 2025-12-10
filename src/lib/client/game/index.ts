@@ -25,6 +25,7 @@ import {
 } from "./state";
 import type { Phase } from "./state/game";
 import { AlertManager, ConfirmManager, InputManager } from "./ui";
+import { GamePresentationLayer } from "./application/facade";
 
 export class GameManager {
   private eventBus: EventBus;
@@ -114,6 +115,8 @@ export class GameClientFactory {
       slotStateManager,
     });
 
+    const presentationLayer = new GamePresentationLayer();
+
     const turnSequencer = new TurnSequencer();
     const turnTimer = new PlayerTurnTimer({ eventBus });
 
@@ -185,6 +188,6 @@ export class GameClientFactory {
 
     const gameManager = new GameManager({ eventBus });
 
-    return { gameManager, stateLayer };
+    return { gameManager, stateLayer, presentationLayer };
   }
 }
