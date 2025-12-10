@@ -278,3 +278,5 @@ export class GameStateLayer implements
   }
   // ------------------------------------------------------------------------
 }
+
+export class GamePresentationLayer { }
