@@ -15,6 +15,8 @@ import { createNewBoard, getBlockMatrix, placeBlock } from '$lib/game/core';
 import type { IGameResultManager } from './ports/game-result.ports';
 import type { Score } from '$lib/domain/score';
 import type { IGameResultReader } from './ports/game-result-reader.ports';
+import type { IMoveConfirmationPresenter } from './ports/move-confirmation-presenter';
+import type { BoardPresentationManager } from '../ui/presentation';
 
 export class GameStateLayer implements
   IGameLifecycleManager,
@@ -279,4 +281,29 @@ export class GameStateLayer implements
   // ------------------------------------------------------------------------
 }
 
-export class GamePresentationLayer { }
+export class GamePresentationLayer implements IMoveConfirmationPresenter {
+  private boardPresentationManager: BoardPresentationManager;
+
+  get board() {
+    return this.boardPresentationManager;
+  }
+
+  constructor({
+    boardPresentationManager,
+  }: {
+    boardPresentationManager: BoardPresentationManager;
+  }) {
+    this.boardPresentationManager = boardPresentationManager;
+  }
+
+  // -----------------------MoveConfirmationPresenter------------------------
+  getConfirmPreviewData(p: {
+    board: BoardMatrix;
+    block: Block;
+    position: [number, number];
+    slotIdx: SlotIdx;
+  }): Promise<HTMLCanvasElement> {
+    return this.boardPresentationManager.getPreview(p);
+  }
+  // ------------------------------------------------------------------------
+}
