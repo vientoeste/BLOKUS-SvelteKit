@@ -161,6 +161,13 @@ export class PlayerTurnOrchestrator {
         return;
       }
 
+      const board = this.boardReader.getBoard();
+      if (!board) {
+        throw new Error('Board is not initialized');
+      }
+      const movePreviewElement = await this.moveConfirmationPresenter.getConfirmPreviewData({
+        block: blockInfo, board, position, slotIdx,
+      });
       switch (this.turnState) {
         case 'NOT_PLAYER_TURN': {
           // [TODO] reserve move here
@@ -168,7 +175,8 @@ export class PlayerTurnOrchestrator {
         }
         case 'PLAYER_TURN': {
           this.setState('MOVE_PROCESSING');
-          const result = await this.confirmManager.openMoveConfirmModal(previewUrl);
+          // [TODO] cast the type if needed
+          const result = await this.confirmManager.openMoveConfirmModal(movePreviewElement.toDataURL());
           if (result === 'CONFIRM') {
             const moveMessage: InboundMoveMessage = {
               type: 'MOVE',
