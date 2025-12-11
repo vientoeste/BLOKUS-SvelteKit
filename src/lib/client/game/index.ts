@@ -27,7 +27,7 @@ import type { Phase } from "./state/game";
 import { AlertManager, ConfirmManager, InputManager } from "./ui";
 import { TimerStateManager } from "./state/timer";
 import { Vsync } from "$lib/vsync";
-import { BlockPresentationManager } from "./ui/presentation/Block";
+import { BlockPresentationManager, BoardPresentationManager } from "./ui/presentation";
 import { BlockFilterStateManager } from "./state/filter";
 import { GamePresentationLayer } from "./application/facade";
 
@@ -54,18 +54,16 @@ export class GameManager {
   };
 
   submitMove = ({
-    previewUrl,
     position,
     blockInfo,
     slotIdx,
   }: {
-    previewUrl: string;
     position: [number, number];
     blockInfo: Block;
     slotIdx: SlotIdx;
   }) => {
     this.eventBus.publish('PlayerMoveSubmitted', {
-      previewUrl, position, blockInfo, slotIdx,
+      position, blockInfo, slotIdx,
     });
   };
 
@@ -145,11 +143,15 @@ export class GameClientFactory {
     const confirmManager = new ConfirmManager();
     const inputManager = new InputManager();
 
+    const boardPresentationManager = new BoardPresentationManager();
     const blockPresentationManager = new BlockPresentationManager({
       blockState: blockStateManager,
       filterState: blockFilterStateManager,
     });
-    const presentationLayer = new GamePresentationLayer({ block: blockPresentationManager });
+    const presentationLayer = new GamePresentationLayer({
+      block: blockPresentationManager,
+      boardPresentationManager,
+    });
 
     new GameResultOrchestrator({
       eventBus,
@@ -172,6 +174,9 @@ export class GameClientFactory {
       moveApplier: stateLayer,
       slotManager: stateLayer,
       turnManager: stateLayer,
+      boardReader: stateLayer,
+
+      moveConfirmationPresenter: presentationLayer,
     });
     new PregameOrchestrator({
       eventBus,

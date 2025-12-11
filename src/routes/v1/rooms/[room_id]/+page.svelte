@@ -10,6 +10,7 @@
   import type { Block, BoardMatrix, PlayerIdx, SlotIdx } from "$types";
   import type { PageData } from "./$types";
   import { createGameContext } from "$lib/client/game/context";
+  import OffscreenBoardSnapshot from "$lib/components/OffscreenBoardSnapshot.svelte";
 
   const { data }: { data: PageData } = $props();
   const { room, playerIdx, roomCache, moves } = data;
@@ -91,7 +92,6 @@
   });
 
   const submitMove = (param: {
-    previewUrl: string;
     position: [number, number];
     blockInfo: Block;
     slotIdx: SlotIdx;
@@ -105,6 +105,7 @@
 </script>
 
 {#if isGameInitialized}
+  <OffscreenBoardSnapshot></OffscreenBoardSnapshot>
   <Players
     ready={() => {
       gameManager.submitReady();
