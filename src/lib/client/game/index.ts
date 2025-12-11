@@ -25,6 +25,8 @@ import {
 } from "./state";
 import type { Phase } from "./state/game";
 import { AlertManager, ConfirmManager, InputManager } from "./ui";
+import { GamePresentationLayer } from "./application/facade";
+import { BoardPresentationManager } from "./ui/presentation";
 
 export class GameManager {
   private eventBus: EventBus;
@@ -49,18 +51,16 @@ export class GameManager {
   }
 
   submitMove({
-    previewUrl,
     position,
     blockInfo,
     slotIdx,
   }: {
-    previewUrl: string;
     position: [number, number];
     blockInfo: Block;
     slotIdx: SlotIdx;
   }) {
     this.eventBus.publish('PlayerMoveSubmitted', {
-      previewUrl, position, blockInfo, slotIdx,
+      position, blockInfo, slotIdx,
     });
   }
 
@@ -114,6 +114,11 @@ export class GameClientFactory {
       slotStateManager,
     });
 
+    const boardPresentationManager = new BoardPresentationManager();
+    const presentationLayer = new GamePresentationLayer({
+      boardPresentationManager,
+    });
+
     const turnSequencer = new TurnSequencer();
     const turnTimer = new PlayerTurnTimer({ eventBus });
 
@@ -157,6 +162,8 @@ export class GameClientFactory {
       slotManager: stateLayer,
       turnManager: stateLayer,
       boardReader: stateLayer,
+
+      moveConfirmationPresenter: presentationLayer,
     });
     new PregameOrchestrator({
       eventBus,
@@ -185,6 +192,6 @@ export class GameClientFactory {
 
     const gameManager = new GameManager({ eventBus });
 
-    return { gameManager, stateLayer };
+    return { gameManager, stateLayer, presentationLayer };
   }
 }

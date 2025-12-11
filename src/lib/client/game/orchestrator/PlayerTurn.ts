@@ -1,6 +1,7 @@
 import type { InboundMoveMessage, InboundSkipTurnMessage, SubmitMoveDTO } from "$types";
 import type { IClientInfoReader, IMoveApplier, ISlotManager, ITurnManager } from "../application/ports";
 import type { IBoardReader } from "../application/ports/board-reader.ports";
+import type { IMoveConfirmationPresenter } from "../application/ports/move-confirmation-presenter";
 import type { EventBus } from "../event";
 import type { PlayerTurnTimer } from "../sequence/timer";
 import type { AlertManager, ConfirmManager } from "../ui/handler/Dialog";
@@ -31,6 +32,8 @@ export class PlayerTurnOrchestrator {
   private clientInfoReader: IClientInfoReader;
   private boardReader: IBoardReader;
 
+  private moveConfirmationPresenter: IMoveConfirmationPresenter;
+
   private turnState: TurnState = 'NOT_PLAYER_TURN';
 
   constructor({
@@ -43,6 +46,7 @@ export class PlayerTurnOrchestrator {
     moveApplier,
     clientInfoReader,
     boardReader,
+    moveConfirmationPresenter,
   }: {
     eventBus: EventBus;
     playerTurnTimer: PlayerTurnTimer;
@@ -53,6 +57,7 @@ export class PlayerTurnOrchestrator {
     moveApplier: IMoveApplier;
     clientInfoReader: IClientInfoReader;
     boardReader: IBoardReader;
+    moveConfirmationPresenter: IMoveConfirmationPresenter;
   }) {
     this.eventBus = eventBus;
     this.playerTurnTimer = playerTurnTimer;
@@ -63,6 +68,7 @@ export class PlayerTurnOrchestrator {
     this.moveApplier = moveApplier;
     this.clientInfoReader = clientInfoReader;
     this.boardReader = boardReader;
+    this.moveConfirmationPresenter = moveConfirmationPresenter;
 
     this.eventBus.subscribe('PlayerTurnStarted', (event) => {
       const { slotIdx, lastMoveTimestamp } = event.payload;
@@ -144,7 +150,7 @@ export class PlayerTurnOrchestrator {
         console.warn('move is duplicated or delayed');
         return;
       }
-      const { blockInfo, position, slotIdx, previewUrl } = event.payload;
+      const { blockInfo, position, slotIdx } = event.payload;
       const playerIdx = this.clientInfoReader.getClientPlayerIdx();
       const turn = this.turnManager.getCurrentTurn();
       const { result, reason } = this.moveApplier.checkBlockPlaceability({
@@ -155,6 +161,13 @@ export class PlayerTurnOrchestrator {
         return;
       }
 
+      const board = this.boardReader.getBoard();
+      if (!board) {
+        throw new Error('Board is not initialized');
+      }
+      const movePreviewElement = await this.moveConfirmationPresenter.getConfirmPreviewData({
+        block: blockInfo, board, position, slotIdx,
+      });
       switch (this.turnState) {
         case 'NOT_PLAYER_TURN': {
           // [TODO] reserve move here
@@ -162,7 +175,8 @@ export class PlayerTurnOrchestrator {
         }
         case 'PLAYER_TURN': {
           this.setState('MOVE_PROCESSING');
-          const result = await this.confirmManager.openMoveConfirmModal(previewUrl);
+          // [TODO] cast the type if needed
+          const result = await this.confirmManager.openMoveConfirmModal(movePreviewElement.toDataURL());
           if (result === 'CONFIRM') {
             const moveMessage: InboundMoveMessage = {
               type: 'MOVE',

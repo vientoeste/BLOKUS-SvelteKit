@@ -4,12 +4,12 @@
   import { dragPositionOffsetStore, moveStore } from "$lib/store";
   import html2canvas from "html2canvas";
   import { useGame } from "$lib/client/game/context";
+  import BoardMatrixRenderer from "./BoardMatrixRenderer.svelte";
 
   const {
     submitMove,
   }: {
     submitMove: (param: {
-      previewUrl: string;
       position: [number, number];
       blockInfo: Block;
       slotIdx: SlotIdx;
@@ -18,8 +18,6 @@
 
   const { state } = useGame();
   const boardStore = $state?.board.matrix;
-
-  let boardElement: HTMLElement;
 
   class CellHighlightManager {
     // [TODO] implement this class for optimization:
@@ -45,9 +43,11 @@
   function highlightCells({
     block,
     position,
+    boardElement,
   }: {
     block: BlockMatrix;
     position: number[];
+    boardElement: HTMLElement;
   }) {
     unhighlightCells();
     if (
@@ -69,7 +69,15 @@
     }
   }
 
-  function getPosition({ x, y }: { x: number; y: number }): [number, number] {
+  function getPosition({
+    x,
+    y,
+    boardElement,
+  }: {
+    x: number;
+    y: number;
+    boardElement: HTMLElement;
+  }): [number, number] {
     const { left: boardLeft, top: boardTop } =
       boardElement.getBoundingClientRect();
     return [
@@ -78,19 +86,20 @@
     ];
   }
 
-  function handleDragOver(e: DragEvent, rowIdx: number, colIdx: number) {
+  function handleDragOver(e: DragEvent, boardElement: HTMLElement) {
     e.preventDefault();
     if ($moveStore === null) return;
     highlightCells({
       block: getBlockMatrix($moveStore),
-      position: getPosition({ x: e.clientX, y: e.clientY }),
+      position: getPosition({ x: e.clientX, y: e.clientY, boardElement }),
+      boardElement,
     });
   }
 
-  async function handleDrop(e: DragEvent, rowIdx: number, colIdx: number) {
+  async function handleDrop(e: DragEvent, boardElement: HTMLElement) {
     e.preventDefault();
 
-    const position = getPosition({ x: e.clientX, y: e.clientY });
+    const position = getPosition({ x: e.clientX, y: e.clientY, boardElement });
 
     dragPositionOffsetStore.set([0, 0]);
     highlightedCells.forEach((e) => {
@@ -105,13 +114,7 @@
         throw new Error("missing blockInfo");
       }
 
-      const capturedImageURL = await capturePartialBoard(
-        getBlockMatrix({ type, rotation, flip }),
-        position as [number, number],
-        slotIdx,
-      );
       submitMove({
-        previewUrl: capturedImageURL,
         position,
         blockInfo: { type, rotation, flip },
         slotIdx,
@@ -126,6 +129,7 @@
     block: BlockMatrix,
     position: [number, number],
     slotIdx: SlotIdx,
+    boardElement: HTMLElement,
   ): Promise<string> {
     const blockHeight = block.length;
     const blockWidth = block[0].length;
@@ -176,71 +180,4 @@
   }
 </script>
 
-<div id="board" bind:this={boardElement}>
-  {#each $boardStore as boardLine, rowIdx}
-    <div id="boardLine-{rowIdx}" class="boardLine">
-      {#each boardLine as cell, colIdx}
-        <div class="cell-cover">
-          <div
-            id="cell-{rowIdx}-{colIdx}"
-            class="cell cell-{cell}"
-            role="button"
-            tabindex="0"
-            ondragover={(e) => {
-              handleDragOver(e, rowIdx, colIdx);
-            }}
-            ondrop={(e) => {
-              handleDrop(e, rowIdx, colIdx);
-            }}
-          ></div>
-        </div>
-      {/each}
-    </div>
-  {/each}
-</div>
-
-<style>
-  #board {
-    width: fit-content;
-    height: fit-content;
-    background: white;
-    border: 0.5px solid black;
-  }
-  .boardLine {
-    display: flex;
-    flex-direction: row;
-  }
-  .cell-cover {
-    background: white;
-    padding: 1px;
-    border-left: 0.5px solid rgba(0, 0, 0, 0.267);
-    border-bottom: 0.5px solid rgba(0, 0, 0, 0.267);
-  }
-  .cell-cover:first-child {
-    border-left: none;
-  }
-  #boardLine-19 > .cell-cover {
-    border-bottom: none;
-  }
-  .cell {
-    width: 30px;
-    height: 30px;
-    background: rgb(185, 185, 185);
-  }
-  .cell-0 {
-    background: rgba(0, 0, 255, 0.625);
-  }
-  .cell-1 {
-    background: rgba(255, 0, 0, 0.65);
-  }
-  .cell-2 {
-    background: rgb(0, 220, 0, 0.625);
-  }
-  .cell-3 {
-    background: rgb(255, 255, 0, 0.75);
-  }
-  .highlighted {
-    /* change to other color */
-    background: black !important;
-  }
-</style>
+<BoardMatrixRenderer source={boardStore} {handleDragOver} {handleDrop} />
