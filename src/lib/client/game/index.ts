@@ -164,6 +164,8 @@ export class GameClientFactory {
       slotManager: stateLayer,
       turnManager: stateLayer,
       boardReader: stateLayer,
+
+      moveConfirmationPresenter: presentationLayer,
     });
     new PregameOrchestrator({
       eventBus,
