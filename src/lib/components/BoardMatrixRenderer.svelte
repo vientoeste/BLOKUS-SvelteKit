@@ -10,10 +10,12 @@
     handleDrop,
   }: {
     source: Readable<BoardMatrix> | undefined;
-    handleDragOver:
+    handleDragOver?:
       | undefined
       | ((e: DragEvent, boardElement: HTMLElement) => void);
-    handleDrop: undefined | ((e: DragEvent, boardElement: HTMLElement) => void);
+    handleDrop?:
+      | undefined
+      | ((e: DragEvent, boardElement: HTMLElement) => void);
   } = $props();
 </script>
 
