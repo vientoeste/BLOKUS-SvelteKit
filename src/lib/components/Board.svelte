@@ -10,7 +10,6 @@
     submitMove,
   }: {
     submitMove: (param: {
-      previewUrl: string;
       position: [number, number];
       blockInfo: Block;
       slotIdx: SlotIdx;
@@ -115,14 +114,7 @@
         throw new Error("missing blockInfo");
       }
 
-      const capturedImageURL = await capturePartialBoard(
-        getBlockMatrix({ type, rotation, flip }),
-        position as [number, number],
-        slotIdx,
-        boardElement,
-      );
       submitMove({
-        previewUrl: capturedImageURL,
         position,
         blockInfo: { type, rotation, flip },
         slotIdx,

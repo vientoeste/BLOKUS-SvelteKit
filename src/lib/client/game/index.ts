@@ -51,18 +51,16 @@ export class GameManager {
   }
 
   submitMove({
-    previewUrl,
     position,
     blockInfo,
     slotIdx,
   }: {
-    previewUrl: string;
     position: [number, number];
     blockInfo: Block;
     slotIdx: SlotIdx;
   }) {
     this.eventBus.publish('PlayerMoveSubmitted', {
-      previewUrl, position, blockInfo, slotIdx,
+      position, blockInfo, slotIdx,
     });
   }
 

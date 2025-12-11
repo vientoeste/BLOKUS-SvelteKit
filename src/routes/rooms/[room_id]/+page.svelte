@@ -91,7 +91,6 @@
   });
 
   const submitMove = (param: {
-    previewUrl: string;
     position: [number, number];
     blockInfo: Block;
     slotIdx: SlotIdx;

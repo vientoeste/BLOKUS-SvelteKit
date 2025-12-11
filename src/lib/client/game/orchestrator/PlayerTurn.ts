@@ -150,7 +150,7 @@ export class PlayerTurnOrchestrator {
         console.warn('move is duplicated or delayed');
         return;
       }
-      const { blockInfo, position, slotIdx, previewUrl } = event.payload;
+      const { blockInfo, position, slotIdx } = event.payload;
       const playerIdx = this.clientInfoReader.getClientPlayerIdx();
       const turn = this.turnManager.getCurrentTurn();
       const { result, reason } = this.moveApplier.checkBlockPlaceability({
