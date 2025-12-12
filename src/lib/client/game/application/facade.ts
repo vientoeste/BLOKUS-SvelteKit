@@ -19,6 +19,8 @@ import type { IBoardReader } from './ports/board-reader.ports';
 import type { BoardPresentationManager, BlockPresentationManager } from '../ui/presentation';
 import type { BlockFilterStateManager } from '../state/filter';
 import type { IMoveConfirmationPresenter } from './ports/move-confirmation-presenter';
+import type { TimerStateManager } from '../state/timer';
+import type { ITimerStateWriter } from './ports/timer-state.ports';
 
 export class GameStateLayer implements
   IGameLifecycleManager,
@@ -31,7 +33,8 @@ export class GameStateLayer implements
   ICalculationDataProvider,
   ICalculationResultApplier,
   IGameResultReader,
-  IBoardReader {
+  IBoardReader,
+  ITimerStateWriter {
   private blockStateManager: BlockStateManager;
   private boardStateManager: BoardStateManager;
   private gameStateManager: GameStateManager;
@@ -39,6 +42,7 @@ export class GameStateLayer implements
   private playerStateManager: PlayerStateManager;
   private slotStateManager: SlotStateManager;
   private blockFilterStateManager: BlockFilterStateManager;
+  private timerStateManager: TimerStateManager;
 
   constructor({
     blockStateManager,
@@ -48,6 +52,7 @@ export class GameStateLayer implements
     playerStateManager,
     slotStateManager,
     blockFilterStateManager,
+    timerStateManager,
   }: {
     blockStateManager: BlockStateManager,
     boardStateManager: BoardStateManager,
@@ -56,6 +61,7 @@ export class GameStateLayer implements
     playerStateManager: PlayerStateManager,
     slotStateManager: SlotStateManager,
     blockFilterStateManager: BlockFilterStateManager,
+    timerStateManager: TimerStateManager;
   }) {
     this.blockStateManager = blockStateManager;
     this.boardStateManager = boardStateManager;
@@ -65,6 +71,7 @@ export class GameStateLayer implements
     this.slotStateManager = slotStateManager;
     // [TODO] Decide whether expose this manager directly or make public methods
     this.blockFilterStateManager = blockFilterStateManager;
+    this.timerStateManager = timerStateManager;
   }
 
   // ------------------------ Getters for Context API ------------------------
@@ -75,6 +82,7 @@ export class GameStateLayer implements
   get player() { return this.playerStateManager; }
   get slot() { return this.slotStateManager; }
   get filter() { return this.blockFilterStateManager; }
+  get timer() { return this.timerStateManager; }
 
   // -------------------------- GameLifecycleManager -------------------------
   initializeNewGame(payload: { gameId: GameId; activePlayerCount: 2 | 3 | 4; }): void {
@@ -291,6 +299,17 @@ export class GameStateLayer implements
   // ------------------------- GameResultReader------------------------------
   getScore(): Score | undefined {
     return this.gameStateManager.getScore();
+  }
+  // ------------------------------------------------------------------------
+
+
+  // --------------------------- TimerStateWriter ---------------------------
+  setTimer(progression: number): void {
+    return this.timerStateManager.set(progression);
+  }
+
+  resetTimer(): void {
+    return this.timerStateManager.reset();
   }
   // ------------------------------------------------------------------------
 }

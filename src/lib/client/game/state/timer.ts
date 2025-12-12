@@ -1,23 +1,24 @@
-import { turnTimerProgress } from "$lib/store";
-import type { Writable } from "svelte/store";
-
-type TimerStore = Writable<number>;
+import { writable, type Readable, type Writable } from "svelte/store";
 
 export class TimerStateManager {
-  private store: TimerStore;
+  private _progress: Writable<number>;
 
   constructor() {
-    this.store = turnTimerProgress;
+    this._progress = writable<number>(0);
+  }
+
+  get progress(): Readable<number> {
+    return { subscribe: this._progress.subscribe };
   }
 
   /**
    * @param progress Value between 0.0 ~ 1.0
    */
   set(progress: number) {
-    this.store.set(Math.max(0, Math.min(1, progress)));
+    this._progress.set(Math.max(0, Math.min(1, progress)));
   }
 
   reset() {
-    this.store.set(0);
+    this._progress.set(0);
   }
 }

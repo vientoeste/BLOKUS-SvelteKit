@@ -119,11 +119,12 @@ export class GameClientFactory {
       blockStateManager,
       moveStateManager,
       slotStateManager,
-      blockFilterStateManager
+      blockFilterStateManager,
+      timerStateManager,
     });
 
     const turnSequencer = new TurnSequencer();
-    const turnTimer = new PlayerTurnTimer({ eventBus, timerStateManager, vsync });
+    const turnTimer = new PlayerTurnTimer({ eventBus, timerStateWriter: stateLayer, vsync });
 
     const messageDispatcher = new WebSocketMessageDispatcher(webSocket);
     const messageReceiver = new WebSocketMessageReceiver({

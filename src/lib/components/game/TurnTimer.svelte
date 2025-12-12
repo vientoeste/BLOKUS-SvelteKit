@@ -1,12 +1,15 @@
 <script lang="ts">
-  import { turnTimerProgress } from "$lib/store";
+  import { useGame } from "$lib/client/game/context";
 
   let { width = 30 } = $props();
+
+  const { state } = useGame();
+  const turnTimerProgression = $state.timer.progress;
 </script>
 
 <div
   class="timer-container"
-  style="--progress: {1 - $turnTimerProgress}; width: {width}px;"
+  style="--progress: {1 - $turnTimerProgression}; width: {width}px;"
 >
   <!-- [TODO] update background color by slot's color -->
   <div class="timer-bar" style="background-color: #000"></div>

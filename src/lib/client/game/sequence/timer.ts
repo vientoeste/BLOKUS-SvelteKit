@@ -1,25 +1,25 @@
 import type { Vsync } from "$lib/vsync";
 import type { SlotIdx } from "$types";
+import type { ITimerStateWriter } from "../application/ports/timer-state.ports";
 import type { EventBus } from "../event";
-import type { TimerStateManager } from "../state/timer";
 
 export class PlayerTurnTimer {
   constructor({
     eventBus,
-    timerStateManager,
+    timerStateWriter,
     vsync,
   }: {
     eventBus: EventBus;
-    timerStateManager: TimerStateManager;
+    timerStateWriter: ITimerStateWriter;
     vsync: Vsync;
   }) {
     this.eventBus = eventBus;
-    this.timerStateManager = timerStateManager;
+    this.timerStateWriter = timerStateWriter;
     this.vsync = vsync;
   }
 
   private eventBus: EventBus;
-  private timerStateManager: TimerStateManager;
+  private timerStateWriter: ITimerStateWriter;
   private vsync: Vsync;
 
   /**
@@ -41,7 +41,7 @@ export class PlayerTurnTimer {
     const elapsed = time - this.visualStartTime;
     const nextProgress = Math.min(elapsed / this.visualDuration, 1);
 
-    this.timerStateManager.set(nextProgress);
+    this.timerStateWriter.setTimer(nextProgress);
 
     if (nextProgress < 1) {
       this.vsync.requestCallback(this.updateVisualProgress);
@@ -70,7 +70,7 @@ export class PlayerTurnTimer {
     this.visualDuration = time;
     this.visualStartTime = null;
     this.isVisualRunning = true;
-    this.timerStateManager.reset();
+    this.timerStateWriter.resetTimer();
     this.vsync.requestCallback(this.updateVisualProgress);
   }
 
@@ -86,6 +86,6 @@ export class PlayerTurnTimer {
       this.visualStartTime = null;
     }
 
-    this.timerStateManager.reset();
+    this.timerStateWriter.resetTimer();
   }
 }

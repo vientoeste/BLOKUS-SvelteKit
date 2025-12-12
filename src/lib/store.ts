@@ -160,8 +160,3 @@ export const innerHeightStore = writable(0);
 export const blockSizeStore = derived(innerHeightStore, (size) => Math.floor((size - 8) / 20 - 1) - 2);
 
 export const chatStore = writable<Chat[]>([]);
-
-/**
- * @description Progression of the turn timer, represented by 0.00 ~ 1.00.
- */
-export const turnTimerProgress = writable<number>(0);
