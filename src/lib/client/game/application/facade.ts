@@ -15,6 +15,7 @@ import { createNewBoard, getBlockMatrix, placeBlock } from '$lib/game/core';
 import type { IGameResultManager } from './ports/game-result.ports';
 import type { Score } from '$lib/domain/score';
 import type { IGameResultReader } from './ports/game-result-reader.ports';
+import type { IBoardReader } from './ports/board-reader.ports';
 import type { BoardPresentationManager, BlockPresentationManager } from '../ui/presentation';
 import type { BlockFilterStateManager } from '../state/filter';
 import type { IMoveConfirmationPresenter } from './ports/move-confirmation-presenter';
@@ -29,7 +30,8 @@ export class GameStateLayer implements
   ITurnManager,
   ICalculationDataProvider,
   ICalculationResultApplier,
-  IGameResultReader {
+  IGameResultReader,
+  IBoardReader {
   private blockStateManager: BlockStateManager;
   private boardStateManager: BoardStateManager;
   private gameStateManager: GameStateManager;
