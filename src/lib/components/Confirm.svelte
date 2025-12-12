@@ -1,9 +1,11 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, type Component } from "svelte";
 
   let {
     title = $bindable(),
     message = $bindable(),
+    component: Component_ = $bindable(),
+    componentProps = {},
     confirmText = $bindable("Confirm"),
     cancelText = $bindable("Cancel"),
     onConfirm = $bindable(() => {}),
@@ -12,6 +14,8 @@
   }: {
     title?: string;
     message?: string;
+    component?: Component;
+    componentProps: Record<string, unknown>;
     confirmText?: string;
     cancelText?: string;
     onConfirm?: () => void;
@@ -44,7 +48,11 @@
   </div>
 
   <div class="confirm-content">
-    {@html message}
+    {#if Component_ === undefined}
+      {@html message}
+    {:else}
+      <Component_ {...componentProps} />
+    {/if}
   </div>
 
   <div class="confirm-actions">
@@ -93,7 +101,7 @@
 
   .confirm-dialog {
     padding: 5px;
-    min-width: 300px;
+    /* min-width: 300px; */
     background-color: light-dark(#ffffff, #2a2a2a);
   }
 
