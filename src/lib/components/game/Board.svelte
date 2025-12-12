@@ -6,6 +6,7 @@
     movePreviewShadowStore,
     moveStore,
   } from "$lib/store";
+  import OffscreenBoardSnapshot from "../OffscreenBoardSnapshot.svelte";
   import ColorMatrixRenderer from "./ColorMatrixRenderer.svelte";
 
   let boardElement: HTMLElement | null = $state(null);
@@ -52,7 +53,6 @@
         position,
         blockInfo: { type, rotation, flip },
         slotIdx,
-        previewUrl: "",
       });
     } catch (error) {
       console.error("DnD(drop):", error);
@@ -107,6 +107,7 @@
     ></ColorMatrixRenderer>
   </div>
 {/if}
+<OffscreenBoardSnapshot></OffscreenBoardSnapshot>
 
 <style>
   #block-preview-shadow {

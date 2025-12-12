@@ -1,14 +1,15 @@
 <script lang="ts">
   import { useGame } from "$lib/client/game/context";
   import { tick } from "svelte";
-  import BoardMatrixRenderer from "./BoardMatrixRenderer.svelte";
   import html2canvas from "html2canvas";
   import type { PreviewRequest } from "$lib/client/game/ui/presentation/Board";
+  import ColorMatrixRenderer from "./game/ColorMatrixRenderer.svelte";
 
   const { presentation } = useGame();
   const previewRequest = $presentation?.board.previewRequest;
   let snapshotElement: HTMLElement;
   let lastReq = $state<PreviewRequest | null>(null);
+  const matrix = $derived(lastReq?.matrix);
 
   const handlePreviewRequest = (request: PreviewRequest | null) => {
     if (request && request?.id !== lastReq?.id) {
@@ -31,14 +32,14 @@
     request.resolve(canvas);
   };
 
-  previewRequest?.subscribe((req) => handlePreviewRequest(req));
+  previewRequest.subscribe((req) => handlePreviewRequest(req));
 </script>
 
 <div
   bind:this={snapshotElement}
   style="position: absolute; left: -9999px; top: -9999px;"
 >
-  {#if lastReq}
-    <BoardMatrixRenderer source={lastReq.matrix} />
+  {#if lastReq && $matrix}
+    <ColorMatrixRenderer id="" matrix={$matrix} />
   {/if}
 </div>
