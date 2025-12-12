@@ -33,13 +33,6 @@ export class PlayerTurnTimer {
   private visualStartTime: number | null = null;
   private visualDuration = 0;
 
-  // [TODO] set timeout by game strategy
-  setTurnTimeout({ time = 60000, slotIdx, turn }: { time?: number, slotIdx: SlotIdx, turn: number }) {
-    setTimeout(() => {
-      this.eventBus.publish('TimeoutOccured', { slotIdx, turn });
-    }, time);
-  }
-
   private updateVisualProgress = (time: number) => {
     if (this.visualStartTime === null) {
       this.visualStartTime = time;

@@ -103,7 +103,7 @@ export class PlayerTurnOrchestrator {
       }
       if (ellapsedTime === undefined || ellapsedTime < 60000) {
         this.alertManager.openTurnStartedModal();
-        this.playerTurnTimer.setTurnTimeout({ slotIdx, time: ellapsedTime, turn: this.turnManager.getCurrentTurn() });
+        this.playerTurnTimer.start({ slotIdx, time: ellapsedTime, turn: this.turnManager.getCurrentTurn() });
         return;
       }
       // [TODO] is modal needed?
