@@ -13,6 +13,7 @@
   import BlocksFilter from "$lib/components/game/BlocksFilter.svelte";
   import PregameOverlay from "$lib/components/game/PregameOverlay.svelte";
   import ChatContainer from "$lib/components/game/chat/Container.svelte";
+  import TimerOverlay from "$lib/components/game/TimerOverlay.svelte";
   import { createGameContext } from "$lib/client/game/context";
 
   const { data }: { data: PageData } = $props();
@@ -93,6 +94,7 @@
     <div style="position: relative;">
       <Board />
       <PregameOverlay />
+      <TimerOverlay />
     </div>
 
     {#snippet left()}
