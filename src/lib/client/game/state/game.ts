@@ -1,4 +1,5 @@
 import type { Score } from "$lib/domain/score";
+import { colorMapper } from "$lib/utils";
 import type { GameId, SlotIdx } from "$types";
 import { derived, get, writable, type Readable, type Writable } from "svelte/store";
 
@@ -38,6 +39,10 @@ export class GameStateManager {
 
   get currentSlotIdx() {
     return this._currentSlotIdx;
+  }
+
+  get activeSlotColor() {
+    return derived(this._currentSlotIdx, (store) => colorMapper(store));
   }
 
   // Activate this getter if needed.
