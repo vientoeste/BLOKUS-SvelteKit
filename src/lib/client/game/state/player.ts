@@ -1,7 +1,6 @@
 import type { ParticipantInf, PlayerIdx, SlotIdx } from "$types";
 import { get, writable, type Readable, type Writable } from "svelte/store";
 import { determinePlayerSlots } from "$lib/utils";
-import { clientSlotStoreWriter } from "$lib/store";
 
 export class PlayerStateManager {
   private _clientPlayerIdx: Writable<PlayerIdx>;
@@ -18,11 +17,6 @@ export class PlayerStateManager {
     this._clientPlayerIdx = writable(playerIdx);
     this._participants = writable(players);
     this._clientSlots = writable([]);
-
-    // [TODO] remove this syncer after clientSlotStore's replacement completed
-    this._clientSlots.subscribe((store) => {
-      clientSlotStoreWriter.set(store);
-    });
   }
 
   get players(): Readable<(ParticipantInf | undefined)[]> {
