@@ -5,14 +5,18 @@
 
   const { state } = useGame();
   const turnTimerProgression = $state.timer.progress;
+
+  const activeSlotColor = $state.progress.activeSlotColor;
 </script>
 
 <div
   class="timer-container"
   style="--progress: {1 - $turnTimerProgression}; width: {width}px;"
 >
-  <!-- [TODO] update background color by slot's color -->
-  <div class="timer-bar" style="background-color: #000"></div>
+  <div
+    class="timer-bar"
+    style="background-color: var(--{$activeSlotColor})"
+  ></div>
 </div>
 
 <style>
