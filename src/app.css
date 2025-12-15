@@ -8,12 +8,12 @@
 
 :root {
     color-scheme: light dark;
-    --none: #b9b9b9;
-    --blue: rgba(0, 0, 255, 0.625);
-    --red: rgba(255, 0, 0, 0.65);
-    --green: rgb(0, 220, 0, 0.625);
-    --yellow: rgb(255, 255, 0, 0.75);
-    --background: #444;
+    --NONE: #b9b9b9;
+    --BLUE: rgba(0, 0, 255, 0.625);
+    --RED: rgba(255, 0, 0, 0.65);
+    --GREEN: rgb(0, 220, 0, 0.625);
+    --YELLOW: rgb(255, 255, 0, 0.75);
+    --BACKGROUND: #444;
 }
 
 html,
@@ -23,7 +23,7 @@ body {
     white-space: nowrap;
     min-width: 1200px;
     position: relative;
-    background: light-dark(#fff, var(--background));
+    background: light-dark(#fff, var(--BACKGROUND));
     display: flex;
     flex-direction: column;
     align-items: center;

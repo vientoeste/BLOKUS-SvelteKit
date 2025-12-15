@@ -75,7 +75,7 @@
     min-height: 0;
     padding: 10px;
     border-radius: 10px;
-    background-color: var(--green);
+    background-color: var(--GREEN);
     display: flex;
     flex-direction: column;
   }

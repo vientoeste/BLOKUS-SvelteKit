@@ -7,10 +7,7 @@
 {#if color !== "SPACING"}
   <div class="cell-cover">
     <div class="cell-blank">
-      <div
-        class="cell-content"
-        style="background-color: var(--{color.toLowerCase()});"
-      ></div>
+      <div class="cell-content" style="background-color: var(--{color});"></div>
     </div>
   </div>
 {:else}
@@ -19,7 +16,7 @@
 
 <style>
   .cell-cover {
-    background-color: var(--none);
+    background-color: var(--NONE);
     padding: 1px;
     pointer-events: none;
   }

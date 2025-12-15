@@ -26,12 +26,12 @@
     flex: 1;
     padding: 10px;
     border-radius: 10px;
-    background-color: var(--yellow);
+    background-color: var(--YELLOW);
     min-height: 0;
   }
 
   #blocks {
-    background-color: var(--background);
+    background-color: var(--BACKGROUND);
     gap: 5px;
     padding: 5px;
     display: flex;

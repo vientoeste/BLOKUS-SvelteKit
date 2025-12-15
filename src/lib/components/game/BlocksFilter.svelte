@@ -93,7 +93,7 @@
 
   #filter-container {
     border-radius: 10px;
-    background-color: var(--red);
+    background-color: var(--RED);
     padding: 10px;
   }
 
@@ -102,7 +102,7 @@
     padding: 8px;
     flex-direction: row;
     gap: 24px;
-    background-color: var(--background);
+    background-color: var(--BACKGROUND);
     align-items: center;
   }
 
