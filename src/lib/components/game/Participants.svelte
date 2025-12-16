@@ -53,7 +53,7 @@
     width: 100%;
     height: fit-content;
     padding: 10px;
-    background-color: var(--blue);
+    background-color: var(--BLUE);
     border-radius: 10px;
   }
 
